@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+gofmt -w -s -e \
+	"$ROOT/ard" \
+	"$ROOT/cobra" \
+	"$ROOT/format" \
+	"$ROOT/kubernetes" \
+	"$ROOT/library" \
+	"$ROOT/problems" \
+	"$ROOT/reflection" \
+	"$ROOT/terminal" \
+	"$ROOT/url" \
+	"$ROOT/util" \
+	"$ROOT/version"
