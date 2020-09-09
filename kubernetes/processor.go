@@ -34,7 +34,7 @@ type Processor struct {
 	Log                 *logging.Logger
 }
 
-func NewProcessor(name string, informer cache.SharedIndexInformer, period time.Duration, get GetControllerObjectFunc, process ProcessFunc) *Processor {
+func NewProcessor(toolName string, name string, informer cache.SharedIndexInformer, period time.Duration, get GetControllerObjectFunc, process ProcessFunc) *Processor {
 	self := Processor{
 		Name:                name,
 		Informer:            informer,
@@ -42,7 +42,7 @@ func NewProcessor(name string, informer cache.SharedIndexInformer, period time.D
 		Period:              period,
 		GetControllerObject: get,
 		Process:             process,
-		Log:                 logging.MustGetLogger(fmt.Sprintf("turandot.processor.%s", name)),
+		Log:                 logging.MustGetLogger(fmt.Sprintf("%s.processor.%s", toolName, name)),
 	}
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -141,11 +141,11 @@ type Processors struct {
 	controlledGvksLock sync.Mutex
 }
 
-func NewProcessors() *Processors {
+func NewProcessors(toolName string) *Processors {
 	return &Processors{
 		processors:     make(map[schema.GroupVersionKind]*Processor),
 		controlledGvks: make(map[schema.GroupVersionKind]bool),
-		log:            logging.MustGetLogger("turandot.processors"),
+		log:            logging.MustGetLogger(fmt.Sprintf("%s.processors", toolName)),
 	}
 }
 

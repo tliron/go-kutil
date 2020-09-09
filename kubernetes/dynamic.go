@@ -34,7 +34,7 @@ type Dynamic struct {
 	context       context.Context
 }
 
-func NewDynamic(dynamic dynamicpkg.Interface, discovery discovery.DiscoveryInterface, namespace string, context context.Context) *Dynamic {
+func NewDynamic(toolName string, dynamic dynamicpkg.Interface, discovery discovery.DiscoveryInterface, namespace string, context context.Context) *Dynamic {
 	var informerFactory dynamicinformer.DynamicSharedInformerFactory
 	if namespace == "" {
 		informerFactory = dynamicinformer.NewDynamicSharedInformerFactory(dynamic, time.Second)
@@ -46,7 +46,7 @@ func NewDynamic(dynamic dynamicpkg.Interface, discovery discovery.DiscoveryInter
 		Dynamic:         dynamic,
 		Discovery:       discovery,
 		InformerFactory: informerFactory,
-		Log:             logging.MustGetLogger(fmt.Sprintf("turandot.dynamic.%s", namespace)),
+		Log:             logging.MustGetLogger(fmt.Sprintf("%s.dynamic.%s", toolName, namespace)),
 		informers:       make(map[schema.GroupVersionResource]cache.SharedIndexInformer),
 		context:         context,
 	}
