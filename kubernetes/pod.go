@@ -29,7 +29,8 @@ func GetPods(context contextpkg.Context, kubernetes kubernetespkg.Interface, nam
 		if len(pods.Items) > 0 {
 			return pods, nil
 		} else {
-			return nil, fmt.Errorf("no pods for app.kubernetes.io/name=%q in namespace %q", appName, namespace)
+			gk := core.SchemeGroupVersion.WithKind("Pod").GroupKind()
+			return nil, NewNotFound(gk, fmt.Sprintf("label app.kubernetes.io/name=%q in namespace %q", appName, namespace))
 		}
 	} else {
 		return nil, err

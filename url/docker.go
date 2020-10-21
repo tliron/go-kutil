@@ -7,6 +7,7 @@ import (
 	"path"
 
 	namepkg "github.com/google/go-containerregistry/pkg/name"
+	containerregistrypkg "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
@@ -106,7 +107,15 @@ func (self *DockerURL) Context() *Context {
 func (self *DockerURL) WriteTarball(writer io.Writer) error {
 	url := fmt.Sprintf("%s%s", self.URL.Host, self.URL.Path)
 	if tag, err := namepkg.NewTag(url); err == nil {
-		if image, err := remote.Image(tag); err == nil {
+		var image containerregistrypkg.Image
+		httpRoundTripper := self.context.GetHTTPRoundTripper()
+		if httpRoundTripper != nil {
+			image, err = remote.Image(tag, remote.WithTransport(httpRoundTripper))
+		} else {
+			image, err = remote.Image(tag)
+		}
+
+		if err == nil {
 			return tarball.Write(tag, image, writer)
 		} else {
 			return err

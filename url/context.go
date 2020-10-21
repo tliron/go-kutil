@@ -2,6 +2,7 @@ package url
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"sync"
 
@@ -13,12 +14,23 @@ import (
 //
 
 type Context struct {
-	paths map[string]string
-	lock  sync.Mutex
+	paths            map[string]string
+	httpRoundTripper http.RoundTripper
+	lock             sync.Mutex
 }
 
 func NewContext() *Context {
 	return &Context{}
+}
+
+// Not thread-safe
+func (self *Context) SetHTTPRoundTripper(httpRoundTripper http.RoundTripper) {
+	self.httpRoundTripper = httpRoundTripper
+}
+
+// Not thread-safe
+func (self *Context) GetHTTPRoundTripper() http.RoundTripper {
+	return self.httpRoundTripper
 }
 
 func (self *Context) Open(url URL) (*os.File, error) {
@@ -44,6 +56,7 @@ func (self *Context) Open(url URL) (*os.File, error) {
 		}
 	}
 
+	// TODO: remove .zip?
 	temporaryPathPattern := fmt.Sprintf("puccini-%s-*.zip", util.SanitizeFilename(key))
 	if file, err := Download(url, temporaryPathPattern); err == nil {
 		if self.paths == nil {
