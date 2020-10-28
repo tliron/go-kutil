@@ -14,9 +14,9 @@ import (
 //
 
 type Context struct {
-	paths            map[string]string
-	httpRoundTripper http.RoundTripper
-	lock             sync.Mutex
+	paths             map[string]string
+	httpRoundTrippers map[string]http.RoundTripper
+	lock              sync.Mutex // for paths
 }
 
 func NewContext() *Context {
@@ -24,13 +24,21 @@ func NewContext() *Context {
 }
 
 // Not thread-safe
-func (self *Context) SetHTTPRoundTripper(httpRoundTripper http.RoundTripper) {
-	self.httpRoundTripper = httpRoundTripper
+func (self *Context) SetHTTPRoundTripper(host string, httpRoundTripper http.RoundTripper) {
+	if self.httpRoundTrippers == nil {
+		self.httpRoundTrippers = make(map[string]http.RoundTripper)
+	}
+	self.httpRoundTrippers[host] = httpRoundTripper
 }
 
 // Not thread-safe
-func (self *Context) GetHTTPRoundTripper() http.RoundTripper {
-	return self.httpRoundTripper
+func (self *Context) GetHTTPRoundTripper(host string) http.RoundTripper {
+	if self.httpRoundTrippers != nil {
+		roundTripper, _ := self.httpRoundTrippers[host]
+		return roundTripper
+	} else {
+		return nil
+	}
 }
 
 func (self *Context) Open(url URL) (*os.File, error) {
@@ -56,8 +64,7 @@ func (self *Context) Open(url URL) (*os.File, error) {
 		}
 	}
 
-	// TODO: remove .zip?
-	temporaryPathPattern := fmt.Sprintf("puccini-%s-*.zip", util.SanitizeFilename(key))
+	temporaryPathPattern := fmt.Sprintf("puccini-%s-*", util.SanitizeFilename(key))
 	if file, err := Download(url, temporaryPathPattern); err == nil {
 		if self.paths == nil {
 			self.paths = make(map[string]string)

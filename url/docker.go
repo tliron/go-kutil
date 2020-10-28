@@ -12,8 +12,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
-// TODO: support authentication
-
 //
 // DockerURL
 //
@@ -108,7 +106,7 @@ func (self *DockerURL) WriteTarball(writer io.Writer) error {
 	url := fmt.Sprintf("%s%s", self.URL.Host, self.URL.Path)
 	if tag, err := namepkg.NewTag(url); err == nil {
 		var image containerregistrypkg.Image
-		httpRoundTripper := self.context.GetHTTPRoundTripper()
+		httpRoundTripper := self.context.GetHTTPRoundTripper(self.URL.Hostname())
 		if httpRoundTripper != nil {
 			image, err = remote.Image(tag, remote.WithTransport(httpRoundTripper))
 		} else {
