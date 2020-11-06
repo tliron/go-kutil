@@ -9,6 +9,12 @@ import (
 	"github.com/tliron/kutil/util"
 )
 
+type Credentials struct {
+	Username string
+	Password string
+	Token    string
+}
+
 //
 // Context
 //
@@ -16,6 +22,7 @@ import (
 type Context struct {
 	paths             map[string]string
 	httpRoundTrippers map[string]http.RoundTripper
+	credentials       map[string]*Credentials
 	lock              sync.Mutex // for paths
 }
 
@@ -34,8 +41,30 @@ func (self *Context) SetHTTPRoundTripper(host string, httpRoundTripper http.Roun
 // Not thread-safe
 func (self *Context) GetHTTPRoundTripper(host string) http.RoundTripper {
 	if self.httpRoundTrippers != nil {
-		roundTripper, _ := self.httpRoundTrippers[host]
-		return roundTripper
+		httpRoundTripper, _ := self.httpRoundTrippers[host]
+		return httpRoundTripper
+	} else {
+		return nil
+	}
+}
+
+// Not thread-safe
+func (self *Context) SetCredentials(host string, username string, password string, token string) {
+	if self.credentials == nil {
+		self.credentials = make(map[string]*Credentials)
+	}
+	self.credentials[host] = &Credentials{
+		Username: username,
+		Password: password,
+		Token:    token,
+	}
+}
+
+// Not thread-safe
+func (self *Context) GetCredentials(host string) *Credentials {
+	if self.credentials != nil {
+		credentials, _ := self.credentials[host]
+		return credentials
 	} else {
 		return nil
 	}

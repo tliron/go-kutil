@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func GetInternalRegistryURL(kubernetesClient kubernetes.Interface) (string, error) {
+func GetInternalRegistryAddress(kubernetesClient kubernetes.Interface) (string, error) {
 	if service, err := kubernetesClient.CoreV1().Services("kube-system").Get(context.TODO(), "registry", meta.GetOptions{}); err == nil {
 		return fmt.Sprintf("%s:80", service.Spec.ClusterIP), nil
 	} else {
