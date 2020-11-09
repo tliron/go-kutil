@@ -78,13 +78,13 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 				if auths := ard.NewNode(value).Get("auth").Data; auths != nil {
 					return NewRegistryCredentialsTableFromARD(auths)
 				} else {
-					return nil, fmt.Errorf("malformed \"kubernetes.io/dockerconfigjson\" secret: %s", value)
+					return nil, fmt.Errorf("malformed %q secret: %s", core.SecretTypeDockerConfigJson, value)
 				}
 			} else {
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("malformed \"kubernetes.io/dockerconfigjson\" secret: %s", secret.Data)
+			return nil, fmt.Errorf("malformed %q secret: %s", core.SecretTypeDockerConfigJson, secret.Data)
 		}
 
 	case core.SecretTypeDockercfg:
@@ -95,7 +95,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("malformed \"kubernetes.io/dockercfg\" secret: %s", secret.Data)
+			return nil, fmt.Errorf("malformed %q secret: %s", core.SecretTypeDockercfg, secret.Data)
 		}
 	}
 
