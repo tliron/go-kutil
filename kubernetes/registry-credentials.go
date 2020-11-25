@@ -75,7 +75,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 	case core.SecretTypeDockerConfigJson:
 		if data, ok := secret.Data[core.DockerConfigJsonKey]; ok {
 			if value, err := format.DecodeJSON(util.BytesToString(data)); err == nil {
-				if auths := ard.NewNode(value).Get("auth").Data; auths != nil {
+				if auths := ard.NewNode(value).Get("auths").Data; auths != nil {
 					return NewRegistryCredentialsTableFromARD(auths)
 				} else {
 					return nil, fmt.Errorf("malformed %q secret: %s", core.SecretTypeDockerConfigJson, value)

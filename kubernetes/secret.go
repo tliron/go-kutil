@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	contextpkg "context"
+	"fmt"
 
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,3 +25,63 @@ func CopySecret(context contextpkg.Context, kubernetes kubernetespkg.Interface, 
 		return nil, err
 	}
 }
+
+func GetSecretTLSCertBytes(secret *core.Secret, secretDataKey string) ([]byte, error) {
+	switch secret.Type {
+	case core.SecretTypeTLS:
+		if secretDataKey == "" {
+			secretDataKey = core.TLSCertKey
+		}
+
+		if bytes, ok := secret.Data[secretDataKey]; ok {
+			return bytes, nil
+		} else {
+			return nil, fmt.Errorf("no data key %q in %q secret: %s", secretDataKey, secret.Type, secret.Data)
+		}
+
+	case core.SecretTypeServiceAccountToken:
+		if secretDataKey == "" {
+			secretDataKey = core.ServiceAccountRootCAKey
+		}
+
+		if bytes, ok := secret.Data[secretDataKey]; ok {
+			return bytes, nil
+		} else {
+			return nil, fmt.Errorf("no data key %q in %q secret: %s", secretDataKey, secret.Type, secret.Data)
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported TLS secret type: %s", secret.Type)
+	}
+}
+
+/*
+func GetSecretTLSCertPool(secret *core.Secret, secretDataKey string) (*x509.CertPool, error) {
+	switch secret.Type {
+	case core.SecretTypeTLS:
+		if secretDataKey == "" {
+			secretDataKey = core.TLSCertKey
+		}
+
+		if bytes, ok := secret.Data[secretDataKey]; ok {
+			return util.ParseX509CertPool(bytes)
+		} else {
+			return nil, fmt.Errorf("no data key %q in %q secret: %s", secretDataKey, secret.Type, secret.Data)
+		}
+
+	case core.SecretTypeServiceAccountToken:
+		if secretDataKey == "" {
+			secretDataKey = core.ServiceAccountRootCAKey
+		}
+
+		if bytes, ok := secret.Data[secretDataKey]; ok {
+			return util.ParseX509CertPool(bytes)
+		} else {
+			return nil, fmt.Errorf("no data key %q in %q secret: %s", secretDataKey, secret.Type, secret.Data)
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported TLS secret type: %s", secret.Type)
+	}
+}
+*/

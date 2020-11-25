@@ -1,15 +1,18 @@
 package kubernetes
 
 import (
-	"context"
+	contextpkg "context"
 	"fmt"
 
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	kubernetespkg "k8s.io/client-go/kubernetes"
 )
 
-func GetInternalRegistryAddress(kubernetesClient kubernetes.Interface) (string, error) {
-	if service, err := kubernetesClient.CoreV1().Services("kube-system").Get(context.TODO(), "registry", meta.GetOptions{}); err == nil {
+func GetInternalRegistryHost(context contextpkg.Context, kubernetes kubernetespkg.Interface) (string, error) {
+	// TODO: OpenShift
+
+	// Minikube
+	if service, err := kubernetes.CoreV1().Services("kube-system").Get(context, "registry", meta.GetOptions{}); err == nil {
 		return fmt.Sprintf("%s:80", service.Spec.ClusterIP), nil
 	} else {
 		return "", err

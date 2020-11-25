@@ -7,8 +7,8 @@ import (
 	discoverypkg "k8s.io/client-go/discovery"
 )
 
-func FindResourceForKind(discovery_ discoverypkg.DiscoveryInterface, gvk schema.GroupVersionKind, supportedVerbs ...string) (schema.GroupVersionResource, error) {
-	if gvrs, err := FindResourcesForKind(discovery_, gvk, supportedVerbs...); err == nil {
+func FindResourceForKind(discovery discoverypkg.DiscoveryInterface, gvk schema.GroupVersionKind, supportedVerbs ...string) (schema.GroupVersionResource, error) {
+	if gvrs, err := FindResourcesForKind(discovery, gvk, supportedVerbs...); err == nil {
 		count := len(gvrs)
 		if count == 1 {
 			return gvrs[0], nil
