@@ -1,14 +1,14 @@
 package kubernetes
 
 import (
-	"context"
+	contextpkg "context"
 	"io"
 
 	core "k8s.io/api/core/v1"
 	kubernetespkg "k8s.io/client-go/kubernetes"
 )
 
-func Log(kubernetes kubernetespkg.Interface, namespace string, podName string, containerName string, tail int, follow bool) (io.ReadCloser, error) {
+func Log(context contextpkg.Context, kubernetes kubernetespkg.Interface, namespace string, podName string, containerName string, tail int, follow bool) (io.ReadCloser, error) {
 	options := core.PodLogOptions{
 		Container: containerName,
 		Follow:    follow,
@@ -20,5 +20,5 @@ func Log(kubernetes kubernetespkg.Interface, namespace string, podName string, c
 	}
 
 	request := kubernetes.CoreV1().Pods(namespace).GetLogs(podName, &options)
-	return request.Stream(context.TODO())
+	return request.Stream(context)
 }
