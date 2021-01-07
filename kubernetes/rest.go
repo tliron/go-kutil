@@ -70,14 +70,23 @@ func Exec(rest restpkg.Interface, config *restpkg.Config, namespace string, podN
 		if err = executor.Stream(streamOptions); err == nil {
 			return nil
 		} else {
-			stderr_ := stderrCapture.String()
-			if stderr_ != "" {
-				return fmt.Errorf("%s\n%s", err.Error(), stderr_)
-			} else {
-				return err
-			}
+			return NewExecError(err, stderrCapture.String())
 		}
 	} else {
 		return err
 	}
+}
+
+type ExecError struct {
+	Err    error
+	Stderr string
+}
+
+func NewExecError(err error, stderr string) *ExecError {
+	return &ExecError{err, stderr}
+}
+
+// error interface
+func (self *ExecError) Error() string {
+	return fmt.Sprintf("%s\n%s", self.Err.Error(), self.Stderr)
 }
