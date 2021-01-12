@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/op/go-logging"
 	"k8s.io/client-go/rest"
@@ -11,6 +12,10 @@ import (
 
 // See: clientcmd.BuildConfigFromFlags
 func NewConfigFromFlags(masterUrl string, configPath string, context string, log *logging.Logger) (*rest.Config, error) {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		configPath = ""
+	}
+
 	if configPath == "" && masterUrl == "" {
 		if config, err := rest.InClusterConfig(); err == nil {
 			return config, nil
@@ -55,15 +60,28 @@ func NewConfigForContext(configPath string, context string) (*rest.Config, error
 }
 
 func GetConfiguredNamespace(configPath string, context string) (string, bool) {
-	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{
-			ExplicitPath: configPath,
-		},
-		&clientcmd.ConfigOverrides{
-			CurrentContext: context,
-		},
-	)
-	namespace, _, _ := clientConfig.Namespace()
+	var namespace string
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		// Note: this is not a standard Kubernetes environment variable!
+		// If you want to support it, you must do so explicitly, i.e.:
+		// - name: POD_NAMESPACE
+		//   valueFrom:
+		//     fieldRef:
+		//      fieldPath: metadata.namespace
+		namespace = os.Getenv("KUBERNETES_NAMESPACE")
+	} else {
+		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{
+				ExplicitPath: configPath,
+			},
+			&clientcmd.ConfigOverrides{
+				CurrentContext: context,
+			},
+		)
+		namespace, _, _ = clientConfig.Namespace()
+	}
+
 	return namespace, namespace != ""
 }
 
