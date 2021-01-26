@@ -8,7 +8,7 @@ import (
 	"github.com/zchee/color/v2"
 )
 
-var colorize = false
+var Colorize = false
 
 func EnableColor(force bool) {
 	if force {
@@ -17,7 +17,7 @@ func EnableColor(force bool) {
 	if color.NoColor {
 		return
 	}
-	colorize = true
+	Colorize = true
 	Stdout = color.Output
 	Stderr = color.Error
 }
@@ -38,7 +38,7 @@ func ProcessColorizeFlag(colorize string) error {
 type Colorizer = func(name string) string
 
 func ColorHeading(name string) string {
-	if colorize {
+	if Colorize {
 		return color.GreenString(strings.ToUpper(name))
 	} else {
 		return name
@@ -46,7 +46,7 @@ func ColorHeading(name string) string {
 }
 
 func ColorPath(name string) string {
-	if colorize {
+	if Colorize {
 		return color.CyanString(name)
 	} else {
 		return name
@@ -54,7 +54,7 @@ func ColorPath(name string) string {
 }
 
 func ColorName(name string) string {
-	if colorize {
+	if Colorize {
 		return color.BlueString(name)
 	} else {
 		return name
@@ -62,7 +62,7 @@ func ColorName(name string) string {
 }
 
 func ColorTypeName(name string) string {
-	if colorize {
+	if Colorize {
 		return color.MagentaString(name)
 	} else {
 		return name
@@ -70,7 +70,7 @@ func ColorTypeName(name string) string {
 }
 
 func ColorValue(name string) string {
-	if colorize {
+	if Colorize {
 		return color.YellowString(name)
 	} else {
 		return name
@@ -78,7 +78,7 @@ func ColorValue(name string) string {
 }
 
 func ColorError(name string) string {
-	if colorize {
+	if Colorize {
 		return color.RedString(name)
 	} else {
 		return name

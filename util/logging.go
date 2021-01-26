@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -22,25 +23,35 @@ const logFileWritePermissions = 0600
 
 func ConfigureLogging(verbosity int, path *string) {
 	var backend *logging.LogBackend
-	if path != nil {
-		if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logFileWritePermissions); err == nil {
-			// defer f.Close() ???
-			backend = logging.NewLogBackend(file, "", 0)
-			logging.SetFormatter(plainFormatter)
-		} else {
-			Failf("log file error: %s", err.Error())
-		}
+
+	if verbosity == -1 {
+		backend = logging.NewLogBackend(ioutil.Discard, "", 0)
 	} else {
-		backend = logging.NewLogBackend(terminal.Stderr, "", 0)
-		logging.SetFormatter(colorFormatter)
+		if path != nil {
+			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logFileWritePermissions); err == nil {
+				// defer f.Close() ???
+				backend = logging.NewLogBackend(file, "", 0)
+				logging.SetFormatter(plainFormatter)
+			} else {
+				Failf("log file error: %s", err.Error())
+			}
+		} else {
+			backend = logging.NewLogBackend(terminal.Stderr, "", 0)
+			if terminal.Colorize {
+				logging.SetFormatter(colorFormatter)
+			} else {
+				logging.SetFormatter(plainFormatter)
+			}
+		}
+
+		verbosity += 3 // our 0 verbosity is NOTICE (3)
+		if verbosity > 5 {
+			verbosity = 5
+		}
 	}
 
 	leveledBackend := logging.AddModuleLevel(backend)
 
-	verbosity += 3 // 0 verbosity is NOTICE
-	if verbosity > 5 {
-		verbosity = 5
-	}
 	level := logging.Level(verbosity)
 
 	leveledBackend.SetLevel(level, "")
