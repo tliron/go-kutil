@@ -42,8 +42,10 @@ func ReadJSON(reader io.Reader) (ard.Value, error) {
 }
 
 func ReadCompatibleJSON(reader io.Reader) (ard.Value, error) {
-	if value, err := ReadJSON(reader); err == nil {
-		return ard.FromCompatibleJSON(value), nil
+	var data ard.Value
+	decoder := json.NewDecoder(reader)
+	if err := decoder.Decode(&data); err == nil {
+		return ard.FromCompatibleJSON(data), nil
 	} else {
 		return nil, err
 	}
