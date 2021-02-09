@@ -4,27 +4,27 @@ import (
 	"fmt"
 )
 
-func (self *Problems) ReportInSection(skip int, message string, section string, row int, column int) bool {
-	return self.Append(NewProblem(message, section, row, column, skip+1))
+func (self *Problems) ReportFull(skip int, section string, item string, message string, row int, column int) bool {
+	return self.Append(NewProblem(section, item, message, row, column, skip+1))
 }
 
-func (self *Problems) Report(skip int, message string) bool {
-	return self.ReportInSection(skip+1, message, "", -1, -1)
+func (self *Problems) Report(skip int, item string, message string) bool {
+	return self.ReportFull(skip+1, "", item, message, -1, -1)
 }
 
-func (self *Problems) Reportf(skip int, format string, arg ...interface{}) bool {
-	return self.Report(skip+1, fmt.Sprintf(format, arg...))
+func (self *Problems) Reportf(skip int, item string, format string, arg ...interface{}) bool {
+	return self.Report(skip+1, item, fmt.Sprintf(format, arg...))
 }
 
 func (self *Problems) ReportProblematic(skip int, problematic Problematic) bool {
-	message, section, row, column := problematic.Problem()
-	return self.ReportInSection(skip+1, message, section, row, column)
+	section, item, message, row, column := problematic.Problem()
+	return self.ReportFull(skip+1, section, item, message, row, column)
 }
 
 func (self *Problems) ReportError(err error) bool {
 	if problematic, ok := err.(Problematic); ok {
 		return self.ReportProblematic(1, problematic)
 	} else {
-		return self.Report(1, err.Error())
+		return self.Report(1, "", err.Error())
 	}
 }

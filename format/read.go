@@ -15,6 +15,8 @@ func Read(reader io.Reader, format string) (ard.Value, error) {
 		return ReadYAML(reader)
 	case "json":
 		return ReadJSON(reader)
+	case "cjson":
+		return ReadCompatibleJSON(reader)
 	default:
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
@@ -34,6 +36,14 @@ func ReadJSON(reader io.Reader) (ard.Value, error) {
 	if err := decoder.Decode(&data); err == nil {
 		data, _ = ard.ToMaps(data)
 		return data, nil
+	} else {
+		return nil, err
+	}
+}
+
+func ReadCompatibleJSON(reader io.Reader) (ard.Value, error) {
+	if value, err := ReadJSON(reader); err == nil {
+		return ard.FromCompatibleJSON(value), nil
 	} else {
 		return nil, err
 	}

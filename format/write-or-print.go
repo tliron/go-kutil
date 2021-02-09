@@ -8,6 +8,10 @@ import (
 	"github.com/tliron/kutil/terminal"
 )
 
+const DIRECTORY_WRITE_PERMISSIONS = 0700
+
+const FILE_WRITE_PERMISSIONS = 0600
+
 func WriteOrPrint(data interface{}, format string, writer io.Writer, strict bool, pretty bool, output string) error {
 	if output != "" {
 		if f, err := OpenFileForWrite(output); err == nil {
@@ -20,10 +24,6 @@ func WriteOrPrint(data interface{}, format string, writer io.Writer, strict bool
 		return Print(data, format, writer, strict, pretty)
 	}
 }
-
-const DIRECTORY_WRITE_PERMISSIONS = 0700
-
-const FILE_WRITE_PERMISSIONS = 0600
 
 func OpenFileForWrite(path string) (*os.File, error) {
 	if err := os.MkdirAll(filepath.Dir(path), DIRECTORY_WRITE_PERMISSIONS); err == nil {

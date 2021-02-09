@@ -9,10 +9,10 @@ import (
 	"github.com/tliron/kutil/terminal"
 )
 
-var prettyjsonFormatter = prettyjson.NewFormatter()
+var prettyJsonFormatter = prettyjson.NewFormatter()
 
 func init() {
-	prettyjsonFormatter.Indent = terminal.IndentSpaces
+	prettyJsonFormatter.Indent = terminal.IndentSpaces
 }
 
 func Print(data interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
@@ -35,6 +35,8 @@ func Print(data interface{}, format string, writer io.Writer, strict bool, prett
 		return PrintYAML(data, writer, strict, pretty)
 	case "json":
 		return PrintJSON(data, writer, pretty)
+	case "cjson":
+		return PrintCompatibleJSON(data, writer, pretty)
 	case "xml":
 		return PrintXML(data, writer, pretty)
 	default:
@@ -52,7 +54,7 @@ func PrintYAML(data interface{}, writer io.Writer, strict bool, pretty bool) err
 
 func PrintJSON(data interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
-		bytes, err := prettyjsonFormatter.Marshal(data)
+		bytes, err := prettyJsonFormatter.Marshal(data)
 		if err != nil {
 			return err
 		}
@@ -61,6 +63,10 @@ func PrintJSON(data interface{}, writer io.Writer, pretty bool) error {
 		return WriteJSON(data, writer, "")
 	}
 	return nil
+}
+
+func PrintCompatibleJSON(data interface{}, writer io.Writer, pretty bool) error {
+	return PrintJSON(ToCompatibleJSON(data), writer, pretty)
 }
 
 func PrintXML(data interface{}, writer io.Writer, pretty bool) error {

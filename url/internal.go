@@ -25,6 +25,14 @@ func RegisterInternalURL(path string, content string) error {
 	}
 }
 
+func DeregisterInternalURL(path string) {
+	internal.Delete(path)
+}
+
+func UpdateInternalURL(path string, content string) {
+	internal.Store(path, content)
+}
+
 func ReadToInternalURL(path string, reader io.Reader) (*InternalURL, error) {
 	if closer, ok := reader.(io.Closer); ok {
 		defer closer.Close()

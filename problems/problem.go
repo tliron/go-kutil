@@ -18,25 +18,27 @@ import (
 //
 
 type Problem struct {
-	Message string `json:"message" yaml:"message"`
-	Section string `json:"section" yaml:"section"`
-	Row     int    `json:"row" yaml:"row"`
-	Column  int    `json:"column" yaml:"column"`
-	File    string `json:"file" yaml:"file"`
-	Line    int    `json:"line" yaml:"line"`
+	Section    string `json:"section" yaml:"section"`
+	Item       string `json:"item" yaml:"item"`
+	Message    string `json:"message" yaml:"message"`
+	Row        int    `json:"row" yaml:"row"`
+	Column     int    `json:"column" yaml:"column"`
+	SourceFile string `json:"sourceFile" yaml:"sourceFile"`
+	SourceLine int    `json:"sourceLine" yaml:"sourceLine"`
 }
 
-func NewProblem(message string, section string, row int, column int, skip int) *Problem {
+func NewProblem(section string, item string, message string, row int, column int, skip int) *Problem {
 	self := Problem{
-		Message: message,
 		Section: section,
+		Item:    item,
+		Message: message,
 		Row:     row,
 		Column:  column,
 	}
 
 	if _, file, line, ok := runtime.Caller(skip + 1); ok {
-		self.File = file
-		self.Line = line
+		self.SourceFile = file
+		self.SourceLine = line
 	}
 
 	return &self
@@ -48,16 +50,19 @@ func (self *Problem) String() string {
 	if self.Row != -1 {
 		r = fmt.Sprintf("@%d", self.Row)
 		if self.Column != -1 {
-			r = r + fmt.Sprintf(",%d", self.Column)
+			r += fmt.Sprintf(",%d", self.Column)
 		}
-		r = r + " "
+		r += " "
 	}
-	r = r + strings.ReplaceAll(self.Message, "\n", "¶")
+	if self.Item != "" {
+		r += fmt.Sprintf("%s: ", self.Item)
+	}
+	r += strings.ReplaceAll(self.Message, "\n", "¶")
 	return r
 }
 
 func (self *Problem) Equals(problem *Problem) bool {
-	return (self.Message == problem.Message) && (self.Section == problem.Section) && (self.Row == problem.Row) && (self.Column == problem.Column)
+	return (self.Section == problem.Section) && (self.Item == problem.Item) && (self.Message == problem.Message) && (self.Row == problem.Row) && (self.Column == problem.Column)
 }
 
 //
@@ -81,7 +86,10 @@ func (self ProblemSlice) Less(i, j int) bool {
 	jProblem := self[j]
 	c := strings.Compare(iProblem.Section, jProblem.Section)
 	if c == 0 {
-		return strings.Compare(iProblem.Message, jProblem.Message) < 0
+		c = strings.Compare(iProblem.Item, jProblem.Item)
+		if c == 0 {
+			c = strings.Compare(iProblem.Message, jProblem.Message)
+		}
 	}
 	return c < 0
 }
@@ -195,9 +203,9 @@ func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {
 			fmt.Fprint(writer, terminal.IndentString(2))
 			fmt.Fprintf(writer, "%s\n", problem)
 
-			if locate && (problem.File != "") {
+			if locate && (problem.SourceFile != "") {
 				fmt.Fprint(writer, terminal.IndentString(2))
-				fmt.Fprintf(writer, "└─%s:%d\n", problem.File, problem.Line)
+				fmt.Fprintf(writer, "└─%s:%d\n", problem.SourceFile, problem.SourceLine)
 			}
 		}
 		return true

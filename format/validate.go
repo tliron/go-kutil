@@ -14,7 +14,7 @@ func Validate(code string, format string) error {
 	switch format {
 	case "yaml", "":
 		return ValidateYAML(code)
-	case "json":
+	case "json", "cjson":
 		return ValidateJSON(code)
 	case "xml":
 		return ValidateXML(code)

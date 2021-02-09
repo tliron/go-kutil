@@ -13,6 +13,8 @@ func Encode(data interface{}, format string, strict bool) (string, error) {
 		return EncodeYAML(data, terminal.Indent, strict)
 	case "json":
 		return EncodeJSON(data, terminal.Indent)
+	case "cjson":
+		return EncodeCompatibleJSON(data, terminal.Indent)
 	case "xml":
 		return EncodeXML(data, terminal.Indent)
 	default:
@@ -41,6 +43,10 @@ func EncodeJSON(data interface{}, indent string) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func EncodeCompatibleJSON(data interface{}, indent string) (string, error) {
+	return EncodeJSON(ToCompatibleJSON(data), indent)
 }
 
 func EncodeXML(data interface{}, indent string) (string, error) {

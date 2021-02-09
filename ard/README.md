@@ -16,8 +16,9 @@ Note that some formats present limitations:
 
 YAML supports a rich set of primitive types, so ARD will survive a round trip to YAML.
 
-One difference is that YAML maps can be ordered (!!omap vs. !!map) but ARD maps have arbitrary
-order (always !!map) for widest compatibility. A round trip from YAML to ARD would thus lose order.
+One difference is that in YAML 1.1 maps can be ordered (!!omap vs. !!map) but ARD maps have
+arbitrary order (always !!map) for widest compatibility. A round trip from YAML to ARD would thus
+lose order. (YAML 1.2 does not include !!omap support by default.)
 
 YAML allows for maps with arbitrary keys. This is non-trivial to support in Go, and so we provide
 special functions (`MapGet`, `MapPut`, `MapDelete`, `MapMerge`) that replace the Go native
@@ -29,11 +30,10 @@ provided as an independent library, [yamlkeys](https://github.com/tliron/yamlkey
 JSON can be read into ARD.
 
 However, because JSON has fewer types and more limitations than YAML (no integers, only floats; map
-keys can only be string), ARD will lose some type information when translated into JSON.
+keys can only be strings), ARD will lose some type information when translated into JSON.
 
-This could be fixed if we extend JSON with some conventions for encoding extra types. See
-[MongoDB Extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) for an
-example. Also, maps with complex keys could be encoded as key-value pair lists.
+We can overcome this challenge by extending JSON with some conventions for encoding extra types.
+See [our conventions](json.go).
 
 ### XML
 

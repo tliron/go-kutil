@@ -28,6 +28,8 @@ func Write(data interface{}, format string, indent string, strict bool, writer i
 		return WriteYAML(data, writer, indent, strict)
 	case "json":
 		return WriteJSON(data, writer, indent)
+	case "cjson":
+		return WriteCompatibleJSON(data, writer, indent)
 	case "xml":
 		return WriteXML(data, writer, indent)
 	default:
@@ -63,6 +65,10 @@ func WriteJSON(data interface{}, writer io.Writer, indent string) error {
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", indent)
 	return encoder.Encode(data)
+}
+
+func WriteCompatibleJSON(data interface{}, writer io.Writer, indent string) error {
+	return WriteJSON(ToCompatibleJSON(data), writer, indent)
 }
 
 func WriteXML(data interface{}, writer io.Writer, indent string) error {

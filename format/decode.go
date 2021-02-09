@@ -17,6 +17,8 @@ func Decode(code string, format string, all bool) (ard.Value, error) {
 		}
 	case "json":
 		return DecodeJSON(code)
+	case "cjson":
+		return DecodeCompatibleJSON(code)
 	default:
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
@@ -32,4 +34,8 @@ func DecodeAllYAML(code string) (ard.List, error) {
 
 func DecodeJSON(code string) (ard.Value, error) {
 	return ReadJSON(strings.NewReader(code))
+}
+
+func DecodeCompatibleJSON(code string) (ard.Value, error) {
+	return ReadCompatibleJSON(strings.NewReader(code))
 }

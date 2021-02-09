@@ -56,7 +56,7 @@ func ConfigureLogging(verbosity int, path *string) {
 
 	leveledBackend.SetLevel(level, "")
 
-	logging.SetBackend(leveledBackend)
+	logging.SetBackend(NewPrefixLeveledBackend(leveledBackend))
 }
 
 func LogStack(log *logging.Logger, message string, skip int) {
@@ -81,4 +81,47 @@ func LogStack(log *logging.Logger, message string, skip int) {
 	}
 
 	log.Critical(strings.TrimRight(builder.String(), "\n"))
+}
+
+//
+// PrefixLeveledBackend
+//
+
+type PrefixLeveledBackend struct {
+	wrapped      logging.LeveledBackend
+	prefixLevels map[string]logging.Level
+}
+
+func NewPrefixLeveledBackend(wrapped logging.LeveledBackend) *PrefixLeveledBackend {
+	return &PrefixLeveledBackend{
+		wrapped:      wrapped,
+		prefixLevels: make(map[string]logging.Level),
+	}
+}
+
+// logging.Leveled interface
+func (self *PrefixLeveledBackend) GetLevel(module string) logging.Level {
+	for prefix, level := range self.prefixLevels {
+		if strings.HasPrefix(module, prefix) {
+			return level
+		}
+	}
+	return self.wrapped.GetLevel(module)
+}
+
+func (self *PrefixLeveledBackend) SetLevel(level logging.Level, module string) {
+	if strings.HasSuffix(module, "*") {
+		self.prefixLevels[module[:len(module)-1]] = level
+	} else {
+		self.wrapped.SetLevel(level, module)
+	}
+}
+
+func (self *PrefixLeveledBackend) IsEnabledFor(level logging.Level, module string) bool {
+	return level <= self.GetLevel(module)
+}
+
+// logging.Backend interface
+func (self *PrefixLeveledBackend) Log(level logging.Level, callDepth int, record *logging.Record) error {
+	return self.wrapped.Log(level, callDepth, record)
 }
