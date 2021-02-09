@@ -165,21 +165,12 @@ func TryFromCompatibleJSON(value Value) (Value, bool) {
 			}
 		}
 
-		converted := false
-		map_ := make(StringMap)
-
+		map_ := make(Map)
 		for key, value__ := range value_ {
-			var converted_ bool
-			value__, converted_ = TryFromCompatibleJSON(value__)
+			value__ = FromCompatibleJSON(value__)
 			map_[key] = value__
-			if converted_ {
-				converted = true
-			}
 		}
-
-		if converted {
-			return map_, true
-		}
+		return map_, true
 	}
 
 	return value, false
