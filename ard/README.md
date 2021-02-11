@@ -10,20 +10,35 @@ Comprising primitives (string, integer, float, boolean, null) and structures (ma
 agnostic because it can be trivially represented in practically any language or platform, and also
 because it can be transmitted in a wide variety of formats.
 
-Note that some formats present limitations:
+Note that map keys can be arbitrarily complex, not just strings. Most map implementations in most
+programming languages allow for this as long as the key is hashable.
+
+Some caveats and limitations for programming languages:
+
+### Go
+
+Unfortunately, the most popular Go YAML parser does not easily support arbitrarily complex keys
+(see this [issue](https://github.com/go-yaml/yaml/issues/502)). We provide an independent library,
+[yamlkeys](https://github.com/tliron/yamlkeys), to make this easier.
+
+### JavaScript
+
+The JavaScript language doesn't have native support for integers. However, this limitation can be
+overcome if you're able to maintain precision and distinction, e.g. by wrapping the number in a
+custom object.
+
+Some caveats and limitations for transmission formats:
 
 ### YAML
 
-YAML supports a rich set of primitive types, so ARD will survive a round trip to YAML.
+YAML supports a rich set of primitive types (when it includes the common
+[JSON schema](https://yaml.org/spec/1.2/spec.html#id2803231)), so ARD will survive a round trip
+to YAML.
 
-One difference is that in YAML 1.1 maps can be ordered (!!omap vs. !!map) but ARD maps have
-arbitrary order (always !!map) for widest compatibility. A round trip from YAML to ARD would thus
-lose order. (YAML 1.2 does not include !!omap support by default.)
-
-YAML allows for maps with arbitrary keys. This is non-trivial to support in Go, and so we provide
-special functions (`MapGet`, `MapPut`, `MapDelete`, `MapMerge`) that replace the Go native
-functionality with additional support for detecting and handling complex keys. This feature is
-provided as an independent library, [yamlkeys](https://github.com/tliron/yamlkeys).
+Note that some YAML 1.1 implementations support ordered maps
+([!!omap](https://yaml.org/type/omap.html) vs. !!map). These will lose their order when converted
+to ARD, so it's best to standardized on arbitrary order (!!map). YAML 1.2 does not support !!omap
+by default, so this use case may be less and less common.
 
 ### JSON
 
@@ -33,13 +48,16 @@ However, because JSON has fewer types and more limitations than YAML (no integer
 keys can only be strings), ARD will lose some type information when translated into JSON.
 
 We can overcome this challenge by extending JSON with some conventions for encoding extra types.
-See [our conventions](json.go).
+See [our conventions here](json.go). Our implementation is in Go, but it should be too difficult to
+support them in another programming languages.
 
 ### XML
 
 XML does not have a type system. Arbitrary XML cannot be parsed into ARD. 
 
-However, with a proper schema and custom reader this could be implemented in the future.
+However, we support [certain conventions](xml.go) that enforce such compatibility. Our
+implementation is in Go, but it should be too difficult to support them in another programming
+languages.
 
 Raw?
 ----
