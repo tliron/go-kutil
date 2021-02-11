@@ -9,14 +9,8 @@ import (
 	"github.com/tliron/kutil/terminal"
 )
 
-var prettyJsonFormatter = prettyjson.NewFormatter()
-
-func init() {
-	prettyJsonFormatter.Indent = terminal.IndentSpaces
-}
-
 func Print(data interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
-	// Special handling for strings
+	// Special handling for strings (ignore format)
 	if s, ok := data.(string); ok {
 		if pretty {
 			s += "\n"
@@ -25,7 +19,7 @@ func Print(data interface{}, format string, writer io.Writer, strict bool, prett
 		return err
 	}
 
-	// Special handling for etree
+	// Special handling for etree (ignore format)
 	if xmlDocument, ok := data.(*etree.Document); ok {
 		return PrintXMLDocument(xmlDocument, writer, pretty)
 	}
@@ -38,14 +32,14 @@ func Print(data interface{}, format string, writer io.Writer, strict bool, prett
 	case "cjson":
 		return PrintCompatibleJSON(data, writer, pretty)
 	case "xml":
-		return PrintXML(data, writer, pretty)
+		return PrintCompatibleXML(data, writer, pretty)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
 }
 
 func PrintYAML(data interface{}, writer io.Writer, strict bool, pretty bool) error {
-	indent := "          "
+	indent := "  "
 	if pretty {
 		indent = terminal.Indent
 	}
@@ -54,6 +48,8 @@ func PrintYAML(data interface{}, writer io.Writer, strict bool, pretty bool) err
 
 func PrintJSON(data interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
+		prettyJsonFormatter := prettyjson.NewFormatter()
+		prettyJsonFormatter.Indent = terminal.IndentSpaces
 		bytes, err := prettyJsonFormatter.Marshal(data)
 		if err != nil {
 			return err
@@ -69,12 +65,12 @@ func PrintCompatibleJSON(data interface{}, writer io.Writer, pretty bool) error 
 	return PrintJSON(ToCompatibleJSON(data), writer, pretty)
 }
 
-func PrintXML(data interface{}, writer io.Writer, pretty bool) error {
+func PrintCompatibleXML(data interface{}, writer io.Writer, pretty bool) error {
 	indent := ""
 	if pretty {
 		indent = terminal.Indent
 	}
-	if err := WriteXML(data, writer, indent); err != nil {
+	if err := WriteCompatibleXML(data, writer, indent); err != nil {
 		return err
 	}
 	if pretty {

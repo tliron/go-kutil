@@ -7,8 +7,8 @@ import (
 // Ensure data adheres to the ARD map type
 // E.g. JSON decoding uses map[string]interface{} instead of map[interface{}]interface{}
 
-func EnsureMaps(map_ Value) Map {
-	value, _ := ToMaps(map_)
+func EnsureMaps(value Value) Map {
+	value, _ = ToMaps(value)
 	if map_, ok := value.(Map); ok {
 		return map_
 	} else {
@@ -55,13 +55,21 @@ func ToMap(stringMap StringMap) Map {
 // Ensure data adheres to map[string]interface{}
 // E.g. JSON encoding does not support map[interface{}]interface{}
 
-func EnsureStringMaps(map_ Value) StringMap {
-	value, _ := ToStringMaps(map_)
+func EnsureStringMaps(value Value) StringMap {
+	value, _ = ToStringMaps(value)
 	if stringMap, ok := value.(StringMap); ok {
 		return stringMap
 	} else {
 		panic("not a string map")
 	}
+}
+
+func EnsureStringMapsAll(values List) []StringMap {
+	r := make([]StringMap, len(values))
+	for index, value := range values {
+		r[index] = EnsureStringMaps(value)
+	}
+	return r
 }
 
 func ToStringMaps(value Value) (Value, bool) {

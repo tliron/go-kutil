@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"fmt"
 
+	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/format"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -13,7 +14,8 @@ import (
 
 func NewUnstructuredFromYAMLTemplate(code string, data interface{}) (*unstructured.Unstructured, error) {
 	if object, err := format.DecodeYAMLTemplate(code, data); err == nil {
-		return &unstructured.Unstructured{Object: object}, nil
+		object_ := ard.EnsureStringMaps(object)
+		return &unstructured.Unstructured{Object: object_}, nil
 	} else {
 		return nil, err
 	}

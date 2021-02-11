@@ -57,12 +57,12 @@ func GetTypeName(value Value) TypeName {
 //
 
 var TypeZeroes = map[TypeName]Value{
-	TypeMap:       make(Map),
+	TypeMap:       make(Map), // YAML parser returns Map, but JSON parser returns StringMap
 	TypeList:      List{},
 	TypeString:    "",
 	TypeBoolean:   false,
 	TypeInteger:   int(0),       // YAML parser returns int
-	TypeFloat:     float64(0.0), // YAML parser returns float64
+	TypeFloat:     float64(0.0), // YAML and JSON parsers return float64
 	TypeNull:      nil,
 	TypeTimestamp: time.Time{}, // YAML parser returns time.Time
 }

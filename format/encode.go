@@ -16,7 +16,7 @@ func Encode(data interface{}, format string, strict bool) (string, error) {
 	case "cjson":
 		return EncodeCompatibleJSON(data, terminal.Indent)
 	case "xml":
-		return EncodeXML(data, terminal.Indent)
+		return EncodeCompatibleXML(data, terminal.Indent)
 	default:
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
@@ -49,9 +49,9 @@ func EncodeCompatibleJSON(data interface{}, indent string) (string, error) {
 	return EncodeJSON(ToCompatibleJSON(data), indent)
 }
 
-func EncodeXML(data interface{}, indent string) (string, error) {
+func EncodeCompatibleXML(data interface{}, indent string) (string, error) {
 	var writer strings.Builder
-	if err := WriteXML(data, &writer, indent); err == nil {
+	if err := WriteCompatibleXML(data, &writer, indent); err == nil {
 		return writer.String(), nil
 	} else {
 		return "", err

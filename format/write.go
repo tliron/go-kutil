@@ -12,13 +12,13 @@ import (
 )
 
 func Write(data interface{}, format string, indent string, strict bool, writer io.Writer) error {
-	// Special handling for bare strings
+	// Special handling for bare strings (format is ignored)
 	if s, ok := data.(string); ok {
 		_, err := io.WriteString(writer, s)
 		return err
 	}
 
-	// Special handling for XML document (etree)
+	// Special handling for XML etree document (format is ignored)
 	if xmlDocument, ok := data.(*etree.Document); ok {
 		return WriteXMLDocument(xmlDocument, writer, indent)
 	}
@@ -31,7 +31,7 @@ func Write(data interface{}, format string, indent string, strict bool, writer i
 	case "cjson":
 		return WriteCompatibleJSON(data, writer, indent)
 	case "xml":
-		return WriteXML(data, writer, indent)
+		return WriteCompatibleXML(data, writer, indent)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -71,7 +71,7 @@ func WriteCompatibleJSON(data interface{}, writer io.Writer, indent string) erro
 	return WriteJSON(ToCompatibleJSON(data), writer, indent)
 }
 
-func WriteXML(data interface{}, writer io.Writer, indent string) error {
+func WriteCompatibleXML(data interface{}, writer io.Writer, indent string) error {
 	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
 	// JSON and YAML) we must normalize the data before encoding it
 	data, err := Normalize(data)
@@ -79,7 +79,7 @@ func WriteXML(data interface{}, writer io.Writer, indent string) error {
 		return err
 	}
 
-	data = ToXMLWritable(data)
+	data = ard.ToCompatibleXML(data)
 
 	if _, err := io.WriteString(writer, xml.Header); err != nil {
 		return err

@@ -23,11 +23,8 @@ Inspired by: https://docs.mongodb.com/manual/reference/mongodb-Compatible-json/
 */
 
 var CompatibleJSONIntegerCode = "$ard.integer"
-
 var CompatibleJSONUIntegerCode = "$ard.uinteger"
-
 var CompatibleJSONBytesCode = "$ard.bytes"
-
 var CompatibleJSONMapCode = "$ard.map"
 
 func ToCompatibleJSON(value Value) Value {
