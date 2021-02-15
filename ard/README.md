@@ -6,21 +6,20 @@ What is "agnostic raw data"?
 Agnostic?
 ---------
 
-Comprising primitives (string, integer, float, boolean, null) and structures (map, list). It's
-agnostic because it can be trivially represented in practically any language or platform, and also
-because it can be transmitted in a wide variety of formats.
+Comprising primitives (Unicode strings, integers, float, booleans, nulls) and structures (map,
+list). It's agnostic because it can be trivially represented in practically any language or platform,
+and also because it can be transmitted in a wide variety of formats.
 
-Note that map keys do not have to be strings and indeed can be arbitrarily complex, not just
-strings. Most map implementations in most programming languages allow for this as long as the key is
-hashable.
+Note that map keys do not have to be strings and indeed can be arbitrarily complex. Most map
+implementations in most programming languages allow for this as long as the key is hashable.
 
-Also not that precision of integers and floats is out of scope, and thus we normally do not have
+Also note that precision of integers and floats is out of scope, and thus we normally do not have
 to distinguish between signed and unsigned integers.
 
 Raw?
 ----
 
-Data validations is out of scope. There's no schema.
+Data validation is out of scope. There's no schema.
 
 Caveats
 -------

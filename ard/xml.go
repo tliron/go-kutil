@@ -69,7 +69,7 @@ func FromCompatibleXML(element *etree.Element) (interface{}, error) {
 	case CompatibleXMLMapTag:
 		map_ := make(Map)
 		for _, entry := range element.ChildElements() {
-			if entry_, err := ParseXMLMapEntry(entry); err == nil {
+			if entry_, err := NewCompatibleXMLMapEntry(entry); err == nil {
 				//fmt.Printf("%T\n", entry_.Key)
 				map_[entry_.Key] = entry_.Value
 			} else {
@@ -204,7 +204,7 @@ func (self CompatibleXMLMapEntry) MarshalXML(encoder *xml.Encoder, start xml.Sta
 	}
 }
 
-func ParseXMLMapEntry(element *etree.Element) (CompatibleXMLMapEntry, error) {
+func NewCompatibleXMLMapEntry(element *etree.Element) (CompatibleXMLMapEntry, error) {
 	var self CompatibleXMLMapEntry
 
 	if element.Tag == CompatibleXMLMapEntryTag {
