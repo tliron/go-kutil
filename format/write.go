@@ -11,35 +11,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func Write(data interface{}, format string, indent string, strict bool, writer io.Writer) error {
+func Write(value interface{}, format string, indent string, strict bool, writer io.Writer) error {
 	// Special handling for bare strings (format is ignored)
-	if s, ok := data.(string); ok {
+	if s, ok := value.(string); ok {
 		_, err := io.WriteString(writer, s)
 		return err
 	}
 
 	// Special handling for XML etree document (format is ignored)
-	if xmlDocument, ok := data.(*etree.Document); ok {
+	if xmlDocument, ok := value.(*etree.Document); ok {
 		return WriteXMLDocument(xmlDocument, writer, indent)
 	}
 
 	switch format {
 	case "yaml", "":
-		return WriteYAML(data, writer, indent, strict)
+		return WriteYAML(value, writer, indent, strict)
+
 	case "json":
-		return WriteJSON(data, writer, indent)
+		return WriteJSON(value, writer, indent)
+
 	case "cjson":
-		return WriteCompatibleJSON(data, writer, indent)
+		return WriteCompatibleJSON(value, writer, indent)
+
 	case "xml":
-		return WriteCompatibleXML(data, writer, indent)
+		return WriteCompatibleXML(value, writer, indent)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
 }
 
-func WriteYAML(data interface{}, writer io.Writer, indent string, strict bool) error {
+func WriteYAML(value interface{}, writer io.Writer, indent string, strict bool) error {
 	if strict {
-		data = ard.ToYAMLDocumentNode(data, true)
+		value = ard.ToYAMLDocumentNode(value, true)
 	}
 
 	encoder := yaml.NewEncoder(writer)
@@ -47,8 +51,8 @@ func WriteYAML(data interface{}, writer io.Writer, indent string, strict bool) e
 	encoder.SetIndent(len(indent)) // This might not work as expected for tabs!
 	// BUG: currently does not allow an indent value of 1, see: https://github.com/go-yaml/yaml/issues/501
 
-	if slice, ok := data.([]interface{}); !ok {
-		return encoder.Encode(data)
+	if slice, ok := value.([]interface{}); !ok {
+		return encoder.Encode(value)
 	} else {
 		// YAML separates each entry with "---"
 		// (In JSON the slice would be written as an array)
@@ -61,25 +65,25 @@ func WriteYAML(data interface{}, writer io.Writer, indent string, strict bool) e
 	}
 }
 
-func WriteJSON(data interface{}, writer io.Writer, indent string) error {
+func WriteJSON(value interface{}, writer io.Writer, indent string) error {
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", indent)
-	return encoder.Encode(data)
+	return encoder.Encode(value)
 }
 
-func WriteCompatibleJSON(data interface{}, writer io.Writer, indent string) error {
-	return WriteJSON(ToCompatibleJSON(data), writer, indent)
+func WriteCompatibleJSON(value interface{}, writer io.Writer, indent string) error {
+	return WriteJSON(ToCompatibleJSON(value), writer, indent)
 }
 
-func WriteCompatibleXML(data interface{}, writer io.Writer, indent string) error {
+func WriteCompatibleXML(value interface{}, writer io.Writer, indent string) error {
 	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
 	// JSON and YAML) we must normalize the data before encoding it
-	data, err := Normalize(data)
+	value, err := Normalize(value)
 	if err != nil {
 		return err
 	}
 
-	data = ard.ToCompatibleXML(data)
+	value = ard.ToCompatibleXML(value)
 
 	if _, err := io.WriteString(writer, xml.Header); err != nil {
 		return err
@@ -87,7 +91,7 @@ func WriteCompatibleXML(data interface{}, writer io.Writer, indent string) error
 
 	encoder := xml.NewEncoder(writer)
 	encoder.Indent("", indent)
-	if err := encoder.Encode(data); err != nil {
+	if err := encoder.Encode(value); err != nil {
 		return err
 	}
 

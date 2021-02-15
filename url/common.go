@@ -23,7 +23,7 @@ func ReadString(url URL) (string, error) {
 	}
 }
 
-func ReadARD(url URL, locate bool) (ard.Map, ard.Locator, error) {
+func ReadARD(url URL, locate bool) (ard.Value, ard.Locator, error) {
 	if reader, err := url.Open(); err == nil {
 		defer reader.Close()
 		return ard.Read(reader, url.Format(), locate)

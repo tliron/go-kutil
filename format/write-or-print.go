@@ -12,16 +12,16 @@ const DIRECTORY_WRITE_PERMISSIONS = 0700
 
 const FILE_WRITE_PERMISSIONS = 0600
 
-func WriteOrPrint(data interface{}, format string, writer io.Writer, strict bool, pretty bool, output string) error {
+func WriteOrPrint(value interface{}, format string, writer io.Writer, strict bool, pretty bool, output string) error {
 	if output != "" {
 		if f, err := OpenFileForWrite(output); err == nil {
 			defer f.Close()
-			return Write(data, format, terminal.Indent, strict, f)
+			return Write(value, format, terminal.Indent, strict, f)
 		} else {
 			return err
 		}
 	} else {
-		return Print(data, format, writer, strict, pretty)
+		return Print(value, format, writer, strict, pretty)
 	}
 }
 

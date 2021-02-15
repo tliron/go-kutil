@@ -14,10 +14,13 @@ func Validate(code string, format string) error {
 	switch format {
 	case "yaml", "":
 		return ValidateYAML(code)
+
 	case "json", "cjson":
 		return ValidateJSON(code)
+
 	case "xml":
 		return ValidateXML(code)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}

@@ -1,9 +1,15 @@
 package format
 
-func Normalize(data interface{}) (interface{}, error) {
+import (
+	"strings"
+
+	"github.com/tliron/yamlkeys"
+)
+
+func Normalize(value interface{}) (interface{}, error) {
 	// TODO: not very efficient
-	if code, err := EncodeYAML(data, " ", false); err == nil {
-		return DecodeYAML(code)
+	if code, err := EncodeYAML(value, " ", false); err == nil {
+		return yamlkeys.Decode(strings.NewReader(code))
 	} else {
 		return nil, err
 	}

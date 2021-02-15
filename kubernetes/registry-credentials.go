@@ -74,7 +74,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 	switch secret.Type {
 	case core.SecretTypeDockerConfigJson:
 		if data, ok := secret.Data[core.DockerConfigJsonKey]; ok {
-			if value, err := format.DecodeJSON(util.BytesToString(data)); err == nil {
+			if value, _, err := ard.DecodeJSON(util.BytesToString(data), false); err == nil {
 				if auths := ard.NewNode(value).Get("auths").Data; auths != nil {
 					return NewRegistryCredentialsTableFromARD(auths)
 				} else {
@@ -89,7 +89,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 
 	case core.SecretTypeDockercfg:
 		if data, ok := secret.Data[core.DockerConfigKey]; ok {
-			if value, err := format.DecodeJSON(util.BytesToString(data)); err == nil {
+			if value, _, err := ard.DecodeJSON(util.BytesToString(data), false); err == nil {
 				return NewRegistryCredentialsTableFromARD(value)
 			} else {
 				return nil, err

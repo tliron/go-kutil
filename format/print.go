@@ -9,9 +9,9 @@ import (
 	"github.com/tliron/kutil/terminal"
 )
 
-func Print(data interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
+func Print(value interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
 	// Special handling for strings (ignore format)
-	if s, ok := data.(string); ok {
+	if s, ok := value.(string); ok {
 		if pretty {
 			s += "\n"
 		}
@@ -20,57 +20,57 @@ func Print(data interface{}, format string, writer io.Writer, strict bool, prett
 	}
 
 	// Special handling for etree (ignore format)
-	if xmlDocument, ok := data.(*etree.Document); ok {
+	if xmlDocument, ok := value.(*etree.Document); ok {
 		return PrintXMLDocument(xmlDocument, writer, pretty)
 	}
 
 	switch format {
 	case "yaml", "":
-		return PrintYAML(data, writer, strict, pretty)
+		return PrintYAML(value, writer, strict, pretty)
 	case "json":
-		return PrintJSON(data, writer, pretty)
+		return PrintJSON(value, writer, pretty)
 	case "cjson":
-		return PrintCompatibleJSON(data, writer, pretty)
+		return PrintCompatibleJSON(value, writer, pretty)
 	case "xml":
-		return PrintCompatibleXML(data, writer, pretty)
+		return PrintCompatibleXML(value, writer, pretty)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
 }
 
-func PrintYAML(data interface{}, writer io.Writer, strict bool, pretty bool) error {
+func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) error {
 	indent := "  "
 	if pretty {
 		indent = terminal.Indent
 	}
-	return WriteYAML(data, writer, indent, strict)
+	return WriteYAML(value, writer, indent, strict)
 }
 
-func PrintJSON(data interface{}, writer io.Writer, pretty bool) error {
+func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
 		prettyJsonFormatter := prettyjson.NewFormatter()
 		prettyJsonFormatter.Indent = terminal.IndentSpaces
-		bytes, err := prettyJsonFormatter.Marshal(data)
+		bytes, err := prettyJsonFormatter.Marshal(value)
 		if err != nil {
 			return err
 		}
 		fmt.Fprintf(writer, "%s\n", bytes)
 	} else {
-		return WriteJSON(data, writer, "")
+		return WriteJSON(value, writer, "")
 	}
 	return nil
 }
 
-func PrintCompatibleJSON(data interface{}, writer io.Writer, pretty bool) error {
-	return PrintJSON(ToCompatibleJSON(data), writer, pretty)
+func PrintCompatibleJSON(value interface{}, writer io.Writer, pretty bool) error {
+	return PrintJSON(ToCompatibleJSON(value), writer, pretty)
 }
 
-func PrintCompatibleXML(data interface{}, writer io.Writer, pretty bool) error {
+func PrintCompatibleXML(value interface{}, writer io.Writer, pretty bool) error {
 	indent := ""
 	if pretty {
 		indent = terminal.Indent
 	}
-	if err := WriteCompatibleXML(data, writer, indent); err != nil {
+	if err := WriteCompatibleXML(value, writer, indent); err != nil {
 		return err
 	}
 	if pretty {

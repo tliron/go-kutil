@@ -1,15 +1,16 @@
-package format
+package ard
 
 import (
 	"bytes"
 	templatepkg "text/template"
 )
 
-func DecodeYAMLTemplate(code string, data interface{}) (interface{}, error) {
+func DecodeYAMLTemplate(code string, data interface{}) (Value, error) {
 	if template, err := templatepkg.New("").Parse(code); err == nil {
 		var buffer bytes.Buffer
 		if err := template.Execute(&buffer, data); err == nil {
-			return DecodeYAML(buffer.String())
+			value, _, err := ReadYAML(&buffer, false)
+			return value, err
 		} else {
 			return nil, err
 		}

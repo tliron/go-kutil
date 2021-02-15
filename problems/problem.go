@@ -155,16 +155,11 @@ func (self *Problems) String() string {
 	return self.ToString(false)
 }
 
-func (self *Problems) ARD() (ard.Map, error) {
+func (self *Problems) ARD() (ard.Value, error) {
 	self.lock.RLock()
 	defer self.lock.RUnlock()
 
-	if s, err := format.EncodeYAML(self, " ", false); err == nil {
-		map_, _, err := ard.ReadYAML(strings.NewReader(s), false)
-		return map_, err
-	} else {
-		return nil, err
-	}
+	return format.Normalize(self)
 }
 
 func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/format"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -13,7 +12,7 @@ import (
 )
 
 func NewUnstructuredFromYAMLTemplate(code string, data interface{}) (*unstructured.Unstructured, error) {
-	if object, err := format.DecodeYAMLTemplate(code, data); err == nil {
+	if object, err := ard.DecodeYAMLTemplate(code, data); err == nil {
 		object_ := ard.EnsureStringMaps(object)
 		return &unstructured.Unstructured{Object: object_}, nil
 	} else {
