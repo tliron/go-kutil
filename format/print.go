@@ -27,12 +27,19 @@ func Print(value interface{}, format string, writer io.Writer, strict bool, pret
 	switch format {
 	case "yaml", "":
 		return PrintYAML(value, writer, strict, pretty)
+
 	case "json":
 		return PrintJSON(value, writer, pretty)
+
 	case "cjson":
 		return PrintCompatibleJSON(value, writer, pretty)
+
 	case "xml":
 		return PrintCompatibleXML(value, writer, pretty)
+
+	case "cbor":
+		return PrintCBOR(value, writer)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -87,4 +94,8 @@ func PrintXMLDocument(xmlDocument *etree.Document, writer io.Writer, pretty bool
 	}
 	_, err := xmlDocument.WriteTo(writer)
 	return err
+}
+
+func PrintCBOR(value interface{}, writer io.Writer) error {
+	return WriteCBOR(value, writer)
 }

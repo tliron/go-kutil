@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/beevik/etree"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/yamlkeys"
 	"gopkg.in/yaml.v3"
 )
@@ -24,6 +25,9 @@ func Read(reader io.Reader, format string, locate bool) (Value, Locator, error) 
 
 	case "xml":
 		return ReadCompatibleXML(reader, locate)
+
+	case "cbor":
+		return ReadCBOR(reader, locate)
 
 	default:
 		return nil, nil, fmt.Errorf("unsupported format: %q", format)
@@ -85,6 +89,16 @@ func ReadCompatibleXML(reader io.Reader, locate bool) (Value, Locator, error) {
 		} else {
 			return nil, nil, errors.New("unsupported XML")
 		}
+	} else {
+		return nil, nil, err
+	}
+}
+
+func ReadCBOR(reader io.Reader, locate bool) (Value, Locator, error) {
+	var value Value
+	decoder := cbor.NewDecoder(reader)
+	if err := decoder.Decode(&value); err == nil {
+		return value, nil, nil
 	} else {
 		return nil, nil, err
 	}

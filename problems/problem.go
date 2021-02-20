@@ -99,9 +99,9 @@ func (self ProblemSlice) Less(i, j int) bool {
 //
 
 type Problems struct {
-	Problems ProblemSlice
+	Problems ProblemSlice `json:"problems" yaml:"problems"`
 
-	lock sync.RWMutex `yaml:"-"`
+	lock sync.RWMutex `json:"-" yaml:"-"`
 }
 
 func (self *Problems) Empty() bool {
@@ -155,6 +155,14 @@ func (self *Problems) String() string {
 	return self.ToString(false)
 }
 
+func (self *Problems) Slice() ProblemSlice {
+	problems := make(ProblemSlice, len(self.Problems))
+	self.lock.RLock()
+	copy(problems, self.Problems)
+	self.lock.RUnlock()
+	return problems
+}
+
 func (self *Problems) ARD() (ard.Value, error) {
 	self.lock.RLock()
 	defer self.lock.RUnlock()
@@ -163,13 +171,10 @@ func (self *Problems) ARD() (ard.Value, error) {
 }
 
 func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {
-	length := len(self.Problems)
+	problems := self.Slice()
+	length := len(problems)
 	if length > 0 {
 		// Sort
-		problems := make(ProblemSlice, length)
-		self.lock.RLock()
-		copy(problems, self.Problems)
-		self.lock.RUnlock()
 		sort.Sort(problems)
 
 		if pretty {

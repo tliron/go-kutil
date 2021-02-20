@@ -68,3 +68,7 @@ XML does not have a type system. Arbitrary XML cannot be parsed into ARD.
 However, we support [certain conventions](xml.go) that enforce such compatibility. Our
 implementation is in Go, but it should not be too difficult to support them in another programming
 languages.
+
+### CBOR
+
+[CBOR](https://cbor.io/) supports everything! The only caveat is that it is not human-readable.

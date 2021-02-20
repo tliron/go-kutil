@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/beevik/etree"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/kutil/ard"
 	"gopkg.in/yaml.v3"
 )
@@ -35,6 +36,9 @@ func Write(value interface{}, format string, indent string, strict bool, writer 
 
 	case "xml":
 		return WriteCompatibleXML(value, writer, indent)
+
+	case "cbor":
+		return WriteCBOR(value, writer)
 
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
@@ -110,4 +114,9 @@ func WriteXMLDocument(xmlDocument *etree.Document, writer io.Writer, indent stri
 	xmlDocument.Indent(len(indent))
 	_, err := xmlDocument.WriteTo(writer)
 	return err
+}
+
+func WriteCBOR(value interface{}, writer io.Writer) error {
+	encoder := cbor.NewEncoder(writer)
+	return encoder.Encode(value)
 }

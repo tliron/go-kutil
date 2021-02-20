@@ -7,11 +7,11 @@ import (
 
 // See: https://stackoverflow.com/a/7053871/849021
 func GetFunctionName(fn interface{}) string {
-	runtimeFn := runtime.FuncForPC(reflect.ValueOf(fn).Pointer())
-	if runtimeFn == nil {
+	if function := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()); function != nil {
+		return function.Name()
+	} else {
 		return "<unknown function>"
 	}
-	return runtimeFn.Name()
 }
 
 func IsNil(value reflect.Value) bool {
@@ -19,6 +19,7 @@ func IsNil(value reflect.Value) bool {
 	switch value.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Slice, reflect.Ptr:
 		return value.IsNil()
+
 	default:
 		return false
 	}

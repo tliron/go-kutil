@@ -45,12 +45,12 @@ func Traverse(object interface{}, traverse Traverser) {
 
 		fieldType := field.Type()
 		if IsPtrToStruct(fieldType) && !field.IsNil() {
-			// Compatible with *interface{}
+			// Compatible with *struct{}
 			lock.Unlock()
 			Traverse(field.Interface(), traverse)
 			lock.Lock()
 		} else if IsSliceOfPtrToStruct(fieldType) {
-			// Compatible with []*interface{}
+			// Compatible with []*struct{}
 			length := field.Len()
 			for index := 0; index < length; index++ {
 				element := field.Index(index)
@@ -59,7 +59,7 @@ func Traverse(object interface{}, traverse Traverser) {
 				lock.Lock()
 			}
 		} else if IsMapOfStringToPtrToStruct(fieldType) {
-			// Compatible with map[string]*interface{}
+			// Compatible with map[string]*struct{}
 			for _, mapKey := range field.MapKeys() {
 				element := field.MapIndex(mapKey)
 				lock.Unlock()

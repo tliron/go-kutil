@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/op/go-logging"
+	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -29,7 +31,9 @@ func ConfigureLogging(verbosity int, path *string) {
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logFileWritePermissions); err == nil {
-				// defer f.Close() ???
+				atexit.Register(func() {
+					file.Close()
+				})
 				backend = logging.NewLogBackend(file, "", 0)
 				logging.SetFormatter(plainFormatter)
 			} else {
@@ -89,29 +93,43 @@ func LogStack(log *logging.Logger, message string, skip int) {
 
 type PrefixLeveledBackend struct {
 	wrapped      logging.LeveledBackend
-	prefixLevels map[string]logging.Level
+	prefixLevels []prefixLevel
+}
+
+type prefixLevel struct {
+	prefix string
+	level  logging.Level
 }
 
 func NewPrefixLeveledBackend(wrapped logging.LeveledBackend) *PrefixLeveledBackend {
 	return &PrefixLeveledBackend{
-		wrapped:      wrapped,
-		prefixLevels: make(map[string]logging.Level),
+		wrapped: wrapped,
 	}
 }
 
 // logging.Leveled interface
+
 func (self *PrefixLeveledBackend) GetLevel(module string) logging.Level {
-	for prefix, level := range self.prefixLevels {
-		if strings.HasPrefix(module, prefix) {
-			return level
+	for _, prefixLevel := range self.prefixLevels {
+		if strings.HasPrefix(module, prefixLevel.prefix) {
+			return prefixLevel.level
 		}
 	}
+
 	return self.wrapped.GetLevel(module)
 }
 
 func (self *PrefixLeveledBackend) SetLevel(level logging.Level, module string) {
 	if strings.HasSuffix(module, "*") {
-		self.prefixLevels[module[:len(module)-1]] = level
+		self.prefixLevels = append(self.prefixLevels, prefixLevel{
+			prefix: module[:len(module)-1],
+			level:  level,
+		})
+
+		// Sort in reverse so that the more specific (=longer) prefixes come first
+		sort.Slice(self.prefixLevels, func(i int, j int) bool {
+			return strings.Compare(self.prefixLevels[i].prefix, self.prefixLevels[j].prefix) == 1
+		})
 	} else {
 		self.wrapped.SetLevel(level, module)
 	}
@@ -122,6 +140,7 @@ func (self *PrefixLeveledBackend) IsEnabledFor(level logging.Level, module strin
 }
 
 // logging.Backend interface
+
 func (self *PrefixLeveledBackend) Log(level logging.Level, callDepth int, record *logging.Record) error {
 	return self.wrapped.Log(level, callDepth, record)
 }

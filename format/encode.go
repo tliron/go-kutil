@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
 )
 
 func Encode(value interface{}, format string, strict bool) (string, error) {
@@ -20,6 +22,9 @@ func Encode(value interface{}, format string, strict bool) (string, error) {
 
 	case "xml":
 		return EncodeCompatibleXML(value, terminal.Indent)
+
+	case "cbor":
+		return EncodeCBOR(value)
 
 	default:
 		return "", fmt.Errorf("unsupported format: %s", format)
@@ -57,6 +62,15 @@ func EncodeCompatibleXML(value interface{}, indent string) (string, error) {
 	var writer strings.Builder
 	if err := WriteCompatibleXML(value, &writer, indent); err == nil {
 		return writer.String(), nil
+	} else {
+		return "", err
+	}
+}
+
+// Encodes to Base64
+func EncodeCBOR(value interface{}) (string, error) {
+	if bytes, err := cbor.Marshal(value); err == nil {
+		return util.ToBase64(bytes), nil
 	} else {
 		return "", err
 	}
