@@ -4,14 +4,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 // See: clientcmd.BuildConfigFromFlags
-func NewConfigFromFlags(masterUrl string, configPath string, context string, log *logging.Logger) (*rest.Config, error) {
+func NewConfigFromFlags(masterUrl string, configPath string, context string, log logging.Logger) (*rest.Config, error) {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		configPath = ""
 	}

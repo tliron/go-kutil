@@ -1,0 +1,58 @@
+package logging
+
+import (
+	"io/ioutil"
+	"os"
+
+	loggingpkg "github.com/op/go-logging"
+	"github.com/tebeka/atexit"
+	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
+)
+
+var plainFormatter = loggingpkg.MustStringFormatter(
+	`%{time:2006/01/02 15:04:05.000} %{level:8.8s} [%{module}] %{message}`,
+)
+
+var colorFormatter = loggingpkg.MustStringFormatter(
+	`%{color}%{time:2006/01/02 15:04:05.000} %{level:8.8s} [%{module}] %{message}%{color:reset}`,
+)
+
+const logFileWritePermissions = 0600
+
+func Configure(verbosity int, path *string) {
+	var backend *loggingpkg.LogBackend
+
+	if verbosity == -1 {
+		backend = loggingpkg.NewLogBackend(ioutil.Discard, "", 0)
+	} else {
+		if path != nil {
+			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logFileWritePermissions); err == nil {
+				atexit.Register(func() {
+					file.Close()
+				})
+				backend = loggingpkg.NewLogBackend(file, "", 0)
+				loggingpkg.SetFormatter(plainFormatter)
+			} else {
+				util.Failf("log file error: %s", err.Error())
+			}
+		} else {
+			backend = loggingpkg.NewLogBackend(terminal.Stderr, "", 0)
+			if terminal.Colorize {
+				loggingpkg.SetFormatter(colorFormatter)
+			} else {
+				loggingpkg.SetFormatter(plainFormatter)
+			}
+		}
+
+		verbosity += 3 // our 0 verbosity is max level NOTICE (3)
+		if verbosity > 5 {
+			verbosity = 5
+		}
+	}
+
+	leveledBackend := loggingpkg.AddModuleLevel(backend)
+	leveledBackend.SetLevel(loggingpkg.Level(verbosity), "")
+
+	loggingpkg.SetBackend(NewPrefixLeveledBackend(leveledBackend))
+}

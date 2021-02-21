@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,7 +27,7 @@ type Dynamic struct {
 	Dynamic         dynamicpkg.Interface
 	Discovery       discovery.DiscoveryInterface
 	InformerFactory dynamicinformer.DynamicSharedInformerFactory
-	Log             *logging.Logger
+	Log             logging.Logger
 
 	informers     map[schema.GroupVersionResource]cache.SharedIndexInformer
 	informersLock sync.Mutex
@@ -46,7 +46,7 @@ func NewDynamic(toolName string, dynamic dynamicpkg.Interface, discovery discove
 		Dynamic:         dynamic,
 		Discovery:       discovery,
 		InformerFactory: informerFactory,
-		Log:             logging.MustGetLogger(fmt.Sprintf("%s.dynamic.%s", toolName, namespace)),
+		Log:             logging.GetLoggerf("%s.dynamic.%s", toolName, namespace),
 		informers:       make(map[schema.GroupVersionResource]cache.SharedIndexInformer),
 		context:         context,
 	}

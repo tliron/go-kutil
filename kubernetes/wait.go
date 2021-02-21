@@ -4,7 +4,7 @@ import (
 	contextpkg "context"
 	"time"
 
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	errorspkg "k8s.io/apimachinery/pkg/api/errors"
@@ -15,7 +15,7 @@ import (
 
 var timeout = 60 * time.Second
 
-func WaitForPod(context contextpkg.Context, kubernetes kubernetespkg.Interface, log *logging.Logger, namespace string, appName string) (*core.Pod, error) {
+func WaitForPod(context contextpkg.Context, kubernetes kubernetespkg.Interface, log logging.Logger, namespace string, appName string) (*core.Pod, error) {
 	log.Infof("waiting for a pod for app %q", appName)
 
 	var pod *core.Pod
@@ -56,7 +56,7 @@ func WaitForPod(context contextpkg.Context, kubernetes kubernetespkg.Interface, 
 	}
 }
 
-func WaitForDeployment(context contextpkg.Context, kubernetes kubernetespkg.Interface, log *logging.Logger, namespace string, appName string) (*apps.Deployment, error) {
+func WaitForDeployment(context contextpkg.Context, kubernetes kubernetespkg.Interface, log logging.Logger, namespace string, appName string) (*apps.Deployment, error) {
 	log.Infof("waiting for a deployment for app %q", appName)
 
 	var deployment *apps.Deployment
@@ -90,7 +90,7 @@ func WaitForDeployment(context contextpkg.Context, kubernetes kubernetespkg.Inte
 	}
 }
 
-func WaitForDeletion(log *logging.Logger, name string, condition func() bool) {
+func WaitForDeletion(log logging.Logger, name string, condition func() bool) {
 	err := waitpkg.PollImmediate(time.Second, timeout, func() (bool, error) {
 		log.Infof("waiting for %s to delete", name)
 		return !condition(), nil

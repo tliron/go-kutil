@@ -3,13 +3,13 @@ package kubernetes
 import (
 	"fmt"
 
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 )
 
-func GetMetaObject(object interface{}, log *logging.Logger) (meta.Object, error) {
+func GetMetaObject(object interface{}, log logging.Logger) (meta.Object, error) {
 	switch o := object.(type) {
 	case meta.Object:
 		return o, nil

@@ -2,11 +2,10 @@ package kubernetes
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,7 +30,7 @@ type Processor struct {
 	Period              time.Duration
 	GetControllerObject GetControllerObjectFunc
 	Process             ProcessFunc
-	Log                 *logging.Logger
+	Log                 logging.Logger
 }
 
 func NewProcessor(toolName string, name string, informer cache.SharedIndexInformer, period time.Duration, get GetControllerObjectFunc, process ProcessFunc) *Processor {
@@ -42,7 +41,7 @@ func NewProcessor(toolName string, name string, informer cache.SharedIndexInform
 		Period:              period,
 		GetControllerObject: get,
 		Process:             process,
-		Log:                 logging.MustGetLogger(fmt.Sprintf("%s.processor.%s", toolName, name)),
+		Log:                 logging.GetLoggerf("%s.processor.%s", toolName, name),
 	}
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -137,7 +136,7 @@ type Processors struct {
 	processors     map[schema.GroupVersionKind]*Processor
 	controlledGvks map[schema.GroupVersionKind]bool
 
-	log                *logging.Logger
+	log                logging.Logger
 	controlledGvksLock sync.Mutex
 }
 
@@ -145,7 +144,7 @@ func NewProcessors(toolName string) *Processors {
 	return &Processors{
 		processors:     make(map[schema.GroupVersionKind]*Processor),
 		controlledGvks: make(map[schema.GroupVersionKind]bool),
-		log:            logging.MustGetLogger(fmt.Sprintf("%s.processors", toolName)),
+		log:            logging.GetLoggerf("%s.processors", toolName),
 	}
 }
 
