@@ -1,8 +1,6 @@
 package logging
 
-import (
-	loggingpkg "github.com/op/go-logging"
-)
+import "fmt"
 
 //
 // Level
@@ -19,6 +17,22 @@ const (
 	Debug    Level = 6
 )
 
-func SetMaxLevel(name string, level Level) {
-	loggingpkg.SetLevel(loggingpkg.Level(level-1), name)
+// fmt.Stringify interface
+func (self Level) String() string {
+	switch self {
+	case Critical:
+		return "Critical"
+	case Error:
+		return "Error"
+	case Warning:
+		return "Warning"
+	case Notice:
+		return "Notice"
+	case Info:
+		return "Info"
+	case Debug:
+		return "Debug"
+	default:
+		panic(fmt.Sprintf("unsupported level: %d", self))
+	}
 }

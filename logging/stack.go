@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
-
-	loggingpkg "github.com/op/go-logging"
 )
 
-func LogStack(log *loggingpkg.Logger, message string, skip int) {
+func LogStack(log Logger, message string, skip int) {
 	// See: https://golang.org/src/runtime/example_test.go
 
 	var builder strings.Builder

@@ -1,4 +1,4 @@
-package logging
+package gologging
 
 import (
 	"io/ioutil"
@@ -6,9 +6,16 @@ import (
 
 	loggingpkg "github.com/op/go-logging"
 	"github.com/tebeka/atexit"
+	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 )
+
+func init() {
+	logging.SetBackend(NewBackend())
+}
+
+const LOG_FILE_WRITE_PERMISSIONS = 0600
 
 var plainFormatter = loggingpkg.MustStringFormatter(
 	`%{time:2006/01/02 15:04:05.000} %{level:8.8s} [%{module}] %{message}`,
@@ -18,16 +25,22 @@ var colorFormatter = loggingpkg.MustStringFormatter(
 	`%{color}%{time:2006/01/02 15:04:05.000} %{level:8.8s} [%{module}] %{message}%{color:reset}`,
 )
 
-const logFileWritePermissions = 0600
+type Backend struct{}
 
-func Configure(verbosity int, path *string) {
+func NewBackend() Backend {
+	return Backend{}
+}
+
+// logging.Backend interface
+
+func (self Backend) Configure(verbosity int, path *string) {
 	var backend *loggingpkg.LogBackend
 
 	if verbosity == -1 {
 		backend = loggingpkg.NewLogBackend(ioutil.Discard, "", 0)
 	} else {
 		if path != nil {
-			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logFileWritePermissions); err == nil {
+			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
 				atexit.Register(func() {
 					file.Close()
 				})
@@ -55,4 +68,12 @@ func Configure(verbosity int, path *string) {
 	leveledBackend.SetLevel(loggingpkg.Level(verbosity), "")
 
 	loggingpkg.SetBackend(NewPrefixLeveledBackend(leveledBackend))
+}
+
+func (self Backend) SetMaxLevel(name string, level logging.Level) {
+	loggingpkg.SetLevel(loggingpkg.Level(level-1), name)
+}
+
+func (self Backend) GetLogger(name string) logging.Logger {
+	return Logger{loggingpkg.MustGetLogger(name)}
 }
