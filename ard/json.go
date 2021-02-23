@@ -3,6 +3,7 @@ package ard
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/tliron/kutil/util"
 )
@@ -26,6 +27,8 @@ var CompatibleJSONIntegerCode = "$ard.integer"
 var CompatibleJSONUIntegerCode = "$ard.uinteger"
 var CompatibleJSONBytesCode = "$ard.bytes"
 var CompatibleJSONMapCode = "$ard.map"
+
+// TODO: escape $$
 
 func ToCompatibleJSON(value Value) Value {
 	value, _ = TryToCompatibleJSON(value)
@@ -159,6 +162,17 @@ func TryFromCompatibleJSON(value Value) (Value, bool) {
 				return bytes, true
 			} else if map_, ok := DecodeCompatibleJSONMap(value_); ok {
 				return map_, true
+			} else {
+				// Handle escape code:
+				// $$ -> $
+				for key, value__ := range value_ {
+					if strings.HasPrefix(key, "$$") {
+						key = key[1:]
+						map_ := make(Map)
+						map_[key] = FromCompatibleJSON(value__)
+						return map_, true
+					}
+				}
 			}
 		}
 

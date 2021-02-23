@@ -26,6 +26,8 @@ type Backend struct {
 	maxLevel        logging.Level
 	maxLevels       map[string]logging.Level
 	prefixMaxLevels []prefixLevel
+	format          FormatFunc
+	buffered        bool
 }
 
 type prefixLevel struct {
@@ -36,7 +38,17 @@ type prefixLevel struct {
 func NewBackend() *Backend {
 	return &Backend{
 		maxLevels: make(map[string]logging.Level),
+		format:    DefaultFormat,
+		buffered:  true,
 	}
+}
+
+func (self *Backend) SetFormat(format FormatFunc) {
+	self.format = format
+}
+
+func (self *Backend) SetBuffered(buffered bool) {
+	self.buffered = buffered
 }
 
 func (self *Backend) GetMaxLevel(name string) logging.Level {
@@ -62,27 +74,36 @@ func (self *Backend) Allowed(name string, level logging.Level) bool {
 func (self *Backend) Configure(verbosity int, path *string) {
 	if verbosity == -1 {
 		self.writer = ioutil.Discard
+		self.maxLevel = logging.Level(0)
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
 				atexit.Register(func() {
 					file.Close()
 				})
-				self.writer = util.NewBufferWriter(file, BUFFER_SIZE)
+				if self.buffered {
+					self.writer = util.NewBufferWriter(file, BUFFER_SIZE)
+				} else {
+					self.writer = util.NewSyncWriter(file)
+				}
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
-			self.writer = util.NewBufferWriter(terminal.Stderr, BUFFER_SIZE)
+			if self.buffered {
+				self.writer = util.NewBufferWriter(terminal.Stderr, BUFFER_SIZE)
+			} else {
+				self.writer = util.NewSyncWriter(terminal.Stderr)
+			}
 		}
 
 		verbosity += 4 // our 0 verbosity is max level NOTICE (4)
 		if verbosity > 6 {
 			verbosity = 6
 		}
-	}
 
-	self.maxLevel = logging.Level(verbosity)
+		self.maxLevel = logging.Level(verbosity)
+	}
 }
 
 func (self *Backend) SetMaxLevel(name string, level logging.Level) {

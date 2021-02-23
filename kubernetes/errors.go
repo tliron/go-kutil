@@ -11,14 +11,16 @@ import (
 
 // Variation on errorspkg.NewNotFound
 func NewNotFound(gk schema.GroupKind, message string) *errorspkg.StatusError {
-	return &errorspkg.StatusError{meta.Status{
-		Status: meta.StatusFailure,
-		Code:   http.StatusNotFound,
-		Reason: meta.StatusReasonNotFound,
-		Details: &meta.StatusDetails{
-			Group: gk.Group,
-			Kind:  gk.Kind,
+	return &errorspkg.StatusError{
+		ErrStatus: meta.Status{
+			Status: meta.StatusFailure,
+			Code:   http.StatusNotFound,
+			Reason: meta.StatusReasonNotFound,
+			Details: &meta.StatusDetails{
+				Group: gk.Group,
+				Kind:  gk.Kind,
+			},
+			Message: fmt.Sprintf("%s not found: %s", gk.String(), message),
 		},
-		Message: fmt.Sprintf("%s not found: %s", gk.String(), message),
-	}}
+	}
 }

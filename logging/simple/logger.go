@@ -24,7 +24,7 @@ func (self *Logger) Write(level logging.Level, message string) {
 			message += "\n"
 		}
 
-		message = Format(message, self.Name, level, terminal.Colorize)
+		message = self.Backend.format(message, self.Name, level, terminal.Colorize)
 
 		io.WriteString(self.Backend.writer, message)
 	}

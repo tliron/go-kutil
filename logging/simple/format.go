@@ -10,24 +10,27 @@ import (
 
 const TIME_FORMAT = "2006/01/02 15:04:05.000"
 
-func Format(message string, name string, level logging.Level, colorize bool) string {
+type FormatFunc func(message string, name string, level logging.Level, colorize bool) string
+
+// FormatFunc signature
+func DefaultFormat(message string, name string, level logging.Level, colorize bool) string {
 	var builder strings.Builder
 
 	builder.WriteString(time.Now().Format(TIME_FORMAT))
 
 	switch level {
 	case logging.Critical:
-		builder.WriteString(" CRITICAL [")
+		builder.WriteString("  CRIT [")
 	case logging.Error:
-		builder.WriteString("    ERROR [")
+		builder.WriteString(" ERROR [")
 	case logging.Warning:
-		builder.WriteString("  WARNING [")
+		builder.WriteString("  WARN [")
 	case logging.Notice:
-		builder.WriteString("   NOTICE [")
+		builder.WriteString("  NOTE [")
 	case logging.Info:
-		builder.WriteString("     INFO [")
+		builder.WriteString("  INFO [")
 	case logging.Debug:
-		builder.WriteString("    DEBUG [")
+		builder.WriteString(" DEBUG [")
 	}
 
 	builder.WriteString(name)

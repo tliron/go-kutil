@@ -13,8 +13,12 @@ import (
 
 func NewUnstructuredFromYAMLTemplate(code string, data interface{}) (*unstructured.Unstructured, error) {
 	if object, err := ard.DecodeYAMLTemplate(code, data); err == nil {
-		object_ := ard.EnsureStringMaps(object)
-		return &unstructured.Unstructured{Object: object_}, nil
+		object, _ = ard.MapsToStringMaps(object)
+		if stringMap, ok := object.(ard.StringMap); ok {
+			return &unstructured.Unstructured{Object: stringMap}, nil
+		} else {
+			return nil, fmt.Errorf("not a map[string]interface{}: %T", object)
+		}
 	} else {
 		return nil, err
 	}

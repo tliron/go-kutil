@@ -43,7 +43,6 @@ func ReadYAML(reader io.Reader, locate bool) (Value, Locator, error) {
 			if locate {
 				locator = NewYAMLLocator(&node)
 			}
-			// We do not need to call EnsureMaps because yamlkeys takes care of it
 			return value, locator, nil
 		} else {
 			return nil, nil, err
@@ -61,7 +60,9 @@ func ReadJSON(reader io.Reader, locate bool) (Value, Locator, error) {
 	var value Value
 	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(&value); err == nil {
-		return EnsureMaps(value), nil, nil
+		// The JSON decoder uses StringMaps, not Maps
+		value, _ := Normalize(value)
+		return value, nil, nil
 	} else {
 		return nil, nil, err
 	}
@@ -71,7 +72,6 @@ func ReadCompatibleJSON(reader io.Reader, locate bool) (Value, Locator, error) {
 	var value Value
 	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(&value); err == nil {
-		// We do not need to call EnsureMaps because FromCompatibleJSON takes care of it
 		return FromCompatibleJSON(value), nil, nil
 	} else {
 		return nil, nil, err
@@ -83,7 +83,6 @@ func ReadCompatibleXML(reader io.Reader, locate bool) (Value, Locator, error) {
 	if _, err := document.ReadFrom(reader); err == nil {
 		elements := document.ChildElements()
 		if len(elements) == 1 {
-			// We do not need to call EnsureMaps because FromCompatibleXML takes care of it
 			value, err := FromCompatibleXML(elements[0])
 			return value, nil, err
 		} else {
