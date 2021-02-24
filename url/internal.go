@@ -3,7 +3,6 @@ package url
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	pathpkg "path"
 	"strings"
@@ -37,7 +36,7 @@ func ReadToInternalURL(path string, reader io.Reader) (*InternalURL, error) {
 	if closer, ok := reader.(io.Closer); ok {
 		defer closer.Close()
 	}
-	if buffer, err := ioutil.ReadAll(reader); err == nil {
+	if buffer, err := io.ReadAll(reader); err == nil {
 		if err = RegisterInternalURL(path, util.BytesToString(buffer)); err != nil {
 			return nil, err
 		}
@@ -130,7 +129,7 @@ func (self *InternalURL) Key() string {
 
 // URL interface
 func (self *InternalURL) Open() (io.ReadCloser, error) {
-	return ioutil.NopCloser(strings.NewReader(self.Content)), nil
+	return io.NopCloser(strings.NewReader(self.Content)), nil
 }
 
 // URL interface

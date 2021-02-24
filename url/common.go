@@ -2,7 +2,6 @@ package url
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/op/go-logging"
@@ -16,7 +15,7 @@ var log = logging.MustGetLogger("puccini.url")
 func ReadString(url URL) (string, error) {
 	if reader, err := url.Open(); err == nil {
 		defer reader.Close()
-		buffer, err := ioutil.ReadAll(reader)
+		buffer, err := io.ReadAll(reader)
 		return util.BytesToString(buffer), err
 	} else {
 		return "", err
@@ -61,7 +60,7 @@ func DownloadTo(url URL, path string) error {
 }
 
 func Download(url URL, temporaryPathPattern string) (*os.File, error) {
-	if file, err := ioutil.TempFile("", temporaryPathPattern); err == nil {
+	if file, err := os.CreateTemp("", temporaryPathPattern); err == nil {
 		path := file.Name()
 		if reader, err := url.Open(); err == nil {
 			defer reader.Close()

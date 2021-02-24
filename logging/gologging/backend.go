@@ -1,7 +1,7 @@
 package gologging
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 
 	loggingpkg "github.com/op/go-logging"
@@ -37,7 +37,7 @@ func (self Backend) Configure(verbosity int, path *string) {
 	var backend *loggingpkg.LogBackend
 
 	if verbosity == -1 {
-		backend = loggingpkg.NewLogBackend(ioutil.Discard, "", 0)
+		backend = loggingpkg.NewLogBackend(io.Discard, "", 0)
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {

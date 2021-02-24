@@ -2,7 +2,6 @@ package simple
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -73,7 +72,7 @@ func (self *Backend) Allowed(name string, level logging.Level) bool {
 
 func (self *Backend) Configure(verbosity int, path *string) {
 	if verbosity == -1 {
-		self.writer = ioutil.Discard
+		self.writer = io.Discard
 		self.maxLevel = logging.Level(0)
 	} else {
 		if path != nil {

@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/tliron/kutil/logging"
@@ -90,21 +89,21 @@ func NewSelfContainedConfig(restConfig *rest.Config, namespace string) (*api.Con
 
 	caData := restConfig.CAData
 	if (caData == nil) && (restConfig.CAFile != "") {
-		if caData, err = ioutil.ReadFile(restConfig.CAFile); err != nil {
+		if caData, err = os.ReadFile(restConfig.CAFile); err != nil {
 			return nil, err
 		}
 	}
 
 	ccData := restConfig.CertData
 	if (ccData == nil) && (restConfig.CertFile != "") {
-		if ccData, err = ioutil.ReadFile(restConfig.CertFile); err != nil {
+		if ccData, err = os.ReadFile(restConfig.CertFile); err != nil {
 			return nil, err
 		}
 	}
 
 	ckData := restConfig.KeyData
 	if (ckData == nil) && (restConfig.KeyFile != "") {
-		if ckData, err = ioutil.ReadFile(restConfig.KeyFile); err != nil {
+		if ckData, err = os.ReadFile(restConfig.KeyFile); err != nil {
 			return nil, err
 		}
 	}

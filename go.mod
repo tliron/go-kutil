@@ -1,6 +1,6 @@
 module github.com/tliron/kutil
 
-go 1.15
+go 1.16
 
 require (
 	github.com/beevik/etree v1.1.0
