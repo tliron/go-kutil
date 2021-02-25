@@ -25,6 +25,10 @@ var colorFormatter = loggingpkg.MustStringFormatter(
 	`%{color}%{time:2006/01/02 15:04:05.000} %{level:8.8s} [%{module}] %{message}%{color:reset}`,
 )
 
+//
+// Backend
+//
+
 type Backend struct{}
 
 func NewBackend() Backend {
@@ -66,7 +70,6 @@ func (self Backend) Configure(verbosity int, path *string) {
 
 	leveledBackend := loggingpkg.AddModuleLevel(backend)
 	leveledBackend.SetLevel(loggingpkg.Level(verbosity), "")
-
 	loggingpkg.SetBackend(NewPrefixLeveledBackend(leveledBackend))
 }
 
@@ -75,5 +78,7 @@ func (self Backend) SetMaxLevel(name string, level logging.Level) {
 }
 
 func (self Backend) GetLogger(name string) logging.Logger {
-	return Logger{loggingpkg.MustGetLogger(name)}
+	return Logger{
+		Logger: loggingpkg.MustGetLogger(name),
+	}
 }

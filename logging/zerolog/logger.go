@@ -1,7 +1,8 @@
 package zerolog
 
 import (
-	zerologpkg "github.com/rs/zerolog"
+	"github.com/rs/zerolog"
+	"github.com/tliron/kutil/logging"
 )
 
 //
@@ -9,55 +10,59 @@ import (
 //
 
 type Logger struct {
-	Logger zerologpkg.Logger
+	Logger zerolog.Logger
+}
+
+func (self Logger) SetMaxLevel(level logging.Level) {
+	self.Logger = self.Logger.Level(toLevel(level))
 }
 
 // logging.Logger interface
 
-func (self *Logger) Critical(message string) {
+func (self Logger) Critical(message string) {
 	self.Logger.Error().Msg(message)
 }
 
-func (self *Logger) Criticalf(format string, values ...interface{}) {
+func (self Logger) Criticalf(format string, values ...interface{}) {
 	self.Logger.Error().Msgf(format, values...)
 }
 
-func (self *Logger) Error(message string) {
+func (self Logger) Error(message string) {
 	self.Logger.Error().Msg(message)
 }
 
-func (self *Logger) Errorf(format string, values ...interface{}) {
+func (self Logger) Errorf(format string, values ...interface{}) {
 	self.Logger.Error().Msgf(format, values...)
 }
 
-func (self *Logger) Warning(message string) {
+func (self Logger) Warning(message string) {
 	self.Logger.Warn().Msg(message)
 }
 
-func (self *Logger) Warningf(format string, values ...interface{}) {
+func (self Logger) Warningf(format string, values ...interface{}) {
 	self.Logger.Warn().Msgf(format, values...)
 }
 
-func (self *Logger) Notice(message string) {
+func (self Logger) Notice(message string) {
 	self.Logger.Info().Msg(message)
 }
 
-func (self *Logger) Noticef(format string, values ...interface{}) {
+func (self Logger) Noticef(format string, values ...interface{}) {
 	self.Logger.Info().Msgf(format, values...)
 }
 
-func (self *Logger) Info(message string) {
+func (self Logger) Info(message string) {
 	self.Logger.Debug().Msg(message)
 }
 
-func (self *Logger) Infof(format string, values ...interface{}) {
+func (self Logger) Infof(format string, values ...interface{}) {
 	self.Logger.Debug().Msgf(format, values...)
 }
 
-func (self *Logger) Debug(message string) {
+func (self Logger) Debug(message string) {
 	self.Logger.Trace().Msg(message)
 }
 
-func (self *Logger) Debugf(format string, values ...interface{}) {
+func (self Logger) Debugf(format string, values ...interface{}) {
 	self.Logger.Trace().Msgf(format, values...)
 }

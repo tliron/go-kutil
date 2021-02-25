@@ -20,7 +20,9 @@ func SetMaxLevel(name string, level Level) {
 }
 
 func GetLogger(name string) Logger {
-	return &LoggerWrapper{Name: name}
+	return &LazyLogger{
+		Name: name,
+	}
 }
 
 func GetLoggerf(format string, arguments ...interface{}) Logger {
@@ -28,17 +30,17 @@ func GetLoggerf(format string, arguments ...interface{}) Logger {
 }
 
 //
-// LoggerWrapper
+// LazyLogger
 //
 
-type LoggerWrapper struct {
+type LazyLogger struct {
 	Name   string
 	Logger Logger
 
 	once sync.Once
 }
 
-func (self *LoggerWrapper) validate() {
+func (self *LazyLogger) validate() {
 	self.once.Do(func() {
 		if self.Logger == nil {
 			if backend == nil {
@@ -51,62 +53,62 @@ func (self *LoggerWrapper) validate() {
 
 // logging.Logger interface
 
-func (self *LoggerWrapper) Critical(message string) {
+func (self *LazyLogger) Critical(message string) {
 	self.validate()
 	self.Logger.Critical(message)
 }
 
-func (self *LoggerWrapper) Criticalf(format string, values ...interface{}) {
+func (self *LazyLogger) Criticalf(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Criticalf(format, values...)
 }
 
-func (self *LoggerWrapper) Error(message string) {
+func (self *LazyLogger) Error(message string) {
 	self.validate()
 	self.Logger.Error(message)
 }
 
-func (self *LoggerWrapper) Errorf(format string, values ...interface{}) {
+func (self *LazyLogger) Errorf(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Errorf(format, values...)
 }
 
-func (self *LoggerWrapper) Warning(message string) {
+func (self *LazyLogger) Warning(message string) {
 	self.validate()
 	self.Logger.Warning(message)
 }
 
-func (self *LoggerWrapper) Warningf(format string, values ...interface{}) {
+func (self *LazyLogger) Warningf(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Warningf(format, values...)
 }
 
-func (self *LoggerWrapper) Notice(message string) {
+func (self *LazyLogger) Notice(message string) {
 	self.validate()
 	self.Logger.Notice(message)
 }
 
-func (self *LoggerWrapper) Noticef(format string, values ...interface{}) {
+func (self *LazyLogger) Noticef(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Noticef(format, values...)
 }
 
-func (self *LoggerWrapper) Info(message string) {
+func (self *LazyLogger) Info(message string) {
 	self.validate()
 	self.Logger.Info(message)
 }
 
-func (self *LoggerWrapper) Infof(format string, values ...interface{}) {
+func (self *LazyLogger) Infof(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Infof(format, values...)
 }
 
-func (self *LoggerWrapper) Debug(message string) {
+func (self *LazyLogger) Debug(message string) {
 	self.validate()
 	self.Logger.Debug(message)
 }
 
-func (self *LoggerWrapper) Debugf(format string, values ...interface{}) {
+func (self *LazyLogger) Debugf(format string, values ...interface{}) {
 	self.validate()
 	self.Logger.Debugf(format, values...)
 }

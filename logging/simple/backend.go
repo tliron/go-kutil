@@ -20,6 +20,10 @@ const LOG_FILE_WRITE_PERMISSIONS = 0600
 
 const BUFFER_SIZE = 10000
 
+//
+// Backend
+//
+
 type Backend struct {
 	writer          io.Writer
 	maxLevel        logging.Level
@@ -126,8 +130,10 @@ func (self *Backend) SetMaxLevel(name string, level logging.Level) {
 }
 
 func (self *Backend) GetLogger(name string) logging.Logger {
-	return &Logger{
-		Backend: self,
-		Name:    name,
+	return logging.FullLogger{
+		Logger: Logger{
+			Backend: self,
+			Name:    name,
+		},
 	}
 }
