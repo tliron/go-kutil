@@ -7,6 +7,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/fxamacker/cbor/v2"
+	"github.com/tliron/kutil/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,6 +22,9 @@ func Validate(code string, format string) error {
 
 	case "xml":
 		return ValidateXML(code)
+
+	case "cbor":
+		return ValidateCBOR(code)
 
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
@@ -66,5 +71,18 @@ func ValidateXML(code string) error {
 				return err
 			}
 		}
+	}
+}
+
+func ValidateCBOR(code string) error {
+	var value interface{}
+	if bytes, err := util.FromBase64(code); err == nil {
+		if err := cbor.Unmarshal(bytes, &value); err == nil {
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return err
 	}
 }
