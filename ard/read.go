@@ -72,7 +72,8 @@ func ReadCompatibleJSON(reader io.Reader, locate bool) (Value, Locator, error) {
 	var value Value
 	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(&value); err == nil {
-		return FromCompatibleJSON(value), nil, nil
+		value, _ = FromCompatibleJSON(value)
+		return value, nil, nil
 	} else {
 		return nil, nil, err
 	}

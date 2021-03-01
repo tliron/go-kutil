@@ -6,6 +6,7 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/hokaccha/go-prettyjson"
+	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -69,7 +70,7 @@ func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 }
 
 func PrintCompatibleJSON(value interface{}, writer io.Writer, pretty bool) error {
-	return PrintJSON(ToCompatibleJSON(value), writer, pretty)
+	return PrintJSON(ard.EnsureCompatibleJSON(value), writer, pretty)
 }
 
 func PrintCompatibleXML(value interface{}, writer io.Writer, pretty bool) error {

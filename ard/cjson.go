@@ -28,14 +28,13 @@ var CompatibleJSONUIntegerCode = "$ard.uinteger"
 var CompatibleJSONBytesCode = "$ard.bytes"
 var CompatibleJSONMapCode = "$ard.map"
 
-// TODO: escape $$
-
-func ToCompatibleJSON(value Value) Value {
-	value, _ = TryToCompatibleJSON(value)
+func EnsureCompatibleJSON(value Value) Value {
+	value, _ = Canonicalize(value)
+	value, _ = ToCompatibleJSON(value)
 	return value
 }
 
-func TryToCompatibleJSON(value Value) (Value, bool) {
+func ToCompatibleJSON(value Value) (Value, bool) {
 	switch value_ := value.(type) {
 	case int:
 		return CompatibleJSONInteger(int64(value_)), true
@@ -68,7 +67,7 @@ func TryToCompatibleJSON(value Value) (Value, bool) {
 
 		for index, element := range value_ {
 			var converted_ bool
-			element, converted_ = TryToCompatibleJSON(element)
+			element, converted_ = ToCompatibleJSON(element)
 			list[index] = element
 			if converted_ {
 				converted = true
@@ -79,23 +78,6 @@ func TryToCompatibleJSON(value Value) (Value, bool) {
 			return list, true
 		}
 
-	case StringMap:
-		converted := false
-		map_ := make(StringMap)
-
-		for key, value__ := range value_ {
-			var converted_ bool
-			value__, converted_ = TryToCompatibleJSON(value__)
-			map_[key] = value__
-			if converted_ {
-				converted = true
-			}
-		}
-
-		if converted {
-			return map_, true
-		}
-
 	case Map:
 		// We'll build two maps at the same time, but only return one
 		stringMap := make(StringMap)
@@ -103,16 +85,17 @@ func TryToCompatibleJSON(value Value) (Value, bool) {
 		useCompatibleJsonMap := false
 
 		for key, value__ := range value_ {
-			value__ = ToCompatibleJSON(value__)
+			value__, _ = ToCompatibleJSON(value__)
+
 			if key_, ok := key.(string); ok {
 				compatibleJsonMap[key] = value__
-				// We can stop building the stringMap if we switched to compatibleJsonMap
 
+				// We can stop building the stringMap if we switched to compatibleJsonMap
 				if !useCompatibleJsonMap {
 					stringMap[key_] = value__
 				}
 			} else {
-				key = ToCompatibleJSON(key)
+				key, _ = ToCompatibleJSON(key)
 				compatibleJsonMap[key] = value__
 				useCompatibleJsonMap = true
 			}
@@ -125,15 +108,10 @@ func TryToCompatibleJSON(value Value) (Value, bool) {
 		}
 	}
 
-	return value, true
+	return value, false
 }
 
-func FromCompatibleJSON(value Value) Value {
-	value, _ = TryFromCompatibleJSON(value)
-	return value
-}
-
-func TryFromCompatibleJSON(value Value) (Value, bool) {
+func FromCompatibleJSON(value Value) (Value, bool) {
 	switch value_ := value.(type) {
 	case List:
 		converted := false
@@ -141,7 +119,7 @@ func TryFromCompatibleJSON(value Value) (Value, bool) {
 
 		for index, element := range value_ {
 			var converted_ bool
-			element, converted_ = TryFromCompatibleJSON(element)
+			element, converted_ = FromCompatibleJSON(element)
 			list[index] = element
 			if converted_ {
 				converted = true
@@ -169,7 +147,8 @@ func TryFromCompatibleJSON(value Value) (Value, bool) {
 					if strings.HasPrefix(key, "$$") {
 						key = key[1:]
 						map_ := make(Map)
-						map_[key] = FromCompatibleJSON(value__)
+						value__, _ = FromCompatibleJSON(value__)
+						map_[key] = value__
 						return map_, true
 					}
 				}
@@ -178,7 +157,7 @@ func TryFromCompatibleJSON(value Value) (Value, bool) {
 
 		map_ := make(Map)
 		for key, value__ := range value_ {
-			value__ = FromCompatibleJSON(value__)
+			value__, _ = FromCompatibleJSON(value__)
 			map_[key] = value__
 		}
 		return map_, true
@@ -307,9 +286,11 @@ func DecodeCompatibleJSONMapEntry(entry Value) (*CompatibleJSONMapEntry, bool) {
 	if entry_, ok := entry.(StringMap); ok {
 		if key, ok := entry_["key"]; ok {
 			if value, ok := entry_["value"]; ok {
+				key, _ = FromCompatibleJSON(key)
+				value, _ = FromCompatibleJSON(value)
 				return &CompatibleJSONMapEntry{
-					Key:   FromCompatibleJSON(key),
-					Value: FromCompatibleJSON(value),
+					Key:   key,
+					Value: value,
 				}, true
 			}
 		}

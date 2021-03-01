@@ -4,43 +4,6 @@ import (
 	"github.com/tliron/yamlkeys"
 )
 
-// Ensure data adheres to the ARD map type
-// (JSON decoding uses map[string]interface{} instead of map[interface{}]interface{})
-func Normalize(value Value) (Value, bool) {
-	switch value_ := value.(type) {
-	case StringMap:
-		return StringMapToMap(value_), true
-
-	case Map:
-		map_ := make(Map)
-		changed := false
-		for key, element := range value_ {
-			if value, changed_ := Normalize(element); changed_ {
-				map_[key] = value
-				changed = true
-			}
-		}
-		if changed {
-			return map_, true
-		}
-
-	case List:
-		list := make(List, len(value_))
-		changed := false
-		for index, element := range value_ {
-			if value, changed_ := Normalize(element); changed_ {
-				list[index] = value
-				changed = true
-			}
-		}
-		if changed {
-			return list, true
-		}
-	}
-
-	return value, false
-}
-
 func MapsToStringMaps(value Value) (Value, bool) {
 	switch value_ := value.(type) {
 	case Map:
@@ -50,10 +13,11 @@ func MapsToStringMaps(value Value) (Value, bool) {
 		stringMap := make(StringMap)
 		changed := false
 		for key, element := range value_ {
-			if value, changed_ := MapsToStringMaps(element); changed_ {
-				stringMap[key] = value
+			var changed_ bool
+			if element, changed_ = MapsToStringMaps(element); changed_ {
 				changed = true
 			}
+			stringMap[key] = element
 		}
 		if changed {
 			return stringMap, true
@@ -63,10 +27,11 @@ func MapsToStringMaps(value Value) (Value, bool) {
 		list := make(List, len(value_))
 		changed := false
 		for index, element := range value_ {
-			if value, changed_ := MapsToStringMaps(element); changed_ {
-				list[index] = value
+			var changed_ bool
+			if element, changed_ = MapsToStringMaps(element); changed_ {
 				changed = true
 			}
+			list[index] = element
 		}
 		if changed {
 			return list, true

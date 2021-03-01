@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fxamacker/cbor/v2"
+	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 )
@@ -55,7 +56,7 @@ func EncodeJSON(value interface{}, indent string) (string, error) {
 }
 
 func EncodeCompatibleJSON(value interface{}, indent string) (string, error) {
-	return EncodeJSON(ToCompatibleJSON(value), indent)
+	return EncodeJSON(ard.EnsureCompatibleJSON(value), indent)
 }
 
 func EncodeCompatibleXML(value interface{}, indent string) (string, error) {

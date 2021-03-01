@@ -9,13 +9,26 @@ import (
 )
 
 func ToYAMLDocumentNode(value Value, verbose bool) *yaml.Node {
-	var node yaml.Node
-	node.Kind = yaml.DocumentNode
-	node.Content = []*yaml.Node{ToYAMLNode(value, verbose)}
-	return &node
+	var node *yaml.Node
+	var ok bool
+	if node, ok = ToYAMLNode(value, verbose); !ok {
+		// Try again after canonicalization
+		var err error
+		if value, err = Canonicalize(value); err == nil {
+			if node, ok = ToYAMLNode(value, verbose); !ok {
+				panic(fmt.Sprintf("unsupported value type: %T", value))
+			}
+		} else {
+			panic(err)
+		}
+	}
+	return &yaml.Node{
+		Kind:    yaml.DocumentNode,
+		Content: []*yaml.Node{node},
+	}
 }
 
-func ToYAMLNode(value Value, verbose bool) *yaml.Node {
+func ToYAMLNode(value Value, verbose bool) (*yaml.Node, bool) {
 	// See: https://yaml.org/type/
 
 	var node yaml.Node
@@ -33,10 +46,17 @@ func ToYAMLNode(value Value, verbose bool) *yaml.Node {
 		node.Content = make([]*yaml.Node, len(value_)*2)
 		index := 0
 		for k, v := range value_ {
-			node.Content[index] = ToYAMLNode(k, verbose)
-			index += 1
-			node.Content[index] = ToYAMLNode(v, verbose)
-			index += 1
+			var ok bool
+			if node.Content[index], ok = ToYAMLNode(k, verbose); ok {
+				index += 1
+				if node.Content[index], ok = ToYAMLNode(v, verbose); ok {
+					index += 1
+				} else {
+					return nil, false
+				}
+			} else {
+				return nil, false
+			}
 		}
 
 	case List:
@@ -45,7 +65,10 @@ func ToYAMLNode(value Value, verbose bool) *yaml.Node {
 		node.Style = 0
 		node.Content = make([]*yaml.Node, len(value_))
 		for index, v := range value_ {
-			node.Content[index] = ToYAMLNode(v, verbose)
+			var ok bool
+			if node.Content[index], ok = ToYAMLNode(v, verbose); !ok {
+				return nil, false
+			}
 		}
 
 	case string:
@@ -134,10 +157,10 @@ func ToYAMLNode(value Value, verbose bool) *yaml.Node {
 		node.Value = value_.Format(time.RFC3339Nano)
 
 	default:
-		panic(fmt.Sprintf("unsupported ARD value type: %T", value))
+		return nil, false
 	}
 
-	return &node
+	return &node, true
 }
 
 func fixFloat(s string) string {

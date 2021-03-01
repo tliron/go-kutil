@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/format"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -167,7 +166,7 @@ func (self *Problems) ARD() (ard.Value, error) {
 	self.lock.RLock()
 	defer self.lock.RUnlock()
 
-	return format.Normalize(self)
+	return ard.Canonicalize(self)
 }
 
 func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {

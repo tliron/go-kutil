@@ -76,13 +76,13 @@ func WriteJSON(value interface{}, writer io.Writer, indent string) error {
 }
 
 func WriteCompatibleJSON(value interface{}, writer io.Writer, indent string) error {
-	return WriteJSON(ToCompatibleJSON(value), writer, indent)
+	return WriteJSON(ard.EnsureCompatibleJSON(value), writer, indent)
 }
 
 func WriteCompatibleXML(value interface{}, writer io.Writer, indent string) error {
 	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
-	// JSON and YAML) we must normalize the data before encoding it
-	value, err := Normalize(value)
+	// JSON and YAML) we must canonicalize the data before encoding it
+	value, err := ard.Canonicalize(value)
 	if err != nil {
 		return err
 	}
