@@ -10,31 +10,31 @@ func MapsToStringMaps(value Value) (Value, bool) {
 		return MapToStringMap(value_), true
 
 	case StringMap:
-		stringMap := make(StringMap)
+		changedStringMap := make(StringMap)
 		changed := false
 		for key, element := range value_ {
 			var changed_ bool
 			if element, changed_ = MapsToStringMaps(element); changed_ {
 				changed = true
 			}
-			stringMap[key] = element
+			changedStringMap[key] = element
 		}
 		if changed {
-			return stringMap, true
+			return changedStringMap, true
 		}
 
 	case List:
-		list := make(List, len(value_))
+		changedList := make(List, len(value_))
 		changed := false
 		for index, element := range value_ {
 			var changed_ bool
 			if element, changed_ = MapsToStringMaps(element); changed_ {
 				changed = true
 			}
-			list[index] = element
+			changedList[index] = element
 		}
 		if changed {
-			return list, true
+			return changedList, true
 		}
 	}
 

@@ -34,6 +34,76 @@ type Logger interface {
 }
 
 //
+// SubLogger
+//
+
+const DEFAULT_SUBLOGGER_FORMAT = "{%s} %s"
+
+type SubLogger struct {
+	Logger Logger
+	Name   string
+	Format string
+}
+
+func NewSubLogger(logger Logger, name string) SubLogger {
+	return SubLogger{
+		Logger: logger,
+		Name:   name,
+		Format: DEFAULT_SUBLOGGER_FORMAT,
+	}
+}
+
+// logging.Logger interface
+
+func (self SubLogger) Critical(message string) {
+	self.Logger.Criticalf(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Criticalf(format string, values ...interface{}) {
+	self.Critical(fmt.Sprintf(format, values...))
+}
+
+func (self SubLogger) Error(message string) {
+	self.Logger.Errorf(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Errorf(format string, values ...interface{}) {
+	self.Error(fmt.Sprintf(format, values...))
+}
+
+func (self SubLogger) Warning(message string) {
+	self.Logger.Warningf(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Warningf(format string, values ...interface{}) {
+	self.Warning(fmt.Sprintf(format, values...))
+}
+
+func (self SubLogger) Notice(message string) {
+	self.Logger.Noticef(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Noticef(format string, values ...interface{}) {
+	self.Notice(fmt.Sprintf(format, values...))
+}
+
+func (self SubLogger) Info(message string) {
+	self.Logger.Infof(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Infof(format string, values ...interface{}) {
+	self.Info(fmt.Sprintf(format, values...))
+}
+
+func (self SubLogger) Debug(message string) {
+	self.Logger.Debugf(self.Format, self.Name, message)
+}
+
+func (self SubLogger) Debugf(format string, values ...interface{}) {
+	self.Debug(fmt.Sprintf(format, values...))
+}
+
+//
 // FullLogger
 //
 
