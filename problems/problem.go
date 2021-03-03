@@ -177,7 +177,7 @@ func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {
 		sort.Sort(problems)
 
 		if pretty {
-			fmt.Fprintf(writer, "%s (%d)\n", terminal.ColorHeading("Problems"), length)
+			fmt.Fprintf(writer, "%s (%d)\n", terminal.StyleHeading("Problems"), length)
 		} else {
 			fmt.Fprintf(writer, "%s (%d)\n", "Problems", length)
 		}
@@ -190,7 +190,7 @@ func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {
 				fmt.Fprint(writer, terminal.IndentString(1))
 				if currentSection != "" {
 					if pretty {
-						fmt.Fprintf(writer, "%s\n", terminal.ColorValue(currentSection))
+						fmt.Fprintf(writer, "%s\n", terminal.StyleValue(currentSection))
 					} else {
 						fmt.Fprintf(writer, "%s\n", currentSection)
 					}

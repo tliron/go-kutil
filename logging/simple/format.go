@@ -42,15 +42,15 @@ func DefaultFormat(message string, name string, level logging.Level, colorize bo
 	if colorize {
 		switch level {
 		case logging.Critical:
-			s = terminal.ColorError(s)
+			s = terminal.ColorRed(s)
 		case logging.Error:
-			s = terminal.ColorError(s)
+			s = terminal.ColorRed(s)
 		case logging.Warning:
-			s = terminal.ColorValue(s)
+			s = terminal.ColorYellow(s)
 		case logging.Notice:
-			s = terminal.ColorName(s)
+			s = terminal.ColorCyan(s)
 		case logging.Info:
-			s = terminal.ColorName(s)
+			s = terminal.ColorBlue(s)
 		}
 	}
 

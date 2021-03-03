@@ -3,7 +3,6 @@ package terminal
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/zchee/color/v2"
 )
@@ -37,39 +36,23 @@ func ProcessColorizeFlag(colorize string) error {
 
 type Colorizer = func(name string) string
 
-func ColorHeading(name string) string {
+func ColorRed(name string) string {
 	if Colorize {
-		return color.GreenString(strings.ToUpper(name))
+		return color.RedString(name)
 	} else {
 		return name
 	}
 }
 
-func ColorPath(name string) string {
+func ColorGreen(name string) string {
 	if Colorize {
-		return color.CyanString(name)
+		return color.GreenString(name)
 	} else {
 		return name
 	}
 }
 
-func ColorName(name string) string {
-	if Colorize {
-		return color.BlueString(name)
-	} else {
-		return name
-	}
-}
-
-func ColorTypeName(name string) string {
-	if Colorize {
-		return color.MagentaString(name)
-	} else {
-		return name
-	}
-}
-
-func ColorValue(name string) string {
+func ColorYellow(name string) string {
 	if Colorize {
 		return color.YellowString(name)
 	} else {
@@ -77,9 +60,25 @@ func ColorValue(name string) string {
 	}
 }
 
-func ColorError(name string) string {
+func ColorBlue(name string) string {
 	if Colorize {
-		return color.RedString(name)
+		return color.BlueString(name)
+	} else {
+		return name
+	}
+}
+
+func ColorMagenta(name string) string {
+	if Colorize {
+		return color.MagentaString(name)
+	} else {
+		return name
+	}
+}
+
+func ColorCyan(name string) string {
+	if Colorize {
+		return color.CyanString(name)
 	} else {
 		return name
 	}

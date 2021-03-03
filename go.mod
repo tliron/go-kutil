@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/fxamacker/cbor/v2 v2.2.0
-	github.com/google/go-containerregistry v0.4.0
+	github.com/google/go-containerregistry v0.4.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/klauspost/compress v1.11.9 // indirect
 	github.com/klauspost/pgzip v1.2.5
@@ -24,5 +24,5 @@ require (
 	k8s.io/apiextensions-apiserver v0.20.4
 	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v0.20.4
-	k8s.io/klog/v2 v2.5.0
+	k8s.io/klog/v2 v2.6.0
 )

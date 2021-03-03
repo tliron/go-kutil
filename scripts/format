@@ -10,6 +10,11 @@ gofmt -w -s -e \
 	"$ROOT/format" \
 	"$ROOT/kubernetes" \
 	"$ROOT/library" \
+	"$ROOT/logging" \
+	"$ROOT/logging/gologging" \
+	"$ROOT/logging/klog" \
+	"$ROOT/logging/simple" \
+	"$ROOT/logging/zerolog" \
 	"$ROOT/problems" \
 	"$ROOT/reflection" \
 	"$ROOT/terminal" \

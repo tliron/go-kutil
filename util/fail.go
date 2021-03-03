@@ -9,7 +9,7 @@ import (
 
 func Fail(message string) {
 	if !terminal.Quiet {
-		fmt.Fprintln(terminal.Stderr, terminal.ColorError(message))
+		fmt.Fprintln(terminal.Stderr, terminal.StyleError(message))
 	}
 	atexit.Exit(1)
 }
