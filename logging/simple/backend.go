@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
@@ -81,22 +80,31 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
-				atexit.Register(func() {
+				if self.buffered {
+					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
+					util.OnExit(func() {
+						writer.Close()
+					})
+					self.writer = writer
+				} else {
+					self.writer = util.NewSyncedWriter(file)
+				}
+				// Close file *after* flushing (closing) buffered writer
+				util.OnExit(func() {
 					file.Close()
 				})
-				if self.buffered {
-					self.writer = util.NewBufferWriter(file, BUFFER_SIZE)
-				} else {
-					self.writer = util.NewSyncWriter(file)
-				}
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
 			if self.buffered {
-				self.writer = util.NewBufferWriter(terminal.Stderr, BUFFER_SIZE)
+				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
+				util.OnExit(func() {
+					writer.Close()
+				})
+				self.writer = writer
 			} else {
-				self.writer = util.NewSyncWriter(terminal.Stderr)
+				self.writer = util.NewSyncedWriter(terminal.Stderr)
 			}
 		}
 
@@ -107,6 +115,10 @@ func (self *Backend) Configure(verbosity int, path *string) {
 
 		self.maxLevel = logging.Level(verbosity)
 	}
+}
+
+func (self *Backend) GetWriter() io.Writer {
+	return self.writer
 }
 
 func (self *Backend) SetMaxLevel(name string, level logging.Level) {

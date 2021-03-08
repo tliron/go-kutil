@@ -2,6 +2,7 @@ package logging
 
 import (
 	"fmt"
+	"io"
 )
 
 var backend Backend
@@ -12,6 +13,10 @@ func SetBackend(backend_ Backend) {
 
 func Configure(verbosity int, path *string) {
 	backend.Configure(verbosity, path)
+}
+
+func GetWriter() io.Writer {
+	return backend.GetWriter()
 }
 
 func SetMaxLevel(name string, level Level) {

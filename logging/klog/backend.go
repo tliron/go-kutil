@@ -1,6 +1,8 @@
 package klog
 
 import (
+	"io"
+
 	"github.com/tliron/kutil/logging"
 )
 
@@ -22,6 +24,10 @@ func NewBackend() Backend {
 
 func (self Backend) Configure(verbosity int, path *string) {
 	// klog does its own configuration via klog.InitFlags
+}
+
+func (self Backend) GetWriter() io.Writer {
+	return nil
 }
 
 func (self Backend) SetMaxLevel(name string, level logging.Level) {

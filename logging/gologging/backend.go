@@ -5,7 +5,6 @@ import (
 	"os"
 
 	loggingpkg "github.com/op/go-logging"
-	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
@@ -29,7 +28,9 @@ var colorFormatter = loggingpkg.MustStringFormatter(
 // Backend
 //
 
-type Backend struct{}
+type Backend struct {
+	writer io.Writer
+}
 
 func NewBackend() Backend {
 	return Backend{}
@@ -41,20 +42,20 @@ func (self Backend) Configure(verbosity int, path *string) {
 	var backend *loggingpkg.LogBackend
 
 	if verbosity == -1 {
-		backend = loggingpkg.NewLogBackend(io.Discard, "", 0)
+		self.writer = io.Discard
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
-				atexit.Register(func() {
+				util.OnExit(func() {
 					file.Close()
 				})
-				backend = loggingpkg.NewLogBackend(file, "", 0)
+				self.writer = file
 				loggingpkg.SetFormatter(plainFormatter)
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
-			backend = loggingpkg.NewLogBackend(terminal.Stderr, "", 0)
+			self.writer = terminal.Stderr
 			if terminal.Colorize {
 				loggingpkg.SetFormatter(colorFormatter)
 			} else {
@@ -68,9 +69,14 @@ func (self Backend) Configure(verbosity int, path *string) {
 		}
 	}
 
+	backend = loggingpkg.NewLogBackend(self.writer, "", 0)
 	leveledBackend := loggingpkg.AddModuleLevel(backend)
 	leveledBackend.SetLevel(loggingpkg.Level(verbosity), "")
 	loggingpkg.SetBackend(NewPrefixLeveledBackend(leveledBackend))
+}
+
+func (self Backend) GetWriter() io.Writer {
+	return self.writer
 }
 
 func (self Backend) SetMaxLevel(name string, level logging.Level) {

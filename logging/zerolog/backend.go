@@ -8,7 +8,6 @@ import (
 
 	"github.com/rs/zerolog"
 	logpkg "github.com/rs/zerolog/log"
-	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
@@ -27,6 +26,7 @@ const TIME_FORMAT = "2006/01/02 15:04:05.000"
 //
 
 type Backend struct {
+	writer  io.Writer
 	loggers map[string]*Logger
 }
 
@@ -40,27 +40,30 @@ func NewBackend() Backend {
 
 func (self Backend) Configure(verbosity int, path *string) {
 	if verbosity == -1 {
-		logpkg.Logger = zerolog.New(io.Discard)
+		self.writer = io.Discard
+		logpkg.Logger = zerolog.New(self.writer)
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
-				atexit.Register(func() {
+				util.OnExit(func() {
 					file.Close()
 				})
-				logpkg.Logger = zerolog.New(file)
+				self.writer = file
+				logpkg.Logger = zerolog.New(self.writer)
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
+			self.writer = terminal.Stderr
 			if terminal.Colorize {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        terminal.Stderr,
+					Out:        self.writer,
 					TimeFormat: TIME_FORMAT,
 				})
 			} else {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        terminal.Stderr,
+					Out:        self.writer,
 					TimeFormat: TIME_FORMAT,
 					NoColor:    true,
 				})
@@ -79,6 +82,10 @@ func (self Backend) Configure(verbosity int, path *string) {
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMicro
 		logpkg.Logger = logpkg.With().Timestamp().Logger()
 	}
+}
+
+func (self Backend) GetWriter() io.Writer {
+	return self.writer
 }
 
 func (self Backend) SetMaxLevel(name string, level logging.Level) {

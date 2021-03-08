@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 
-	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -11,7 +10,7 @@ func Fail(message string) {
 	if !terminal.Quiet {
 		fmt.Fprintln(terminal.Stderr, terminal.StyleError(message))
 	}
-	atexit.Exit(1)
+	Exit(1)
 }
 
 func Failf(f string, args ...interface{}) {

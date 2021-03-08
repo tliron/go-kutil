@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -160,13 +159,6 @@ func (self *Problems) Slice() ProblemSlice {
 	copy(problems, self.Problems)
 	self.lock.RUnlock()
 	return problems
-}
-
-func (self *Problems) ARD() (ard.Value, error) {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-
-	return ard.Canonicalize(self)
 }
 
 func (self *Problems) Write(writer io.Writer, pretty bool, locate bool) bool {

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/op/go-logging"
-	"github.com/tebeka/atexit"
 	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/util"
 )
@@ -66,7 +65,7 @@ func Download(url URL, temporaryPathPattern string) (*os.File, error) {
 			defer reader.Close()
 			log.Infof("downloading from %q to temporary file %q", url.String(), path)
 			if _, err = io.Copy(file, reader); err == nil {
-				atexit.Register(func() {
+				util.OnExit(func() {
 					DeleteTemporaryFile(path)
 				})
 				return file, nil
