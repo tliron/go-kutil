@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/tliron/kutil/logging"
-	"github.com/tliron/kutil/terminal"
 )
 
 //
@@ -23,7 +22,7 @@ func (self Logger) Write(level logging.Level, message string) {
 			message += "\n"
 		}
 
-		message = self.Backend.format(message, self.Name, level, terminal.Colorize)
+		message = self.Backend.format(message, self.Name, level, self.Backend.colorize)
 		io.WriteString(self.Backend.writer, message)
 	}
 }

@@ -8,7 +8,8 @@ rm --force "$ROOT/go.mod" "$ROOT/go.sum"
 
 cd "$ROOT"
 go mod init "$MODULE"
+go mod tidy
 
-"$HERE/build"
+"$HERE/test"
 
 go mod tidy

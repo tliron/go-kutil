@@ -29,6 +29,7 @@ type Backend struct {
 	maxLevels       map[string]logging.Level
 	prefixMaxLevels []prefixLevel
 	format          FormatFunc
+	colorize        bool
 	buffered        bool
 }
 
@@ -97,6 +98,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
+			self.colorize = terminal.Colorize
 			if self.buffered {
 				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
 				util.OnExit(func() {
