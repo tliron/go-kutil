@@ -12,11 +12,11 @@ type Stylist struct {
 	Colorize bool
 }
 
-func NewStylist(colorize bool) Stylist {
-	return Stylist{colorize}
+func NewStylist(colorize bool) *Stylist {
+	return &Stylist{colorize}
 }
 
-func (self Stylist) Heading(name string) string {
+func (self *Stylist) Heading(name string) string {
 	if self.Colorize {
 		return ColorGreen(strings.ToUpper(name))
 	} else {
@@ -24,7 +24,7 @@ func (self Stylist) Heading(name string) string {
 	}
 }
 
-func (self Stylist) Path(name string) string {
+func (self *Stylist) Path(name string) string {
 	if self.Colorize {
 		return ColorCyan(name)
 	} else {
@@ -32,7 +32,7 @@ func (self Stylist) Path(name string) string {
 	}
 }
 
-func (self Stylist) Name(name string) string {
+func (self *Stylist) Name(name string) string {
 	if self.Colorize {
 		return ColorBlue(name)
 	} else {
@@ -40,7 +40,7 @@ func (self Stylist) Name(name string) string {
 	}
 }
 
-func (self Stylist) TypeName(name string) string {
+func (self *Stylist) TypeName(name string) string {
 	if self.Colorize {
 		return ColorMagenta(name)
 	} else {
@@ -48,7 +48,7 @@ func (self Stylist) TypeName(name string) string {
 	}
 }
 
-func (self Stylist) Value(name string) string {
+func (self *Stylist) Value(name string) string {
 	if self.Colorize {
 		return ColorYellow(name)
 	} else {
@@ -56,7 +56,7 @@ func (self Stylist) Value(name string) string {
 	}
 }
 
-func (self Stylist) Error(name string) string {
+func (self *Stylist) Error(name string) string {
 	if self.Colorize {
 		return ColorRed(name)
 	} else {

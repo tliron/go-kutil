@@ -44,13 +44,13 @@ func (self ProblemSlice) Less(i, j int) bool {
 //
 
 type Problems struct {
-	Problems ProblemSlice     `json:"problems" yaml:"problems"`
-	Stylist  terminal.Stylist `json:"-" yaml:"-"`
+	Problems ProblemSlice      `json:"problems" yaml:"problems"`
+	Stylist  *terminal.Stylist `json:"-" yaml:"-"`
 
 	lock sync.RWMutex `json:"-" yaml:"-"`
 }
 
-func NewProblems(stylist terminal.Stylist) *Problems {
+func NewProblems(stylist *terminal.Stylist) *Problems {
 	return &Problems{
 		Stylist: stylist,
 	}
@@ -104,7 +104,7 @@ func (self *Problems) Merge(problems *Problems) bool {
 
 func (self *Problems) ToString(locate bool) string {
 	var writer strings.Builder
-	self.Write(&writer, terminal.NewStylist(false), false, locate)
+	self.Write(&writer, nil, false, locate)
 	return strings.TrimRight(writer.String(), "\n")
 }
 
@@ -121,10 +121,14 @@ func (self *Problems) Slice() ProblemSlice {
 	return problems
 }
 
-func (self *Problems) Write(writer io.Writer, stylist terminal.Stylist, pretty bool, locate bool) bool {
+func (self *Problems) Write(writer io.Writer, stylist *terminal.Stylist, pretty bool, locate bool) bool {
 	problems := self.Slice()
 	length := len(problems)
 	if length > 0 {
+		if stylist == nil {
+			stylist = terminal.NewStylist(false)
+		}
+
 		// Sort
 		sort.Sort(problems)
 

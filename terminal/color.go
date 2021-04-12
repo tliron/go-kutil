@@ -10,8 +10,6 @@ import (
 
 var Colorize = false
 
-var Stylize = NewStylist(false)
-
 func EnableColor(force bool) {
 	if force {
 		color.NoColor = false

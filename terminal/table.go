@@ -147,10 +147,14 @@ func (self *Table) Wrap() {
 	}
 }
 
-func (self *Table) Write(writer io.Writer, stylist Stylist) {
+func (self *Table) Write(writer io.Writer, stylist *Stylist) {
 	if len(self.Rows) <= 1 {
 		// Empty table
 		return
+	}
+
+	if stylist == nil {
+		stylist = NewStylist(false)
 	}
 
 	self.Wrap()
@@ -221,8 +225,8 @@ func (self *Table) Write(writer io.Writer, stylist Stylist) {
 	}
 }
 
-func (self *Table) Print(stylist Stylist) {
-	self.Write(Stdout, stylist)
+func (self *Table) Print() {
+	self.Write(Stdout, Stylize)
 }
 
 // Utils

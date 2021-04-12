@@ -7,5 +7,5 @@ import "github.com/tliron/kutil/terminal"
 //
 
 type Problematic interface {
-	Problem(terminal.Stylist) (string, string, string, int, int)
+	Problem(*terminal.Stylist) (string, string, string, int, int)
 }
