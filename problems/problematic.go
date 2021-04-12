@@ -1,9 +1,11 @@
 package problems
 
+import "github.com/tliron/kutil/terminal"
+
 //
 // Problematic
 //
 
 type Problematic interface {
-	Problem() (string, string, string, int, int)
+	Problem(terminal.Stylist) (string, string, string, int, int)
 }

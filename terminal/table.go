@@ -147,7 +147,7 @@ func (self *Table) Wrap() {
 	}
 }
 
-func (self *Table) Write(writer io.Writer) {
+func (self *Table) Write(writer io.Writer, stylist Stylist) {
 	if len(self.Rows) <= 1 {
 		// Empty table
 		return
@@ -178,10 +178,10 @@ func (self *Table) Write(writer io.Writer) {
 			for column, cell := range row {
 				if line < len(cell) {
 					if r != 0 {
-						fmt.Fprint(writer, StyleValue(pad(cell[line], columnWidths[column])))
+						fmt.Fprint(writer, stylist.Value(pad(cell[line], columnWidths[column])))
 					} else {
 						// Heading
-						fmt.Fprint(writer, StyleTypeName(pad(cell[line], columnWidths[column])))
+						fmt.Fprint(writer, stylist.TypeName(pad(cell[line], columnWidths[column])))
 					}
 				} else {
 					// Pad lines
@@ -221,8 +221,8 @@ func (self *Table) Write(writer io.Writer) {
 	}
 }
 
-func (self *Table) Print() {
-	self.Write(Stdout)
+func (self *Table) Print(stylist Stylist) {
+	self.Write(Stdout, stylist)
 }
 
 // Utils

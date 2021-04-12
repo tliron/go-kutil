@@ -23,7 +23,7 @@ func Options(options []string) string {
 	return writer.String()
 }
 
-func ColoredOptions(options []string, colorizer Colorizer) string {
+func StylizedOptions(options []string, colorizer Colorizer) string {
 	var writer strings.Builder
 	penultimate := len(options) - 2
 	for index, option := range options {

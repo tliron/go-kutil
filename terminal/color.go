@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/zchee/color/v2"
@@ -9,16 +10,24 @@ import (
 
 var Colorize = false
 
+var Stylize = NewStylist(false)
+
 func EnableColor(force bool) {
 	if force {
 		color.NoColor = false
 	}
-	if color.NoColor {
-		return
+
+	Colorize = !color.NoColor
+
+	if Colorize {
+		Stdout = color.Output
+		Stderr = color.Error
+		Stylize = NewStylist(true)
+	} else {
+		Stdout = os.Stdout
+		Stderr = os.Stderr
+		Stylize = NewStylist(false)
 	}
-	Colorize = true
-	Stdout = color.Output
-	Stderr = color.Error
 }
 
 func ProcessColorizeFlag(colorize string) error {
@@ -36,50 +45,32 @@ func ProcessColorizeFlag(colorize string) error {
 
 type Colorizer = func(name string) string
 
+// Colorizer signature
 func ColorRed(name string) string {
-	if Colorize {
-		return color.RedString(name)
-	} else {
-		return name
-	}
+	return color.RedString(name)
 }
 
+// Colorizer signature
 func ColorGreen(name string) string {
-	if Colorize {
-		return color.GreenString(name)
-	} else {
-		return name
-	}
+	return color.GreenString(name)
 }
 
+// Colorizer signature
 func ColorYellow(name string) string {
-	if Colorize {
-		return color.YellowString(name)
-	} else {
-		return name
-	}
+	return color.YellowString(name)
 }
 
+// Colorizer signature
 func ColorBlue(name string) string {
-	if Colorize {
-		return color.BlueString(name)
-	} else {
-		return name
-	}
+	return color.BlueString(name)
 }
 
+// Colorizer signature
 func ColorMagenta(name string) string {
-	if Colorize {
-		return color.MagentaString(name)
-	} else {
-		return name
-	}
+	return color.MagentaString(name)
 }
 
+// Colorizer signature
 func ColorCyan(name string) string {
-	if Colorize {
-		return color.CyanString(name)
-	} else {
-		return name
-	}
+	return color.CyanString(name)
 }

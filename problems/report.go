@@ -17,7 +17,7 @@ func (self *Problems) Reportf(skip int, item string, format string, arg ...inter
 }
 
 func (self *Problems) ReportProblematic(skip int, problematic Problematic) bool {
-	section, item, message, row, column := problematic.Problem()
+	section, item, message, row, column := problematic.Problem(self.Stylist)
 	return self.ReportFull(skip+1, section, item, message, row, column)
 }
 
