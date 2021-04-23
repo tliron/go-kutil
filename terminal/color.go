@@ -41,6 +41,23 @@ func ProcessColorizeFlag(colorize string) error {
 	return nil
 }
 
+// Codes
+
+const escapePrefix = "\x1b["
+const escapeSuffix = "m"
+
+var ResetCode = escapePrefix + color.Reset.String() + escapeSuffix
+var RedCode = escapePrefix + color.FgRed.String() + escapeSuffix
+var GreenCode = escapePrefix + color.FgGreen.String() + escapeSuffix
+var YellowCode = escapePrefix + color.FgYellow.String() + escapeSuffix
+var BlueCode = escapePrefix + color.FgBlue.String() + escapeSuffix
+var MagentaCode = escapePrefix + color.FgMagenta.String() + escapeSuffix
+var CyanCode = escapePrefix + color.FgCyan.String() + escapeSuffix
+
+//
+// Colorizer
+//
+
 type Colorizer = func(name string) string
 
 // Colorizer signature

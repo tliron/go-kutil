@@ -6,7 +6,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/yamlkeys"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func RoundtripCBOR(value Value) (Value, error) {

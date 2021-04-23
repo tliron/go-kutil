@@ -5,9 +5,10 @@ go 1.16
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/fxamacker/cbor/v2 v2.2.0
+	github.com/goccy/go-yaml v1.8.9
 	github.com/google/go-containerregistry v0.4.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
-	github.com/klauspost/compress v1.11.13 // indirect
+	github.com/klauspost/compress v1.12.1 // indirect
 	github.com/klauspost/pgzip v1.2.5
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/rs/zerolog v1.21.0
@@ -16,8 +17,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/yamlkeys v1.3.5
 	github.com/zchee/color/v2 v2.0.6
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
-	gopkg.in/yaml.v2 v2.4.0
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.21.0
 	k8s.io/apiextensions-apiserver v0.21.0

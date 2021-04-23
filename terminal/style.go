@@ -4,6 +4,8 @@ import (
 	"strings"
 )
 
+var Stylize = NewStylist(false)
+
 //
 // Stylist
 //
@@ -16,6 +18,7 @@ func NewStylist(colorize bool) *Stylist {
 	return &Stylist{colorize}
 }
 
+// Colorizer signature
 func (self *Stylist) Heading(name string) string {
 	if self.Colorize {
 		return ColorGreen(strings.ToUpper(name))
@@ -24,6 +27,7 @@ func (self *Stylist) Heading(name string) string {
 	}
 }
 
+// Colorizer signature
 func (self *Stylist) Path(name string) string {
 	if self.Colorize {
 		return ColorCyan(name)
@@ -32,6 +36,7 @@ func (self *Stylist) Path(name string) string {
 	}
 }
 
+// Colorizer signature
 func (self *Stylist) Name(name string) string {
 	if self.Colorize {
 		return ColorBlue(name)
@@ -40,6 +45,7 @@ func (self *Stylist) Name(name string) string {
 	}
 }
 
+// Colorizer signature
 func (self *Stylist) TypeName(name string) string {
 	if self.Colorize {
 		return ColorMagenta(name)
@@ -48,6 +54,7 @@ func (self *Stylist) TypeName(name string) string {
 	}
 }
 
+// Colorizer signature
 func (self *Stylist) Value(name string) string {
 	if self.Colorize {
 		return ColorYellow(name)
@@ -56,6 +63,7 @@ func (self *Stylist) Value(name string) string {
 	}
 }
 
+// Colorizer signature
 func (self *Stylist) Error(name string) string {
 	if self.Colorize {
 		return ColorRed(name)

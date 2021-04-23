@@ -8,7 +8,10 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/fxamacker/cbor/v2"
+	yamllexer "github.com/goccy/go-yaml/lexer"
+	yamlprinter "github.com/goccy/go-yaml/printer"
 	"github.com/tliron/kutil/ard"
+	"github.com/tliron/kutil/terminal"
 	"gopkg.in/yaml.v3"
 )
 
@@ -66,6 +69,57 @@ func WriteYAML(value interface{}, writer io.Writer, indent string, strict bool) 
 			}
 		}
 		return nil
+	}
+}
+
+func PrettifyYAML(code string, writer io.Writer) error {
+	tokens := yamllexer.Tokenize(code)
+	var printer yamlprinter.Printer
+
+	printer.String = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.BlueCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+	printer.Number = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.MagentaCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+	printer.Bool = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.CyanCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+
+	printer.MapKey = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.GreenCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+
+	printer.Anchor = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.RedCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+	printer.Alias = func() *yamlprinter.Property {
+		return &yamlprinter.Property{
+			Prefix: terminal.YellowCode,
+			Suffix: terminal.ResetCode,
+		}
+	}
+
+	if _, err := io.WriteString(writer, printer.PrintTokens(tokens)); err == nil {
+		_, err := io.WriteString(writer, "\n")
+		return err
+	} else {
+		return err
 	}
 }
 

@@ -47,26 +47,34 @@ func Print(value interface{}, format string, writer io.Writer, strict bool, pret
 }
 
 func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) error {
-	indent := "  "
-	if pretty {
-		indent = terminal.Indent
+	if pretty && terminal.Colorize {
+		if code, err := EncodeYAML(value, terminal.Indent, strict); err == nil {
+			return PrettifyYAML(code, writer)
+		} else {
+			return err
+		}
+	} else {
+		return WriteYAML(value, writer, "  ", strict)
 	}
-	return WriteYAML(value, writer, indent, strict)
 }
 
 func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
 		prettyJsonFormatter := prettyjson.NewFormatter()
 		prettyJsonFormatter.Indent = terminal.IndentSpaces
-		bytes, err := prettyJsonFormatter.Marshal(value)
-		if err != nil {
+		if bytes, err := prettyJsonFormatter.Marshal(value); err == nil {
+			if _, err := writer.Write(bytes); err == nil {
+				_, err := io.WriteString(writer, "\n")
+				return err
+			} else {
+				return err
+			}
+		} else {
 			return err
 		}
-		fmt.Fprintf(writer, "%s\n", bytes)
 	} else {
 		return WriteJSON(value, writer, "")
 	}
-	return nil
 }
 
 func PrintCompatibleJSON(value interface{}, writer io.Writer, pretty bool) error {
@@ -78,13 +86,16 @@ func PrintCompatibleXML(value interface{}, writer io.Writer, pretty bool) error 
 	if pretty {
 		indent = terminal.Indent
 	}
-	if err := WriteCompatibleXML(value, writer, indent); err != nil {
+	if err := WriteCompatibleXML(value, writer, indent); err == nil {
+		if pretty {
+			_, err := fmt.Fprintln(writer)
+			return err
+		} else {
+			return nil
+		}
+	} else {
 		return err
 	}
-	if pretty {
-		fmt.Fprintln(writer)
-	}
-	return nil
 }
 
 func PrintXMLDocument(xmlDocument *etree.Document, writer io.Writer, pretty bool) error {
