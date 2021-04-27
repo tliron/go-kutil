@@ -47,8 +47,8 @@ YAML supports a rich set of primitive types (when it includes the common
 to YAML.
 
 Note that some YAML 1.1 implementations support ordered maps
-([!!omap](https://yaml.org/type/omap.html) vs. !!map). These will lose their order when converted
-to ARD, so it's best to standardized on arbitrary order (!!map). YAML 1.2 does not support !!omap
+([`!!omap`](https://yaml.org/type/omap.html) vs. !!map). These will lose their order when converted
+to ARD, so it's best to standardized on arbitrary order (`!!map`). YAML 1.2 does not support `!!omap`
 by default, so this use case may be less and less common.
 
 ### JSON
@@ -58,7 +58,7 @@ integers, only floats; map keys can only be strings), ARD will lose some type in
 translated into JSON.
 
 We can overcome this challenge by extending JSON with some conventions for encoding extra types.
-See [our conventions here](json.go). Our implementation is in Go, but it should not be too difficult
+See [our conventions here](cjson.go). Our implementation is in Go, but it should not be too difficult
 to support them in another programming languages.
 
 ### XML

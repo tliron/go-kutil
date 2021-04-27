@@ -83,9 +83,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
 				if self.buffered {
 					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
-					util.OnExit(func() {
-						writer.Close()
-					})
+					writer.CloseOnExit()
 					self.writer = writer
 				} else {
 					self.writer = util.NewSyncedWriter(file)
@@ -101,9 +99,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 			self.colorize = terminal.Colorize
 			if self.buffered {
 				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
-				util.OnExit(func() {
-					writer.Close()
-				})
+				writer.CloseOnExit()
 				self.writer = writer
 			} else {
 				self.writer = util.NewSyncedWriter(terminal.Stderr)

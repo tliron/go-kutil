@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/beevik/etree v1.1.0
+	github.com/fatih/color v1.10.0
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/goccy/go-yaml v1.8.9
 	github.com/google/go-containerregistry v0.4.1

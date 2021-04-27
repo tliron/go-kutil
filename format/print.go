@@ -5,19 +5,23 @@ import (
 	"io"
 
 	"github.com/beevik/etree"
-	"github.com/hokaccha/go-prettyjson"
 	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
 )
 
 func Print(value interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
 	// Special handling for strings (ignore format)
 	if s, ok := value.(string); ok {
-		if pretty {
-			s += "\n"
+		if _, err := io.WriteString(writer, s); err == nil {
+			if pretty {
+				return util.WriteNewline(writer)
+			} else {
+				return nil
+			}
+		} else {
+			return err
 		}
-		_, err := fmt.Fprint(writer, s)
-		return err
 	}
 
 	// Special handling for etree (ignore format)
@@ -60,12 +64,10 @@ func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) er
 
 func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
-		prettyJsonFormatter := prettyjson.NewFormatter()
-		prettyJsonFormatter.Indent = terminal.IndentSpaces
-		if bytes, err := prettyJsonFormatter.Marshal(value); err == nil {
+		formatter := NewJSONFormatter()
+		if bytes, err := formatter.Marshal(value); err == nil {
 			if _, err := writer.Write(bytes); err == nil {
-				_, err := io.WriteString(writer, "\n")
-				return err
+				return util.WriteNewline(writer)
 			} else {
 				return err
 			}
@@ -88,8 +90,7 @@ func PrintCompatibleXML(value interface{}, writer io.Writer, pretty bool) error 
 	}
 	if err := WriteCompatibleXML(value, writer, indent); err == nil {
 		if pretty {
-			_, err := fmt.Fprintln(writer)
-			return err
+			return util.WriteNewline(writer)
 		} else {
 			return nil
 		}

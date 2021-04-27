@@ -151,7 +151,7 @@ func (self *Problems) Write(writer io.Writer, stylist *terminal.Stylist, pretty 
 						fmt.Fprintf(writer, "%s\n", currentSection)
 					}
 				} else {
-					fmt.Fprintf(writer, "General\n")
+					fmt.Fprintln(writer, "General")
 				}
 			}
 

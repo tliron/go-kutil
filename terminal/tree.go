@@ -1,9 +1,5 @@
 package terminal
 
-import (
-	"fmt"
-)
-
 //
 // TreePrefix
 //
@@ -15,15 +11,15 @@ func (self TreePrefix) Print(indent int, last bool) {
 
 	for _, element := range self {
 		if element {
-			fmt.Fprint(Stdout, "  ")
+			Print(Stdout, "  ")
 		} else {
-			fmt.Fprint(Stdout, "│ ")
+			Print(Stdout, "│ ")
 		}
 	}
 
 	if last {
-		fmt.Fprint(Stdout, "└─")
+		Print(Stdout, "└─")
 	} else {
-		fmt.Fprint(Stdout, "├─")
+		Print(Stdout, "├─")
 	}
 }

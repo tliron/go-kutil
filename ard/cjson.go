@@ -9,7 +9,7 @@ import (
 )
 
 /*
-ARD-compatible JSON can encode features that exist in YAML but not normlly in
+ARD-compatible JSON can encode features that exist in YAML but not normally in
 JSON:
 
 1) integers and unsigned integers are preserved as distinct from floats

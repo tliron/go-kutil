@@ -5,6 +5,11 @@ import (
 	"sync"
 )
 
+func WriteNewline(writer io.Writer) error {
+	_, err := io.WriteString(writer, "\n")
+	return err
+}
+
 func ReaderSize(reader io.Reader) (int64, error) {
 	var size int64 = 0
 
@@ -34,15 +39,21 @@ type BufferedWriter struct {
 	done chan bool
 }
 
-func NewBufferedWriter(writer io.Writer, n int) BufferedWriter {
+func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 	self := BufferedWriter{
-		jobs: make(chan []byte, n),
+		jobs: make(chan []byte, size),
 		done: make(chan bool, 1),
 	}
 
 	go self.run(writer)
 
 	return self
+}
+
+func (self BufferedWriter) CloseOnExit() ExitFunctionHandle {
+	return OnExit(func() {
+		self.Close()
+	})
 }
 
 // io.Writer interface

@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -14,5 +13,5 @@ func IndentString(indent int) string {
 }
 
 func PrintIndent(indent int) {
-	fmt.Fprint(Stdout, IndentString(indent))
+	Print(IndentString(indent))
 }

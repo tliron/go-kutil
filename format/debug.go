@@ -1,7 +1,6 @@
 package format
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -42,7 +41,7 @@ func DumpYAMLNode(writer io.Writer, node *yaml.Node, indent int) {
 		s += node.Value
 	}
 
-	fmt.Fprintln(writer, s)
+	io.WriteString(writer, s)
 
 	indent += 1
 	for _, child := range node.Content {
