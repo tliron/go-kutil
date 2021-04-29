@@ -79,6 +79,8 @@ func ToCompatibleJSON(value Value) (Value, bool) {
 		}
 
 	case Map:
+		// TODO: check if we need escaping
+
 		// We'll build two maps at the same time, but only return one
 		stringMap := make(StringMap)
 		compatibleJsonMap := make(CompatibleJSONMap)
