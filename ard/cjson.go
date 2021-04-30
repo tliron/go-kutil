@@ -79,7 +79,22 @@ func ToCompatibleJSON(value Value) (Value, bool) {
 		}
 
 	case Map:
-		// TODO: check if we need escaping
+		if len(value_) == 1 {
+			// Check if we need escaping
+			if value__, ok := value_[CompatibleJSONIntegerCode]; ok {
+				value__, _ = ToCompatibleJSON(value__)
+				return StringMap{"$" + CompatibleJSONIntegerCode: value__}, true
+			} else if value__, ok := value_[CompatibleJSONUIntegerCode]; ok {
+				value__, _ = ToCompatibleJSON(value__)
+				return StringMap{"$" + CompatibleJSONUIntegerCode: value__}, true
+			} else if value__, ok := value_[CompatibleJSONBytesCode]; ok {
+				value__, _ = ToCompatibleJSON(value__)
+				return StringMap{"$" + CompatibleJSONBytesCode: value__}, true
+			} else if value__, ok := value_[CompatibleJSONMapCode]; ok {
+				value__, _ = ToCompatibleJSON(value__)
+				return StringMap{"$" + CompatibleJSONMapCode: value__}, true
+			}
+		}
 
 		// We'll build two maps at the same time, but only return one
 		stringMap := make(StringMap)
