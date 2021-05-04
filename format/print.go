@@ -64,15 +64,19 @@ func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) er
 
 func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 	if pretty {
-		formatter := NewJSONFormatter()
-		if bytes, err := formatter.Marshal(value); err == nil {
-			if _, err := writer.Write(bytes); err == nil {
-				return util.WriteNewline(writer)
+		if terminal.Colorize {
+			formatter := NewJSONFormatter()
+			if bytes, err := formatter.Marshal(value); err == nil {
+				if _, err := writer.Write(bytes); err == nil {
+					return util.WriteNewline(writer)
+				} else {
+					return err
+				}
 			} else {
 				return err
 			}
 		} else {
-			return err
+			return WriteJSON(value, writer, terminal.Indent)
 		}
 	} else {
 		return WriteJSON(value, writer, "")
