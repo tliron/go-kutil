@@ -44,8 +44,8 @@ endiannes or precision of integers and floats, and also not concerned with chara
 (compare the Unicode standard for data vs. the UTF-8 standard for encoding that data).
 
 
-ARD and Transmission Formats
-----------------------------
+ARD and Representation Formats
+------------------------------
 
 ### CBOR
 
@@ -57,9 +57,11 @@ YAML supports a rich set of primitive types (when it includes the common
 [JSON schema](https://yaml.org/spec/1.2/spec.html#id2803231)), so most ARD will survive a round
 trip to YAML.
 
-Byte arrays can be problematic. Some parsers support the optional
-[`!!binary`](https://yaml.org/type/binary.html) type, but others may not. Base64-encoded strings
-can be used instead.
+YAML, however, does not distinguish between signed and unsigned integers.
+
+Byte arrays can also be problematic. Some parsers support the optional
+[`!!binary`](https://yaml.org/type/binary.html) type, but others may not. Encoded strings (e.g.
+using Base64) can be used instead to ensure portability.
 
 Also note that some YAML 1.1 implementations support ordered maps
 ([`!!omap`](https://yaml.org/type/omap.html) vs. `!!map`). These will lose their order when
@@ -69,8 +71,8 @@ support `!!omap` by default, so this use case may become less and less common.
 ### JSON
 
 JSON can be read into ARD. However, because JSON has fewer types and more limitations than YAML
-(no integers, only floats; map keys can only be strings), ARD will lose some type information
-when translated into JSON.
+(no integers, only floats; map keys can only be strings), ARD will lose quite a bit of type
+information when translated into JSON.
 
 We can overcome this challenge by extending JSON with some conventions for encoding extra types.
 See [our conventions here](cjson.go) or
@@ -95,9 +97,11 @@ Unfortunately, the most popular Go YAML parser does not easily support arbitrari
 ### Python
 
 Likewise, the Python [ruamel.yaml](https://yaml.readthedocs.io) parser does not easily support
-arbitrarily complex keys.
+arbitrarily complex keys. We solve this by extending ruamel.yaml in our
+[Python ARD library](https://github.com/tliron/python-ard).
 
 ### JavaScript
 
-JavaScript objects (hashtables) only support string keys. A list of tuples can be used instead.
-Also problematic is that JavaScript does not have native support for integers, only floats.
+See the discussion of JSON, above (JSON stands for "JavaScript Object Notation"). A
+straightforward way to work with ARD in JavaScript is via our ARD-compatible JSON conventions.
+However, it may also be possible to create a library of classes to support ARD features.
