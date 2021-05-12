@@ -168,3 +168,23 @@ func (self *Node) List(allowNil bool) (List, bool) {
 	}
 	return nil, false
 }
+
+func (self *Node) StringList(allowNil bool) ([]string, bool) {
+	if self != NoNode {
+		if allowNil && (self.Data == nil) {
+			return nil, true
+		}
+		if value, ok := self.Data.(List); ok {
+			list := make([]string, len(value))
+			for index, element := range value {
+				if list[index], ok = element.(string); !ok {
+					return nil, false
+				}
+			}
+			return list, true
+		} else {
+			return nil, false
+		}
+	}
+	return nil, false
+}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 //
@@ -29,6 +30,8 @@ func NewFileURL(path string, context *Context) *FileURL {
 }
 
 func NewValidFileURL(path string, context *Context) (*FileURL, error) {
+	isDir := strings.HasSuffix(path, "/")
+
 	if filepath.IsAbs(path) {
 		path = filepath.Clean(path)
 	} else {
@@ -39,7 +42,11 @@ func NewValidFileURL(path string, context *Context) (*FileURL, error) {
 	}
 
 	if info, err := os.Stat(path); err == nil {
-		if !info.Mode().IsRegular() {
+		if isDir {
+			if !info.Mode().IsDir() {
+				return nil, fmt.Errorf("URL path does not point to a directory: %s", path)
+			}
+		} else if !info.Mode().IsRegular() {
 			return nil, fmt.Errorf("URL path does not point to a file: %s", path)
 		}
 	} else {
@@ -50,7 +57,12 @@ func NewValidFileURL(path string, context *Context) (*FileURL, error) {
 }
 
 func NewValidRelativeFileURL(path string, origin *FileURL) (*FileURL, error) {
-	return NewValidFileURL(filepath.Join(origin.Path, path), origin.context)
+	isDir := strings.HasSuffix(path, "/")
+	path = filepath.Join(origin.Path, path)
+	if isDir {
+		path += "/"
+	}
+	return NewValidFileURL(path, origin.context)
 }
 
 // URL interface
