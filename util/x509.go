@@ -1,8 +1,13 @@
 package util
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/pem"
+	"math/big"
+	"time"
 )
 
 func ParseX509Certificates(bytes []byte) ([]*x509.Certificate, error) {
@@ -38,5 +43,54 @@ func ParseX509CertPool(bytes []byte) (*x509.CertPool, error) {
 		}
 	} else {
 		return nil, err
+	}
+}
+
+var serialNumberLimit = new(big.Int).Lsh(big.NewInt(1), 128)
+
+func CreateSelfSignedX509(organization string, host string) ([]byte, []byte, error) {
+	// See: fasthttp
+
+	if serialNumber, err := rand.Int(rand.Reader, serialNumberLimit); err == nil {
+		now := time.Now()
+		certificate := &x509.Certificate{
+			Subject: pkix.Name{
+				Organization: []string{organization},
+			},
+			DNSNames:     []string{host},
+			SerialNumber: serialNumber,
+			KeyUsage:     x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
+			ExtKeyUsage: []x509.ExtKeyUsage{
+				x509.ExtKeyUsageServerAuth,
+				x509.ExtKeyUsageClientAuth,
+			},
+			SignatureAlgorithm:    x509.SHA256WithRSA,
+			BasicConstraintsValid: true,
+			IsCA:                  true,
+			NotBefore:             now,
+			NotAfter:              now.Add(365 * 24 * time.Hour), // one year
+		}
+
+		if key, err := rsa.GenerateKey(rand.Reader, 2048); err == nil {
+			if certificateBytes, err := x509.CreateCertificate(rand.Reader, certificate, certificate, &key.PublicKey, key); err == nil {
+				return pem.EncodeToMemory(
+						&pem.Block{
+							Type:  "CERTIFICATE",
+							Bytes: certificateBytes,
+						},
+					), pem.EncodeToMemory(
+						&pem.Block{
+							Type:  "PRIVATE KEY",
+							Bytes: x509.MarshalPKCS1PrivateKey(key),
+						},
+					), nil
+			} else {
+				return nil, nil, err
+			}
+		} else {
+			return nil, nil, err
+		}
+	} else {
+		return nil, nil, err
 	}
 }

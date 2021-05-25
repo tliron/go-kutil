@@ -8,5 +8,4 @@ MODULE=github.com/tliron/kutil
 ROOT=$(readlink --canonicalize "$_HERE/..")
 
 GOPATH=${GOPATH:-$HOME/go}
-
-export TMPDIR=/Depot/Temporary
+export PATH=$GOPATH/bin:$PATH

@@ -2,7 +2,6 @@ package util
 
 import (
 	"crypto/md5"
-	"encoding/hex"
 	"io"
 	"os"
 )
@@ -13,7 +12,7 @@ func GetFileHash(path string) (string, error) {
 		hash := md5.New()
 		if _, err := io.Copy(hash, file); err == nil {
 			hashBytes := hash.Sum(nil)
-			return hex.EncodeToString(hashBytes), nil
+			return ToBase64(hashBytes), nil
 		} else {
 			return "", err
 		}

@@ -6,23 +6,22 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 )
 
-func Encode(value interface{}, format string, strict bool) (string, error) {
+func Encode(value interface{}, format string, indent string, strict bool) (string, error) {
 	switch format {
 	case "yaml", "":
-		return EncodeYAML(value, terminal.Indent, strict)
+		return EncodeYAML(value, indent, strict)
 
 	case "json":
-		return EncodeJSON(value, terminal.Indent)
+		return EncodeJSON(value, indent)
 
 	case "cjson":
-		return EncodeCompatibleJSON(value, terminal.Indent)
+		return EncodeCompatibleJSON(value, indent)
 
 	case "xml":
-		return EncodeCompatibleXML(value, terminal.Indent)
+		return EncodeCompatibleXML(value, indent)
 
 	case "cbor":
 		return EncodeCBOR(value)
