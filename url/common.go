@@ -4,12 +4,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/op/go-logging"
 	"github.com/tliron/kutil/ard"
+	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/util"
 )
 
-var log = logging.MustGetLogger("puccini.url")
+var log = logging.GetLogger("kutil.url")
 
 func ReadString(url URL) (string, error) {
 	if reader, err := url.Open(); err == nil {

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dop251/goja"
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/util"
@@ -71,4 +72,18 @@ func (self UtilAPI) Now() time.Time {
 
 func (self UtilAPI) Mutex() *sync.Mutex {
 	return new(sync.Mutex)
+}
+
+// Goroutine
+func (self UtilAPI) Go(value goja.Value) error { // TODO more accurate type for functions?
+	if call, ok := goja.AssertFunction(value); ok {
+		go func() {
+			if _, err := call(nil); err != nil {
+				log.Errorf("%s", err.Error())
+			}
+		}()
+		return nil
+	} else {
+		return fmt.Errorf("not a \"function\": %T", value)
+	}
 }

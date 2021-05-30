@@ -6,12 +6,21 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	urlpkg "github.com/tliron/kutil/url"
 	"github.com/tliron/kutil/util"
 )
 
-type FileAPI struct{}
+type FileAPI struct {
+	context *urlpkg.Context
+}
 
-func (self UtilAPI) JoinFilePath(elements ...string) string {
+func NewFileAPI(context *urlpkg.Context) FileAPI {
+	return FileAPI{
+		context: context,
+	}
+}
+
+func (self FileAPI) JoinFilePath(elements ...string) string {
 	return filepath.Join(elements...)
 }
 
@@ -38,4 +47,12 @@ func (self FileAPI) TemporaryFile(pattern string, directory string) (string, err
 
 func (self FileAPI) TemporaryDirectory(pattern string, directory string) (string, error) {
 	return os.MkdirTemp(directory, pattern)
+}
+
+func (self FileAPI) Download(sourceUrl string, targetPath string) error {
+	if sourceUrl_, err := urlpkg.NewURL(sourceUrl, self.context); err == nil {
+		return urlpkg.DownloadTo(sourceUrl_, targetPath)
+	} else {
+		return err
+	}
 }
