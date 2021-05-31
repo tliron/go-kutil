@@ -93,7 +93,7 @@ func (self *Context) Open(url URL) (*os.File, error) {
 		}
 	}
 
-	temporaryPathPattern := fmt.Sprintf("puccini-%s-*", util.SanitizeFilename(key))
+	temporaryPathPattern := fmt.Sprintf("kutil-%s-*", util.SanitizeFilename(key))
 	if file, err := Download(url, temporaryPathPattern); err == nil {
 		if self.paths == nil {
 			self.paths = make(map[string]string)
@@ -105,15 +105,20 @@ func (self *Context) Open(url URL) (*os.File, error) {
 	}
 }
 
-func (self *Context) Release() {
+func (self *Context) Release() error {
 	self.lock.Lock()
 	defer self.lock.Unlock()
 
+	var err error
 	if self.paths != nil {
 		for _, path := range self.paths {
-			DeleteTemporaryFile(path)
+			if err_ := DeleteTemporaryFile(path); err_ != nil {
+				err = err_
+			}
 		}
 
 		self.paths = nil
 	}
+
+	return err
 }

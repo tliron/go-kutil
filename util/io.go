@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"sync"
 )
@@ -35,17 +36,21 @@ func ReaderSize(reader io.Reader) (int64, error) {
 // https://gobyexample.com/closing-channels
 
 type BufferedWriter struct {
-	jobs chan []byte
-	done chan bool
+	writer io.Writer
+	jobs   chan []byte
+	close  chan bool
+	closed chan bool
 }
 
 func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 	self := BufferedWriter{
-		jobs: make(chan []byte, size),
-		done: make(chan bool, 1),
+		writer: writer,
+		jobs:   make(chan []byte, size),
+		close:  make(chan bool, 1),
+		closed: make(chan bool, 1),
 	}
 
-	go self.run(writer)
+	go self.run()
 
 	return self
 }
@@ -58,24 +63,39 @@ func (self BufferedWriter) CloseOnExit() ExitFunctionHandle {
 
 // io.Writer interface
 func (self BufferedWriter) Write(p []byte) (int, error) {
+	defer func() {
+		if recover() != nil {
+			// The channel was closed
+			fmt.Println("closed!!!!")
+			self.writer.Write(p)
+		}
+	}()
+
 	self.jobs <- p
 	return len(p), nil
 }
 
 // io.Closer interface
 func (self BufferedWriter) Close() error {
+	defer func() {
+		recover()
+	}()
+
 	close(self.jobs)
-	<-self.done
+	<-self.closed
 	return nil
 }
 
-func (self BufferedWriter) run(writer io.Writer) {
+func (self BufferedWriter) run() {
 	for {
-		if job, more := <-self.jobs; more {
-			writer.Write(job)
-		} else {
-			self.done <- true
-			break
+		select {
+		case job, ok := <-self.jobs:
+			if ok {
+				self.writer.Write(job)
+			} else {
+				self.closed <- true
+				return
+			}
 		}
 	}
 }

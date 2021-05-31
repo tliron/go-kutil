@@ -18,6 +18,7 @@ func (self FormatAPI) StringToBytes(string_ string) []byte {
 	return util.StringToBytes(string_)
 }
 
+// Another way to achieve this in JavaScript: String.fromCharCode.apply(null, bytes)
 func (self FormatAPI) BytesToString(bytes []byte) string {
 	return util.BytesToString(bytes)
 }
@@ -29,7 +30,6 @@ func (self FormatAPI) Btoa(bytes []byte) string {
 
 // Decode base64 to bytes
 func (self FormatAPI) Atob(b64 string) ([]byte, error) {
-	// Note: if you need a string in JavaScript: String.fromCharCode.apply(null, .atob(...))
 	return util.FromBase64(b64)
 }
 

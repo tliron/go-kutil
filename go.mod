@@ -6,6 +6,7 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/dop251/goja v0.0.0-20210427212725-462d53687b0d
 	github.com/fatih/color v1.12.0
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/goccy/go-yaml v1.8.9
 	github.com/google/go-containerregistry v0.5.1

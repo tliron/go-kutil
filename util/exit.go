@@ -1,8 +1,11 @@
 package util
 
 import (
+	"fmt"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 // Inspired by: https://github.com/tebeka/atexit
@@ -33,13 +36,33 @@ func OnExit(exitFunction func()) ExitFunctionHandle {
 
 func Exit(code int) {
 	exitLock.RLock()
-	defer exitLock.RUnlock()
 
-	for _, exitEntry := range exitEntries {
-		exitEntry.function()
+	length := len(exitEntries)
+	for index := range exitEntries {
+		exitEntry := exitEntries[length-index-1]
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Fprintf(os.Stderr, "panic during exit: %s\n", r)
+				}
+			}()
+
+			exitEntry.function()
+		}()
 	}
 
+	exitLock.RUnlock()
+
 	os.Exit(code)
+}
+
+func ExitOnSIGTERM() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		Exit(1)
+	}()
 }
 
 //

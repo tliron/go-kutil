@@ -81,6 +81,9 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
+				util.OnExit(func() {
+					file.Close()
+				})
 				if self.buffered {
 					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
 					writer.CloseOnExit()
@@ -88,10 +91,6 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				} else {
 					self.writer = util.NewSyncedWriter(file)
 				}
-				// Close file *after* flushing (closing) buffered writer
-				util.OnExit(func() {
-					file.Close()
-				})
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}

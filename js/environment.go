@@ -5,21 +5,10 @@ import (
 	"sync"
 
 	"github.com/dop251/goja"
+	"github.com/fsnotify/fsnotify"
+	"github.com/tliron/kutil/logging"
 	urlpkg "github.com/tliron/kutil/url"
 )
-
-type ResolveFunc func(id string) (urlpkg.URL, error)
-
-type CreateResolverFunc func(url urlpkg.URL) ResolveFunc
-
-type PrecompileFunc func(url urlpkg.URL, script string, resolve ResolveFunc) (string, error)
-
-type CreateExtensionFunc func(environment *Environment, resolve ResolveFunc) goja.Value
-
-type Extension struct {
-	Name   string
-	Create CreateExtensionFunc
-}
 
 //
 // Environment
@@ -28,19 +17,26 @@ type Extension struct {
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *urlpkg.Context
+	Watcher        *fsnotify.Watcher
 	Extensions     []Extension
+	Modules        *goja.Object
 	Precompile     PrecompileFunc
 	CreateResolver CreateResolverFunc
+	Log            logging.Logger
 
 	exportsCache sync.Map
 	programCache sync.Map
 }
 
+type PrecompileFunc func(url urlpkg.URL, script string, context *Context) (string, error)
+
+type OnChangedFunc func(id string, module *Module)
+
 func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 	self := Environment{
 		Runtime:    goja.New(),
 		URLContext: urlContext,
-		CreateResolver: func(url urlpkg.URL) ResolveFunc {
+		CreateResolver: func(url urlpkg.URL, context *Context) ResolveFunc {
 			var origins []urlpkg.URL
 			if url != nil {
 				origins = []urlpkg.URL{url.Origin()}
@@ -52,30 +48,81 @@ func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 				return urlpkg.NewValidURL(id, origins, urlContext)
 			}
 		},
+		Log: log,
 	}
+
+	self.Modules = NewThreadSafeObject().NewDynamicObject(self.Runtime)
 
 	self.Runtime.SetFieldNameMapper(CamelCaseMapper)
 
 	return &self
 }
 
+func (self *Environment) Watch(onChanged OnChangedFunc) error {
+	var err error
+	if self.Watcher, err = fsnotify.NewWatcher(); err == nil {
+		go func() {
+			for {
+				select {
+				case event, ok := <-self.Watcher.Events:
+					if !ok {
+						return
+					}
+
+					id := urlpkg.NewFileURL(event.Name, nil).Key()
+					var module *Module
+					if module_ := self.Modules.Get(id); module_ != nil {
+						module = module_.Export().(*Module)
+					}
+					onChanged(id, module)
+
+				case err, ok := <-self.Watcher.Errors:
+					if !ok {
+						return
+					}
+
+					self.Log.Errorf("%s", err.Error())
+				}
+			}
+		}()
+
+		return nil
+	} else {
+		return err
+	}
+}
+
+func (self *Environment) Release() error {
+	if self.Watcher != nil {
+		if err := self.Watcher.Close(); err == nil {
+			self.Watcher = nil
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return nil
+	}
+}
+
+func (self *Environment) RequireID(id string) (*goja.Object, error) {
+	return self.requireId(id, self.NewContext(nil, nil))
+}
+
 func (self *Environment) RequireURL(url urlpkg.URL) (*goja.Object, error) {
-	return self.require(url, self.CreateResolver(url))
+	return self.requireUrl(url, self.NewContext(url, nil))
 }
 
-func (self *Environment) Require(id string) (*goja.Object, error) {
-	return self.ResolveAndRequire(id, self.CreateResolver(nil))
-}
-
-func (self *Environment) ResolveAndRequire(id string, resolve ResolveFunc) (*goja.Object, error) {
-	if url, err := resolve(id); err == nil {
-		return self.require(url, resolve)
+func (self *Environment) requireId(id string, context *Context) (*goja.Object, error) {
+	if url, err := context.Resolve(id); err == nil {
+		self.AddModule(url, context.Module)
+		return self.requireUrl(url, context)
 	} else {
 		return nil, err
 	}
 }
 
-func (self *Environment) require(url urlpkg.URL, resolve ResolveFunc) (*goja.Object, error) {
+func (self *Environment) requireUrl(url urlpkg.URL, context *Context) (*goja.Object, error) {
 	key := url.Key()
 
 	// Try cache
@@ -84,7 +131,7 @@ func (self *Environment) require(url urlpkg.URL, resolve ResolveFunc) (*goja.Obj
 		return exports.(*goja.Object), nil
 	} else {
 		// Cache miss
-		if exports, err := self.require_(url, resolve); err == nil {
+		if exports, err := self.require_(url, context); err == nil {
 			if exports_, loaded := self.exportsCache.LoadOrStore(key, exports); loaded {
 				// Cache hit
 				return exports_.(*goja.Object), nil
@@ -98,17 +145,25 @@ func (self *Environment) require(url urlpkg.URL, resolve ResolveFunc) (*goja.Obj
 	}
 }
 
-func (self *Environment) require_(url urlpkg.URL, resolve ResolveFunc) (*goja.Object, error) {
-	if program, err := self.compile(url, resolve); err == nil {
+func (self *Environment) require_(url urlpkg.URL, context *Context) (*goja.Object, error) {
+	context = self.NewContext(url, context)
+
+	if program, err := self.compile(url, context); err == nil {
 		if value, err := self.Runtime.RunProgram(program); err == nil {
 			if call, ok := goja.AssertFunction(value); ok {
-				module, extensions := self.newModule(url)
-
 				// See: self.compile_ for arguments
-				arguments := []goja.Value{module.Get("exports"), module.Get("require"), module, module.Get("filename"), module.Get("path")}
-				arguments = append(arguments, extensions...)
+				arguments := []goja.Value{
+					context.Module.Exports,
+					context.Module.Require,
+					self.Runtime.ToValue(context.Module),
+					self.Runtime.ToValue(context.Module.Filename),
+					self.Runtime.ToValue(context.Module.Path),
+				}
+
+				arguments = append(arguments, context.Extensions...)
+
 				if _, err := call(nil, arguments...); err == nil {
-					return module.Get("exports").(*goja.Object), nil
+					return context.Module.Exports, nil
 				} else {
 					return nil, err
 				}
@@ -124,7 +179,7 @@ func (self *Environment) require_(url urlpkg.URL, resolve ResolveFunc) (*goja.Ob
 	}
 }
 
-func (self *Environment) compile(url urlpkg.URL, resolve ResolveFunc) (*goja.Program, error) {
+func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Program, error) {
 	key := url.Key()
 
 	// Try cache
@@ -133,7 +188,7 @@ func (self *Environment) compile(url urlpkg.URL, resolve ResolveFunc) (*goja.Pro
 		return program.(*goja.Program), nil
 	} else {
 		// Cache miss
-		if program, err := self.compile_(url, resolve); err == nil {
+		if program, err := self.compile_(url, context); err == nil {
 			if program_, loaded := self.programCache.LoadOrStore(key, program); loaded {
 				// Cache hit
 				return program_.(*goja.Program), nil
@@ -147,11 +202,11 @@ func (self *Environment) compile(url urlpkg.URL, resolve ResolveFunc) (*goja.Pro
 	}
 }
 
-func (self *Environment) compile_(url urlpkg.URL, resolve ResolveFunc) (*goja.Program, error) {
+func (self *Environment) compile_(url urlpkg.URL, context *Context) (*goja.Program, error) {
 	if script, err := urlpkg.ReadString(url); err == nil {
 		// Precompile
 		if self.Precompile != nil {
-			if script, err = self.Precompile(url, script, resolve); err != nil {
+			if script, err = self.Precompile(url, script, context); err != nil {
 				return nil, err
 			}
 		}
@@ -168,46 +223,4 @@ func (self *Environment) compile_(url urlpkg.URL, resolve ResolveFunc) (*goja.Pr
 	} else {
 		return nil, err
 	}
-}
-
-func (self *Environment) newModule(url urlpkg.URL) (*goja.Object, []goja.Value) {
-	resolve := self.CreateResolver(url)
-
-	var filename string
-	var dirname string
-	if url_, ok := url.(*urlpkg.FileURL); ok {
-		filename = url_.Path
-		if origin, ok := url_.Origin().(*urlpkg.FileURL); ok {
-			dirname = origin.Path
-		}
-	}
-
-	// See: https://nodejs.org/api/modules.html#modules_the_module_object
-	module := self.Runtime.NewObject()
-	module.Set("id", url.Key())
-	module.Set("exports", self.Runtime.NewObject())
-	module.Set("filename", filename)
-	module.Set("path", dirname)
-
-	// See: https://nodejs.org/api/modules.html#modules_require_id
-	require := self.Runtime.ToValue(func(id string) (goja.Value, error) {
-		return self.ResolveAndRequire(id, resolve)
-	}).(*goja.Object)
-	require.Set("cache", nil)
-	require.Set("main", module)
-	require.Set("resolve", func(id string, options *goja.Object) (string, error) {
-		if url, err := resolve(id); err == nil {
-			return url.String(), nil
-		} else {
-			return "", err
-		}
-	})
-	module.Set("require", require)
-
-	var extensions []goja.Value
-	for _, extension := range self.Extensions {
-		extensions = append(extensions, extension.Create(self, resolve))
-	}
-
-	return module, extensions
 }
