@@ -2,10 +2,10 @@ package js
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/dop251/goja"
-	"github.com/fsnotify/fsnotify"
 	"github.com/tliron/kutil/logging"
 	urlpkg "github.com/tliron/kutil/url"
 )
@@ -17,7 +17,7 @@ import (
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *urlpkg.Context
-	Watcher        *fsnotify.Watcher
+	Watcher        *Watcher
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
@@ -56,40 +56,6 @@ func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 	self.Runtime.SetFieldNameMapper(CamelCaseMapper)
 
 	return &self
-}
-
-func (self *Environment) Watch(onChanged OnChangedFunc) error {
-	var err error
-	if self.Watcher, err = fsnotify.NewWatcher(); err == nil {
-		go func() {
-			for {
-				select {
-				case event, ok := <-self.Watcher.Events:
-					if !ok {
-						return
-					}
-
-					id := urlpkg.NewFileURL(event.Name, nil).Key()
-					var module *Module
-					if module_ := self.Modules.Get(id); module_ != nil {
-						module = module_.Export().(*Module)
-					}
-					onChanged(id, module)
-
-				case err, ok := <-self.Watcher.Errors:
-					if !ok {
-						return
-					}
-
-					self.Log.Errorf("%s", err.Error())
-				}
-			}
-		}()
-
-		return nil
-	} else {
-		return err
-	}
 }
 
 func (self *Environment) Release() error {
@@ -212,11 +178,16 @@ func (self *Environment) compile_(url urlpkg.URL, context *Context) (*goja.Progr
 		}
 
 		// See: https://nodejs.org/api/modules.html#modules_the_module_wrapper
-		var extensions string
+		var builder strings.Builder
+		builder.WriteString("(function(exports, require, module, __filename, __dirname")
 		for _, extension := range self.Extensions {
-			extensions += ", " + extension.Name
+			builder.WriteString(", ")
+			builder.WriteString(extension.Name)
 		}
-		script = "(function(exports, require, module, __filename, __dirname" + extensions + ") {" + script + "\n});"
+		builder.WriteString(") {")
+		builder.WriteString(script)
+		builder.WriteString("\n});")
+		script = builder.String()
 		//log.Infof("%s", script)
 
 		return goja.Compile(url.String(), script, true)
