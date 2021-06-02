@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/dop251/goja"
+	"github.com/tliron/kutil/fswatch"
 	"github.com/tliron/kutil/logging"
 	urlpkg "github.com/tliron/kutil/url"
 )
@@ -17,7 +18,7 @@ import (
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *urlpkg.Context
-	Watcher        *Watcher
+	Watcher        *fswatch.Watcher
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
@@ -58,6 +59,23 @@ func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 	return &self
 }
 
+func (self *Environment) Watch(onChanged OnChangedFunc) error {
+	var err error
+	if self.Watcher, err = fswatch.NewWatcher(self.URLContext); err == nil {
+		self.Watcher.Start(func(fileUrl *urlpkg.FileURL) {
+			id := fileUrl.Key()
+			var module *Module
+			if module_ := self.Modules.Get(id); module_ != nil {
+				module = module_.Export().(*Module)
+			}
+			onChanged(id, module)
+		})
+		return nil
+	} else {
+		return err
+	}
+}
+
 func (self *Environment) Release() error {
 	if self.Watcher != nil {
 		if err := self.Watcher.Close(); err == nil {
@@ -76,19 +94,19 @@ func (self *Environment) RequireID(id string) (*goja.Object, error) {
 }
 
 func (self *Environment) RequireURL(url urlpkg.URL) (*goja.Object, error) {
-	return self.requireUrl(url, self.NewContext(url, nil))
+	return self.cachedRequire(url, self.NewContext(url, nil))
 }
 
 func (self *Environment) requireId(id string, context *Context) (*goja.Object, error) {
 	if url, err := context.Resolve(id); err == nil {
 		self.AddModule(url, context.Module)
-		return self.requireUrl(url, context)
+		return self.cachedRequire(url, context)
 	} else {
 		return nil, err
 	}
 }
 
-func (self *Environment) requireUrl(url urlpkg.URL, context *Context) (*goja.Object, error) {
+func (self *Environment) cachedRequire(url urlpkg.URL, context *Context) (*goja.Object, error) {
 	key := url.Key()
 
 	// Try cache
@@ -97,7 +115,7 @@ func (self *Environment) requireUrl(url urlpkg.URL, context *Context) (*goja.Obj
 		return exports.(*goja.Object), nil
 	} else {
 		// Cache miss
-		if exports, err := self.require_(url, context); err == nil {
+		if exports, err := self.require(url, context); err == nil {
 			if exports_, loaded := self.exportsCache.LoadOrStore(key, exports); loaded {
 				// Cache hit
 				return exports_.(*goja.Object), nil
@@ -111,10 +129,11 @@ func (self *Environment) requireUrl(url urlpkg.URL, context *Context) (*goja.Obj
 	}
 }
 
-func (self *Environment) require_(url urlpkg.URL, context *Context) (*goja.Object, error) {
+func (self *Environment) require(url urlpkg.URL, context *Context) (*goja.Object, error) {
+	// Create a child context
 	context = self.NewContext(url, context)
 
-	if program, err := self.compile(url, context); err == nil {
+	if program, err := self.cachedCompile(url, context); err == nil {
 		if value, err := self.Runtime.RunProgram(program); err == nil {
 			if call, ok := goja.AssertFunction(value); ok {
 				// See: self.compile_ for arguments
@@ -145,7 +164,7 @@ func (self *Environment) require_(url urlpkg.URL, context *Context) (*goja.Objec
 	}
 }
 
-func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Program, error) {
+func (self *Environment) cachedCompile(url urlpkg.URL, context *Context) (*goja.Program, error) {
 	key := url.Key()
 
 	// Try cache
@@ -154,7 +173,7 @@ func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Progra
 		return program.(*goja.Program), nil
 	} else {
 		// Cache miss
-		if program, err := self.compile_(url, context); err == nil {
+		if program, err := self.compile(url, context); err == nil {
 			if program_, loaded := self.programCache.LoadOrStore(key, program); loaded {
 				// Cache hit
 				return program_.(*goja.Program), nil
@@ -168,7 +187,7 @@ func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Progra
 	}
 }
 
-func (self *Environment) compile_(url urlpkg.URL, context *Context) (*goja.Program, error) {
+func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Program, error) {
 	if script, err := urlpkg.ReadString(url); err == nil {
 		// Precompile
 		if self.Precompile != nil {

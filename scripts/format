@@ -8,6 +8,8 @@ gofmt -w -s -e \
 	"$ROOT/ard" \
 	"$ROOT/cobra" \
 	"$ROOT/format" \
+	"$ROOT/fswatch" \
+	"$ROOT/js" \
 	"$ROOT/kubernetes" \
 	"$ROOT/library" \
 	"$ROOT/logging" \
