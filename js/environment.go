@@ -89,6 +89,18 @@ func (self *Environment) Release() error {
 	}
 }
 
+func (self *Environment) ClearCache() {
+	self.exportsCache.Range(func(key interface{}, value interface{}) bool {
+		self.exportsCache.Delete(key)
+		return true
+	})
+	self.programCache.Range(func(key interface{}, value interface{}) bool {
+		self.programCache.Delete(key)
+		return true
+	})
+	self.Modules = NewThreadSafeObject().NewDynamicObject(self.Runtime)
+}
+
 func (self *Environment) RequireID(id string) (*goja.Object, error) {
 	return self.requireId(id, self.NewContext(nil, nil))
 }
