@@ -6,12 +6,12 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/dop251/goja v0.0.0-20210427212725-462d53687b0d
 	github.com/fatih/color v1.12.0
-	github.com/fsnotify/fsnotify v1.4.7
-	github.com/fxamacker/cbor/v2 v2.2.0
+	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fxamacker/cbor/v2 v2.3.0
 	github.com/goccy/go-yaml v1.8.9
 	github.com/google/go-containerregistry v0.5.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
-	github.com/klauspost/compress v1.12.3 // indirect
+	github.com/klauspost/compress v1.13.0 // indirect
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7

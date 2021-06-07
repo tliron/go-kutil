@@ -11,11 +11,18 @@ import (
 
 var log = logging.GetLogger("kutil.url")
 
-func ReadString(url URL) (string, error) {
+func ReadBytes(url URL) ([]byte, error) {
 	if reader, err := url.Open(); err == nil {
 		defer reader.Close()
-		buffer, err := io.ReadAll(reader)
-		return util.BytesToString(buffer), err
+		return io.ReadAll(reader)
+	} else {
+		return nil, err
+	}
+}
+
+func ReadString(url URL) (string, error) {
+	if bytes, err := ReadBytes(url); err == nil {
+		return util.BytesToString(bytes), nil
 	} else {
 		return "", err
 	}

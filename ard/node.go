@@ -55,6 +55,17 @@ func (self *Node) Append(value interface{}) bool {
 	return false
 }
 
+func (self *Node) Bytes(allowNil bool) ([]byte, bool) {
+	if self != NoNode {
+		if allowNil && (self.Data == nil) {
+			return nil, true
+		}
+		value, ok := self.Data.([]byte)
+		return value, ok
+	}
+	return nil, false
+}
+
 func (self *Node) String(allowNil bool) (string, bool) {
 	if self != NoNode {
 		if allowNil && (self.Data == nil) {
@@ -64,7 +75,6 @@ func (self *Node) String(allowNil bool) (string, bool) {
 		return value, ok
 	}
 	return "", false
-
 }
 
 func (self *Node) Integer(allowNil bool) (int64, bool) {
