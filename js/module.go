@@ -38,10 +38,8 @@ func (self *Environment) AddModule(url urlpkg.URL, module *Module) {
 			module.Path = fileOrigin.Path
 		}
 
-		if self.Watcher != nil {
-			if err := self.Watcher.Add(module.Filename); err != nil {
-				self.Log.Errorf("%s", err.Error())
-			}
+		if err := self.Watch(module.Filename); err != nil {
+			self.Log.Errorf("%s", err.Error())
 		}
 	}
 

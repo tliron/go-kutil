@@ -17,10 +17,6 @@ type Context struct {
 	Extensions  []goja.Value
 }
 
-type ResolveFunc func(id string) (urlpkg.URL, error)
-
-type CreateResolverFunc func(url urlpkg.URL, context *Context) ResolveFunc
-
 func (self *Environment) NewContext(url urlpkg.URL, parent *Context) *Context {
 	context := Context{
 		Environment: self,
@@ -49,7 +45,7 @@ func (self *Environment) NewContext(url urlpkg.URL, parent *Context) *Context {
 
 	context.Module.Require.Set("resolve", func(id string, options *goja.Object) (string, error) {
 		// TODO: options?
-		if url, err := context.Resolve(id); err == nil {
+		if url, err := context.Resolve(id, false); err == nil {
 			return url.String(), nil
 		} else {
 			return "", err

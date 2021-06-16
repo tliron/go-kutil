@@ -18,15 +18,17 @@ import (
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *urlpkg.Context
-	Watcher        *fswatch.Watcher
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
 	CreateResolver CreateResolverFunc
 	Log            logging.Logger
+	Lock           sync.Mutex
 
+	watcher      *fswatch.Watcher
+	watcherLock  sync.Mutex
 	exportsCache sync.Map
-	programCache sync.Map
+	programCache *sync.Map
 }
 
 type PrecompileFunc func(url urlpkg.URL, script string, context *Context) (string, error)
@@ -35,21 +37,11 @@ type OnChangedFunc func(id string, module *Module)
 
 func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 	self := Environment{
-		Runtime:    goja.New(),
-		URLContext: urlContext,
-		CreateResolver: func(url urlpkg.URL, context *Context) ResolveFunc {
-			var origins []urlpkg.URL
-			if url != nil {
-				origins = []urlpkg.URL{url.Origin()}
-			}
-			return func(id string) (urlpkg.URL, error) {
-				/*if strings.IndexRune(id, '.') == -1 {
-					id += ".js"
-				}*/
-				return urlpkg.NewValidURL(id, origins, urlContext)
-			}
-		},
-		Log: log,
+		Runtime:        goja.New(),
+		URLContext:     urlContext,
+		CreateResolver: NewDefaultResolverCreator(urlContext, "js"),
+		Log:            log,
+		programCache:   new(sync.Map),
 	}
 
 	self.Modules = NewThreadSafeObject().NewDynamicObject(self.Runtime)
@@ -59,15 +51,31 @@ func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 	return &self
 }
 
-func (self *Environment) Watch(onChanged OnChangedFunc) error {
-	var err error
-	if self.Watcher, err = fswatch.NewWatcher(self.URLContext); err == nil {
-		self.Watcher.Start(func(fileUrl *urlpkg.FileURL) {
+func (self *Environment) NewChild() *Environment {
+	environment := NewEnvironment(self.URLContext)
+	environment.watcher = self.watcher
+	environment.Extensions = self.Extensions
+	environment.Precompile = self.Precompile
+	environment.CreateResolver = self.CreateResolver
+	environment.Log = self.Log
+	environment.programCache = self.programCache
+	return environment
+}
+
+func (self *Environment) StartWatcher(onChanged OnChangedFunc) error {
+	self.watcherLock.Lock()
+	defer self.watcherLock.Unlock()
+
+	if watcher, err := fswatch.NewWatcher(self.URLContext); err == nil {
+		self.watcher = watcher
+		watcher.Start(func(fileUrl *urlpkg.FileURL) {
+			self.Lock.Lock()
 			id := fileUrl.Key()
 			var module *Module
 			if module_ := self.Modules.Get(id); module_ != nil {
 				module = module_.Export().(*Module)
 			}
+			self.Lock.Unlock()
 			onChanged(id, module)
 		})
 		return nil
@@ -76,10 +84,24 @@ func (self *Environment) Watch(onChanged OnChangedFunc) error {
 	}
 }
 
+func (self *Environment) Watch(path string) error {
+	self.watcherLock.Lock()
+	defer self.watcherLock.Unlock()
+
+	if self.watcher != nil {
+		return self.watcher.Add(path)
+	} else {
+		return nil
+	}
+}
+
 func (self *Environment) Release() error {
-	if self.Watcher != nil {
-		if err := self.Watcher.Close(); err == nil {
-			self.Watcher = nil
+	self.watcherLock.Lock()
+	defer self.watcherLock.Unlock()
+
+	if self.watcher != nil {
+		if err := self.watcher.Close(); err == nil {
+			self.watcher = nil
 			return nil
 		} else {
 			return err
@@ -87,6 +109,13 @@ func (self *Environment) Release() error {
 	} else {
 		return nil
 	}
+}
+
+func (self *Environment) Call(function JavaScriptFunc, arguments ...interface{}) interface{} {
+	self.Lock.Lock()
+	defer self.Lock.Unlock()
+
+	return Call(self.Runtime, function, arguments...)
 }
 
 func (self *Environment) ClearCache() {
@@ -110,7 +139,7 @@ func (self *Environment) RequireURL(url urlpkg.URL) (*goja.Object, error) {
 }
 
 func (self *Environment) requireId(id string, context *Context) (*goja.Object, error) {
-	if url, err := context.Resolve(id); err == nil {
+	if url, err := context.Resolve(id, false); err == nil {
 		self.AddModule(url, context.Module)
 		return self.cachedRequire(url, context)
 	} else {

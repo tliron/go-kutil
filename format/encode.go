@@ -46,7 +46,7 @@ func EncodeJSON(value interface{}, indent string) (string, error) {
 		s := writer.String()
 		if indent == "" {
 			// json.Encoder adds a "\n", unlike json.Marshal
-			s = strings.Trim(s, "\n")
+			s = strings.TrimRight(s, "\n")
 		}
 		return s, nil
 	} else {

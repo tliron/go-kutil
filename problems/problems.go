@@ -16,16 +16,12 @@ import (
 
 type ProblemSlice []*Problem
 
-// sort.Interface
-
+// sort.Interface interface
 func (self ProblemSlice) Len() int {
 	return len(self)
 }
 
-func (self ProblemSlice) Swap(i, j int) {
-	self[i], self[j] = self[j], self[i]
-}
-
+// sort.Interface interface
 func (self ProblemSlice) Less(i, j int) bool {
 	iProblem := self[i]
 	jProblem := self[j]
@@ -37,6 +33,11 @@ func (self ProblemSlice) Less(i, j int) bool {
 		}
 	}
 	return c < 0
+}
+
+// sort.Interface interface
+func (self ProblemSlice) Swap(i, j int) {
+	self[i], self[j] = self[j], self[i]
 }
 
 //

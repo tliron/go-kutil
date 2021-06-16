@@ -7,14 +7,11 @@ import (
 )
 
 type ThreadSafeObject struct {
-	map_ map[string]goja.Value
-	lock sync.Mutex
+	map_ sync.Map
 }
 
 func NewThreadSafeObject() *ThreadSafeObject {
-	return &ThreadSafeObject{
-		map_: make(map[string]goja.Value),
-	}
+	return &ThreadSafeObject{}
 }
 
 func (self *ThreadSafeObject) NewDynamicObject(runtime *goja.Runtime) *goja.Object {
@@ -23,48 +20,37 @@ func (self *ThreadSafeObject) NewDynamicObject(runtime *goja.Runtime) *goja.Obje
 
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Get(key string) goja.Value {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-
-	value, _ := self.map_[key]
-	return value
+	if value, ok := self.map_.Load(key); ok {
+		return value.(goja.Value)
+	} else {
+		return nil
+	}
 }
 
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Set(key string, value goja.Value) bool {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-
-	self.map_[key] = value
+	self.map_.Store(key, value)
 	return true
 }
 
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Has(key string) bool {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-
-	_, ok := self.map_[key]
+	_, ok := self.map_.Load(key)
 	return ok
 }
 
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Delete(key string) bool {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-
-	delete(self.map_, key)
+	self.map_.Delete(key)
 	return true
 }
 
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Keys() []string {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-
-	keys := make([]string, 0, len(self.map_))
-	for key := range self.map_ {
-		keys = append(keys, key)
-	}
+	var keys []string
+	self.map_.Range(func(key interface{}, value interface{}) bool {
+		keys = append(keys, key.(string))
+		return true
+	})
 	return keys
 }
