@@ -14,7 +14,7 @@ type Module struct {
 	Children     []*Module
 	Filename     string
 	Path         string
-	Paths        []string // unused
+	Paths        []string
 	Exports      *goja.Object
 	Require      *goja.Object
 	IsPreloading bool
@@ -22,7 +22,13 @@ type Module struct {
 }
 
 func (self *Environment) NewModule() *Module {
+	var path []string
+	for _, url := range self.Path {
+		path = append(path, url.String())
+	}
+
 	return &Module{
+		Paths:        path,
 		Exports:      self.Runtime.NewObject(),
 		IsPreloading: true,
 	}

@@ -18,6 +18,7 @@ import (
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *urlpkg.Context
+	Path           []urlpkg.URL
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
@@ -35,11 +36,12 @@ type PrecompileFunc func(url urlpkg.URL, script string, context *Context) (strin
 
 type OnChangedFunc func(id string, module *Module)
 
-func NewEnvironment(urlContext *urlpkg.Context) *Environment {
+func NewEnvironment(urlContext *urlpkg.Context, path []urlpkg.URL) *Environment {
 	self := Environment{
 		Runtime:        goja.New(),
 		URLContext:     urlContext,
-		CreateResolver: NewDefaultResolverCreator(urlContext, "js"),
+		Path:           path,
+		CreateResolver: NewDefaultResolverCreator(urlContext, path, "js"),
 		Log:            log,
 		programCache:   new(sync.Map),
 	}
@@ -52,7 +54,7 @@ func NewEnvironment(urlContext *urlpkg.Context) *Environment {
 }
 
 func (self *Environment) NewChild() *Environment {
-	environment := NewEnvironment(self.URLContext)
+	environment := NewEnvironment(self.URLContext, self.Path)
 	environment.watcher = self.watcher
 	environment.Extensions = self.Extensions
 	environment.Precompile = self.Precompile

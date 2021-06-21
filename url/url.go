@@ -98,7 +98,7 @@ func newValidRelativeURL(path string, origins []URL, context *Context, avoidNetw
 		// Try relative to origins
 		for _, origin := range origins {
 			var url URL
-			var err = errors.New("")
+			err := errors.New("")
 
 			switch origin_ := origin.(type) {
 			case *FileURL:

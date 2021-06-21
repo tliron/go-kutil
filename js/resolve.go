@@ -10,12 +10,14 @@ type ResolveFunc func(id string, raw bool) (urlpkg.URL, error)
 
 type CreateResolverFunc func(url urlpkg.URL, context *Context) ResolveFunc
 
-func NewDefaultResolverCreator(urlContext *urlpkg.Context, defaultExtension string) CreateResolverFunc {
+func NewDefaultResolverCreator(urlContext *urlpkg.Context, path []urlpkg.URL, defaultExtension string) CreateResolverFunc {
 	return func(url urlpkg.URL, context *Context) ResolveFunc {
 		var origins []urlpkg.URL
 
 		if url != nil {
-			origins = []urlpkg.URL{url.Origin()}
+			origins = append([]urlpkg.URL{url.Origin()}, path...)
+		} else {
+			origins = path
 		}
 
 		if defaultExtension == "" {

@@ -43,7 +43,7 @@ Example
         urlContext := url.NewContext()
         defer urlContext.Release()
 
-        environment := js.NewEnvironment(urlContext)
+        environment := js.NewEnvironment(urlContext, nil)
         defer environment.Release()
 
         // Implementation of "console.log"
@@ -61,7 +61,7 @@ Example
         })
 
         // Start!
-        environment.RequireID("start.js")
+        environment.RequireID("./start")
     }
 
     var logger = log.New(os.Stdout, "console: ", log.LstdFlags)
@@ -74,7 +74,7 @@ Example
 
 `start.js`:
 
-    const hello = require('lib/hello.js');
+    const hello = require('./lib/hello');
 
     hello.sayit();
 
