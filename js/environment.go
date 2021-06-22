@@ -23,6 +23,7 @@ type Environment struct {
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
 	CreateResolver CreateResolverFunc
+	OnChanged      OnChangedFunc
 	Log            logging.Logger
 	Lock           sync.Mutex
 
@@ -59,18 +60,31 @@ func (self *Environment) NewChild() *Environment {
 	environment.Extensions = self.Extensions
 	environment.Precompile = self.Precompile
 	environment.CreateResolver = self.CreateResolver
+	environment.OnChanged = self.OnChanged
 	environment.Log = self.Log
 	environment.programCache = self.programCache
 	return environment
 }
 
-func (self *Environment) StartWatcher(onChanged OnChangedFunc) error {
+func (self *Environment) RestartWatcher() error {
 	self.watcherLock.Lock()
 	defer self.watcherLock.Unlock()
 
-	if watcher, err := fswatch.NewWatcher(self.URLContext); err == nil {
-		self.watcher = watcher
-		watcher.Start(func(fileUrl *urlpkg.FileURL) {
+	if self.watcher != nil {
+		if err := self.watcher.Close(); err == nil {
+			self.watcher = nil
+		} else {
+			return err
+		}
+	}
+
+	if self.OnChanged == nil {
+		return nil
+	}
+
+	var err error
+	if self.watcher, err = fswatch.NewWatcher(self.URLContext); err == nil {
+		self.watcher.Start(func(fileUrl *urlpkg.FileURL) {
 			self.Lock.Lock()
 			id := fileUrl.Key()
 			var module *Module
@@ -78,11 +92,27 @@ func (self *Environment) StartWatcher(onChanged OnChangedFunc) error {
 				module = module_.Export().(*Module)
 			}
 			self.Lock.Unlock()
-			onChanged(id, module)
+			self.OnChanged(id, module)
 		})
 		return nil
 	} else {
 		return err
+	}
+}
+
+func (self *Environment) StopWatcher() error {
+	self.watcherLock.Lock()
+	defer self.watcherLock.Unlock()
+
+	if self.watcher != nil {
+		if err := self.watcher.Close(); err == nil {
+			self.watcher = nil
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return nil
 	}
 }
 
@@ -98,19 +128,7 @@ func (self *Environment) Watch(path string) error {
 }
 
 func (self *Environment) Release() error {
-	self.watcherLock.Lock()
-	defer self.watcherLock.Unlock()
-
-	if self.watcher != nil {
-		if err := self.watcher.Close(); err == nil {
-			self.watcher = nil
-			return nil
-		} else {
-			return err
-		}
-	} else {
-		return nil
-	}
+	return self.StopWatcher()
 }
 
 func (self *Environment) Call(function JavaScriptFunc, arguments ...interface{}) interface{} {
