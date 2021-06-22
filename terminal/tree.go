@@ -11,15 +11,15 @@ func (self TreePrefix) Print(indent int, last bool) {
 
 	for _, element := range self {
 		if element {
-			Print(Stdout, "  ")
+			Print("  ")
 		} else {
-			Print(Stdout, "│ ")
+			Print("│ ")
 		}
 	}
 
 	if last {
-		Print(Stdout, "└─")
+		Print("└─")
 	} else {
-		Print(Stdout, "├─")
+		Print("├─")
 	}
 }
