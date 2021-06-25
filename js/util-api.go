@@ -74,13 +74,22 @@ func (self UtilAPI) Mutex() *sync.Mutex {
 	return new(sync.Mutex)
 }
 
-var onces sync.Map
+var onces map[string]*sync.Once = make(map[string]*sync.Once)
+var oncesLock sync.Mutex
 
 func (self UtilAPI) Once(name string, value goja.Value) error {
 	if call, ok := goja.AssertFunction(value); ok {
-		once, _ := onces.LoadOrStore(name, new(sync.Once))
-		once_ := once.(*sync.Once)
-		once_.Do(func() {
+		var once *sync.Once
+
+		oncesLock.Lock()
+		var ok bool
+		if once, ok = onces[name]; !ok {
+			once = new(sync.Once)
+			onces[name] = once
+		}
+		oncesLock.Unlock()
+
+		once.Do(func() {
 			if _, err := call(nil); err != nil {
 				log.Errorf("%s", err.Error())
 			}
