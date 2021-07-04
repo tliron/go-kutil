@@ -79,7 +79,7 @@ func (self *FileURL) Format() string {
 // URL interface
 func (self *FileURL) Origin() URL {
 	path := filepath.Dir(self.Path)
-	if path != "" {
+	if path != "/" {
 		path += "/"
 	}
 

@@ -103,7 +103,7 @@ func (self *ZipURL) Format() string {
 // URL interface
 func (self *ZipURL) Origin() URL {
 	path := pathpkg.Dir(self.Path)
-	if path != "" {
+	if path != "/" {
 		path += "/"
 	}
 

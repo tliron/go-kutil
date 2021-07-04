@@ -111,7 +111,7 @@ func (self *InternalURL) Format() string {
 // URL interface
 func (self *InternalURL) Origin() URL {
 	path := pathpkg.Dir(self.Path)
-	if path != "" {
+	if path != "/" {
 		path += "/"
 	}
 

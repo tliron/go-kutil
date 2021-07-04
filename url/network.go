@@ -84,7 +84,7 @@ func (self *NetworkURL) Format() string {
 func (self *NetworkURL) Origin() URL {
 	url := *self
 	url.URL.Path = path.Dir(url.URL.Path)
-	if url.URL.Path != "" {
+	if url.URL.Path != "/" {
 		url.URL.Path += "/"
 	}
 	// TODO: url.URL.RawPath?
