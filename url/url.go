@@ -58,7 +58,7 @@ func NewValidURL(url string, origins []URL, context *Context) (URL, error) {
 	neturl, err := neturlpkg.ParseRequestURI(url)
 	if err != nil {
 		// Malformed URL, so it might be a relative path
-		return newValidRelativeURL(url, origins, context, true)
+		return newValidRelativeURL(url, origins, context, false)
 	} else {
 		switch neturl.Scheme {
 		case "http", "https":

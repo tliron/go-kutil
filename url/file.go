@@ -78,8 +78,13 @@ func (self *FileURL) Format() string {
 
 // URL interface
 func (self *FileURL) Origin() URL {
+	path := filepath.Dir(self.Path)
+	if path != "" {
+		path += "/"
+	}
+
 	return &FileURL{
-		Path:    filepath.Dir(self.Path),
+		Path:    path,
 		context: self.context,
 	}
 }

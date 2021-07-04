@@ -65,6 +65,10 @@ func (self *DockerURL) Format() string {
 func (self *DockerURL) Origin() URL {
 	url := *self
 	url.URL.Path = path.Dir(url.URL.Path)
+	if url.URL.Path != "" {
+		url.URL.Path += "/"
+	}
+	// TODO: url.URL.RawPath?
 	return &url
 }
 

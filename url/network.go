@@ -35,7 +35,7 @@ func NewNetworkURL(neturl *neturlpkg.URL, context *Context) *NetworkURL {
 
 func NewValidNetworkURL(neturl *neturlpkg.URL, context *Context) (*NetworkURL, error) {
 	string_ := neturl.String()
-	if response, err := http.Get(string_); err == nil {
+	if response, err := http.Head(string_); err == nil {
 		response.Body.Close()
 		if response.StatusCode == http.StatusOK {
 			if context == nil {
@@ -84,6 +84,10 @@ func (self *NetworkURL) Format() string {
 func (self *NetworkURL) Origin() URL {
 	url := *self
 	url.URL.Path = path.Dir(url.URL.Path)
+	if url.URL.Path != "" {
+		url.URL.Path += "/"
+	}
+	// TODO: url.URL.RawPath?
 	return &url
 }
 

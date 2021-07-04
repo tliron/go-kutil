@@ -102,9 +102,14 @@ func (self *ZipURL) Format() string {
 
 // URL interface
 func (self *ZipURL) Origin() URL {
+	path := pathpkg.Dir(self.Path)
+	if path != "" {
+		path += "/"
+	}
+
 	// Note: deleteArchive is *not* copied over
 	return &ZipURL{
-		Path:       pathpkg.Dir(self.Path),
+		Path:       path,
 		ArchiveURL: self.ArchiveURL,
 	}
 }

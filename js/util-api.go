@@ -79,8 +79,7 @@ var onces sync.Map
 func (self UtilAPI) Once(name string, value goja.Value) error {
 	if call, ok := goja.AssertFunction(value); ok {
 		once, _ := onces.LoadOrStore(name, new(sync.Once))
-		once_ := once.(*sync.Once)
-		once_.Do(func() {
+		once.(*sync.Once).Do(func() {
 			if _, err := call(nil); err != nil {
 				log.Errorf("%s", err.Error())
 			}
