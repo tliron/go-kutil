@@ -53,22 +53,24 @@ func NewValidZipURL(path string, archiveUrl URL) (*ZipURL, error) {
 func NewValidRelativeZipURL(path string, origin *ZipURL) (*ZipURL, error) {
 	self := origin.Relative(path).(*ZipURL)
 	if reader, err := self.OpenArchive(); err == nil {
+		defer reader.Close()
+
 		for _, file := range reader.Reader.File {
 			if self.Path == file.Name {
 				return self, nil
 			}
 		}
 
-		return nil, fmt.Errorf("path %q not found in zip: %s", path, self.ArchiveURL.String())
+		return nil, fmt.Errorf("path %q not found in zip: %s", self.Path, self.ArchiveURL.String())
 	} else {
 		return nil, err
 	}
 }
 
 func ParseZipURL(url string, context *Context) (*ZipURL, error) {
-	if archive, path, err := parseZipURL(url); err == nil {
-		if archiveUrl, err := NewURL(archive, context); err == nil {
-			return NewZipURL(path, archiveUrl), nil
+	if archiveUrl, path, err := parseZipURL(url); err == nil {
+		if archiveUrl_, err := NewURL(archiveUrl, context); err == nil {
+			return NewZipURL(path, archiveUrl_), nil
 		} else {
 			return nil, err
 		}
@@ -78,9 +80,9 @@ func ParseZipURL(url string, context *Context) (*ZipURL, error) {
 }
 
 func ParseValidZipURL(url string, context *Context) (*ZipURL, error) {
-	if archive, path, err := parseZipURL(url); err == nil {
-		if zipUrl, err := NewURL(archive, context); err == nil {
-			return NewValidZipURL(path, zipUrl)
+	if archiveUrl, path, err := parseZipURL(url); err == nil {
+		if archiveUrl_, err := NewURL(archiveUrl, context); err == nil {
+			return NewValidZipURL(path, archiveUrl_)
 		} else {
 			return nil, err
 		}
@@ -107,7 +109,6 @@ func (self *ZipURL) Origin() URL {
 		path += "/"
 	}
 
-	// Note: deleteArchive is *not* copied over
 	return &ZipURL{
 		Path:       path,
 		ArchiveURL: self.ArchiveURL,
@@ -116,7 +117,6 @@ func (self *ZipURL) Origin() URL {
 
 // URL interface
 func (self *ZipURL) Relative(path string) URL {
-	// Note: deleteArchive is *not* copied over
 	return &ZipURL{
 		Path:       pathpkg.Join(self.Path, path),
 		ArchiveURL: self.ArchiveURL,

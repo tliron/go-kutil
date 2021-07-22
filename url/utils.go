@@ -30,3 +30,16 @@ func DeleteTemporaryFile(path string) error {
 		return err
 	}
 }
+
+func DeleteTemporaryDir(path string) error {
+	if err := os.RemoveAll(path); err == nil {
+		log.Infof("deleted temporary dir %q", path)
+		return nil
+	} else if os.IsNotExist(err) {
+		log.Infof("temporary dir already deleted %q", path)
+		return nil
+	} else {
+		log.Errorf("could not delete temporary dir %q: %s", path, err.Error())
+		return err
+	}
+}

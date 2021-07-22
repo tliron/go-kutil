@@ -20,7 +20,8 @@ type Credentials struct {
 //
 
 type Context struct {
-	paths             map[string]string
+	files             map[string]string
+	dirs              map[string]string
 	httpRoundTrippers map[string]http.RoundTripper
 	credentials       map[string]*Credentials
 	lock              sync.Mutex // for paths
@@ -81,12 +82,12 @@ func (self *Context) Open(url URL) (*os.File, error) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
 
-	if self.paths != nil {
-		if path, ok := self.paths[key]; ok {
+	if self.files != nil {
+		if path, ok := self.files[key]; ok {
 			if file, err := os.Open(path); err == nil {
 				return file, nil
 			} else if os.IsNotExist(err) {
-				delete(self.paths, key)
+				delete(self.files, key)
 			} else {
 				return nil, err
 			}
@@ -95,10 +96,10 @@ func (self *Context) Open(url URL) (*os.File, error) {
 
 	temporaryPathPattern := fmt.Sprintf("kutil-%s-*", util.SanitizeFilename(key))
 	if file, err := Download(url, temporaryPathPattern); err == nil {
-		if self.paths == nil {
-			self.paths = make(map[string]string)
+		if self.files == nil {
+			self.files = make(map[string]string)
 		}
-		self.paths[key] = file.Name()
+		self.files[key] = file.Name()
 		return file, nil
 	} else {
 		return nil, err
@@ -110,14 +111,25 @@ func (self *Context) Release() error {
 	defer self.lock.Unlock()
 
 	var err error
-	if self.paths != nil {
-		for _, path := range self.paths {
+
+	if self.files != nil {
+		for _, path := range self.files {
 			if err_ := DeleteTemporaryFile(path); err_ != nil {
 				err = err_
 			}
 		}
 
-		self.paths = nil
+		self.files = nil
+	}
+
+	if self.dirs != nil {
+		for _, path := range self.dirs {
+			if err_ := DeleteTemporaryDir(path); err_ != nil {
+				err = err_
+			}
+		}
+
+		self.files = nil
 	}
 
 	return err
