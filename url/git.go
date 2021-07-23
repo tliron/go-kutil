@@ -3,12 +3,16 @@ package url
 import (
 	"fmt"
 	"io"
+	neturlpkg "net/url"
 	"os"
 	pathpkg "path"
 	"path/filepath"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/tliron/kutil/util"
 )
 
@@ -19,6 +23,9 @@ import (
 type GitURL struct {
 	Path          string
 	RepositoryURL string
+	Reference     string
+	Username      string
+	Password      string
 
 	clonePath string
 	context   *Context
@@ -28,11 +35,27 @@ func NewGitURL(path string, repositoryUrl string, context *Context) *GitURL {
 	// Must be absolute
 	path = strings.TrimLeft(path, "/")
 
-	return &GitURL{
-		Path:          path,
-		RepositoryURL: repositoryUrl,
-		context:       context,
+	var self = GitURL{
+		Path:    path,
+		context: context,
 	}
+
+	if neturl, err := neturlpkg.Parse(repositoryUrl); err == nil {
+		if neturl.User != nil {
+			self.Username = neturl.User.Username()
+			if password, ok := neturl.User.Password(); ok {
+				self.Password = password
+			}
+			// Don't store user info
+			neturl.User = nil
+		}
+		self.Reference = neturl.Fragment
+		self.RepositoryURL = neturl.String()
+	} else {
+		self.RepositoryURL = repositoryUrl
+	}
+
+	return &self
 }
 
 func NewValidGitURL(path string, repositoryUrl string, context *Context) (*GitURL, error) {
@@ -137,35 +160,59 @@ func (self *GitURL) Context() *Context {
 
 func (self *GitURL) OpenRepository() (*git.Repository, error) {
 	if self.clonePath != "" {
-		return openAndPullGitRepository(self.clonePath, self.RepositoryURL)
+		return self.openRepository(false)
 	} else {
 		key := self.Key()
 
+		// Note: this will lock for the entire clone duration!
 		self.context.lock.Lock()
 		defer self.context.lock.Unlock()
 
 		if self.context.dirs != nil {
+			// Already cloned?
 			if clonePath, ok := self.context.dirs[key]; ok {
 				self.clonePath = clonePath
-				return openAndPullGitRepository(self.clonePath, self.RepositoryURL)
+				return self.openRepository(false)
 			}
 		}
 
 		temporaryPathPattern := fmt.Sprintf("kutil-%s-*", util.SanitizeFilename(key))
 		if clonePath, err := os.MkdirTemp("", temporaryPathPattern); err == nil {
+			if self.context.dirs == nil {
+				self.context.dirs = make(map[string]string)
+			}
+			self.context.dirs[key] = clonePath
+
+			// Clone
 			if repository, err := git.PlainClone(clonePath, false, &git.CloneOptions{
-				URL:               self.RepositoryURL,
-				RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+				URL:  self.RepositoryURL,
+				Auth: self.getAuth(),
 			}); err == nil {
-				if self.context.dirs == nil {
-					self.context.dirs = make(map[string]string)
+				if reference, err := self.findReference(repository); err == nil {
+					if reference != nil {
+						// Checkout
+						if workTree, err := repository.Worktree(); err == nil {
+							if err := workTree.Checkout(&git.CheckoutOptions{
+								Branch: reference.Name(),
+							}); err != nil {
+								os.RemoveAll(clonePath)
+								return nil, err
+							}
+						} else {
+							os.RemoveAll(clonePath)
+							return nil, err
+						}
+					}
+				} else {
+					os.RemoveAll(clonePath)
+					return nil, err
 				}
-				self.context.dirs[key] = clonePath
 
 				self.clonePath = clonePath
 				return repository, nil
 			} else {
-				return nil, os.RemoveAll(clonePath)
+				os.RemoveAll(clonePath)
+				return nil, err
 			}
 		} else {
 			return nil, err
@@ -173,22 +220,69 @@ func (self *GitURL) OpenRepository() (*git.Repository, error) {
 	}
 }
 
-// Utils
-
-func openAndPullGitRepository(path string, repositoryUrl string) (*git.Repository, error) {
-	if repository, err := git.PlainOpen(path); err == nil {
-		// Pull
-		if workTree, err := repository.Worktree(); err == nil {
-			if err := workTree.Pull(&git.PullOptions{RemoteName: "origin"}); err != git.NoErrAlreadyUpToDate {
-				log.Warningf("could not pull git repository %q from %q: %s", path, repositoryUrl, err.Error())
+func (self *GitURL) openRepository(pull bool) (*git.Repository, error) {
+	if repository, err := git.PlainOpen(self.clonePath); err == nil {
+		if pull {
+			if err := self.pullRepository(repository); err != nil {
+				return nil, err
 			}
-		} else {
-			log.Warningf("could not open git repository %q from %q: %s", path, repositoryUrl, err.Error())
 		}
 
 		return repository, nil
 	} else {
 		return nil, err
+	}
+}
+
+func (self *GitURL) pullRepository(repository *git.Repository) error {
+	if workTree, err := repository.Worktree(); err == nil {
+		if err := workTree.Pull(&git.PullOptions{
+			Auth: self.getAuth(),
+		}); (err == nil) || (err == git.NoErrAlreadyUpToDate) {
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+}
+
+func (self *GitURL) findReference(repository *git.Repository) (*plumbing.Reference, error) {
+	if self.Reference != "" {
+		if iter, err := repository.References(); err == nil {
+			defer iter.Close()
+			for {
+				if reference, err := iter.Next(); err == nil {
+					name := reference.Name()
+					if name.Short() == self.Reference {
+						return reference, nil
+					} else if name.String() == self.Reference {
+						return reference, nil
+					}
+				} else if err == io.EOF {
+					return nil, fmt.Errorf("reference %q not found in git repository: %s", self.Reference, self.RepositoryURL)
+				} else {
+					return nil, err
+				}
+			}
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, nil
+	}
+}
+
+func (self *GitURL) getAuth() transport.AuthMethod {
+	// TODO: what about non-HTTP transports, like ssh?
+	if self.Username != "" {
+		return &http.BasicAuth{
+			Username: self.Username,
+			Password: self.Password,
+		}
+	} else {
+		return nil
 	}
 }
 
