@@ -10,6 +10,7 @@ import (
 	"github.com/tliron/kutil/logging"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	labelspkg "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	dynamicpkg "k8s.io/client-go/dynamic"
@@ -55,6 +56,19 @@ func NewDynamic(toolName string, dynamic dynamicpkg.Interface, discovery discove
 func (self *Dynamic) GetResource(gvk schema.GroupVersionKind, name string, namespace string) (*unstructured.Unstructured, error) {
 	if gvr, err := FindResourceForKind(self.Discovery, gvk, "get", "create"); err == nil {
 		return self.Dynamic.Resource(gvr).Namespace(namespace).Get(self.context, name, meta.GetOptions{})
+	} else {
+		return nil, err
+	}
+}
+
+func (self *Dynamic) ListResources(gvk schema.GroupVersionKind, namespace string, labels_ map[string]string) ([]unstructured.Unstructured, error) {
+	selector := labelspkg.SelectorFromSet(labels_).String()
+	if gvr, err := FindResourceForKind(self.Discovery, gvk, "get", "create", "list"); err == nil {
+		if list, err := self.Dynamic.Resource(gvr).Namespace(namespace).List(self.context, meta.ListOptions{LabelSelector: selector}); err == nil {
+			return list.Items, nil
+		} else {
+			return nil, err
+		}
 	} else {
 		return nil, err
 	}
