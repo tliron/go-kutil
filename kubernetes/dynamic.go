@@ -61,8 +61,8 @@ func (self *Dynamic) GetResource(gvk schema.GroupVersionKind, name string, names
 	}
 }
 
-func (self *Dynamic) ListResources(gvk schema.GroupVersionKind, namespace string, labels_ map[string]string) ([]unstructured.Unstructured, error) {
-	selector := labelspkg.SelectorFromSet(labels_).String()
+func (self *Dynamic) ListResources(gvk schema.GroupVersionKind, namespace string, labels map[string]string) ([]unstructured.Unstructured, error) {
+	selector := labelspkg.SelectorFromSet(labels).String()
 	if gvr, err := FindResourceForKind(self.Discovery, gvk, "get", "create", "list"); err == nil {
 		if list, err := self.Dynamic.Resource(gvr).Namespace(namespace).List(self.context, meta.ListOptions{LabelSelector: selector}); err == nil {
 			return list.Items, nil

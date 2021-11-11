@@ -64,7 +64,7 @@ func GetConfiguredNamespace(configPath string, context string) (string, bool) {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// Note: this is not a standard Kubernetes environment variable!
 		// If you want to support it, you must do so explicitly, i.e.:
-		// - name: POD_NAMESPACE
+		// - name: KUBERNETES_NAMESPACE
 		//   valueFrom:
 		//     fieldRef:
 		//      fieldPath: metadata.namespace
