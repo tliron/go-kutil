@@ -72,8 +72,8 @@ func Download(url URL, temporaryPathPattern string) (*os.File, error) {
 			defer reader.Close()
 			log.Infof("downloading from %q to temporary file %q", url.String(), path)
 			if _, err = io.Copy(file, reader); err == nil {
-				util.OnExit(func() {
-					DeleteTemporaryFile(path)
+				util.OnExitError(func() error {
+					return DeleteTemporaryFile(path)
 				})
 				return file, nil
 			} else {

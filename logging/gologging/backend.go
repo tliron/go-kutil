@@ -46,9 +46,7 @@ func (self Backend) Configure(verbosity int, path *string) {
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
-				util.OnExit(func() {
-					file.Close()
-				})
+				util.OnExitError(file.Close)
 				self.writer = file
 				loggingpkg.SetFormatter(plainFormatter)
 			} else {

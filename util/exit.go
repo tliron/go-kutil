@@ -10,11 +10,11 @@ import (
 
 // Inspired by: https://github.com/tebeka/atexit
 
-var exitEntries []exitEntry
+var exitHooks []exitHook
 var exitNextHandle ExitFunctionHandle
 var exitLock sync.RWMutex
 
-type exitEntry struct {
+type exitHook struct {
 	function func()
 	handle   ExitFunctionHandle
 }
@@ -26,7 +26,7 @@ func OnExit(exitFunction func()) ExitFunctionHandle {
 	handle := exitNextHandle
 	exitNextHandle++
 
-	exitEntries = append(exitEntries, exitEntry{
+	exitHooks = append(exitHooks, exitHook{
 		function: exitFunction,
 		handle:   handle,
 	})
@@ -34,12 +34,20 @@ func OnExit(exitFunction func()) ExitFunctionHandle {
 	return handle
 }
 
+func OnExitError(exitFunction func() error) ExitFunctionHandle {
+	return OnExit(func() {
+		if err := exitFunction(); err != nil {
+			fmt.Fprintf(os.Stderr, "error during exit: %s\n", err.Error())
+		}
+	})
+}
+
 func Exit(code int) {
 	exitLock.RLock()
 
-	length := len(exitEntries)
-	for index := range exitEntries {
-		exitEntry := exitEntries[length-index-1]
+	length := len(exitHooks)
+	for index := range exitHooks {
+		exitHook := exitHooks[length-index-1]
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
@@ -47,7 +55,7 @@ func Exit(code int) {
 				}
 			}()
 
-			exitEntry.function()
+			exitHook.function()
 		}()
 	}
 
@@ -75,9 +83,9 @@ func (self ExitFunctionHandle) Cancel() {
 	exitLock.Lock()
 	defer exitLock.Unlock()
 
-	for index, exitEntry := range exitEntries {
+	for index, exitEntry := range exitHooks {
 		if exitEntry.handle == self {
-			exitEntries = append(exitEntries[:index], exitEntries[index+1:]...)
+			exitHooks = append(exitHooks[:index], exitHooks[index+1:]...)
 			break
 		}
 	}

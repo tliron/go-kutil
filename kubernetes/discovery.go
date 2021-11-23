@@ -1,60 +1,86 @@
 package kubernetes
 
 import (
-	"fmt"
+	contextpkg "context"
+	"time"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	discoverypkg "k8s.io/client-go/discovery"
+	"github.com/tliron/kutil/logging"
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	typedcore "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 )
 
-func FindResourceForKind(discovery discoverypkg.DiscoveryInterface, gvk schema.GroupVersionKind, supportedVerbs ...string) (schema.GroupVersionResource, error) {
-	if gvrs, err := FindResourcesForKind(discovery, gvk, supportedVerbs...); err == nil {
-		count := len(gvrs)
-		if count == 1 {
-			return gvrs[0], nil
-		} else if count == 0 {
-			return schema.GroupVersionResource{}, fmt.Errorf("%s resources not found for: %s", supportedVerbs, gvk.String())
+//
+// PodDiscovery
+//
+
+type PodsDiscoveredFunc func([]*core.Pod)
+
+type PodDiscovery struct {
+	selector       string
+	context        contextpkg.Context
+	podsDiscovered PodsDiscoveredFunc
+	log            logging.Logger
+
+	pods    typedcore.PodInterface
+	started chan struct{}
+}
+
+func StartPodDiscovery(namespace string, selector string, frequency float64, podsDiscovered PodsDiscoveredFunc, log logging.Logger) (*PodDiscovery, error) {
+	self := PodDiscovery{
+		selector:       selector,
+		context:        contextpkg.TODO(),
+		podsDiscovered: podsDiscovered,
+		log:            log,
+	}
+
+	if config, err := rest.InClusterConfig(); err == nil {
+		if client, err := kubernetes.NewForConfig(config); err == nil {
+			self.pods = client.CoreV1().Pods(namespace)
+			self.start(frequency)
+			return &self, nil
 		} else {
-			return schema.GroupVersionResource{}, fmt.Errorf("too many %s resources found for: %s", supportedVerbs, gvk.String())
+			return nil, err
 		}
 	} else {
-		return schema.GroupVersionResource{}, err
+		return nil, err
 	}
 }
 
-func FindResourcesForKind(discovery discoverypkg.DiscoveryInterface, gvk schema.GroupVersionKind, supportedVerbs ...string) ([]schema.GroupVersionResource, error) {
-	gv := gvk.GroupVersion()
-	groupVersion := gv.String()
-	kind := gvk.Kind
+func (self *PodDiscovery) Stop() {
+	close(self.started)
+}
 
-	if _, resourceLists, err := discovery.ServerGroupsAndResources(); err == nil {
-		var gvrs []schema.GroupVersionResource
+func (self *PodDiscovery) start(seconds float64) {
+	ticker := time.NewTicker(time.Duration(seconds * 1000000000.0)) // seconds to nanoseconds
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				self.list()
 
-		for _, resourceList := range resourceLists {
-			if resourceList.GroupVersion == groupVersion {
-				for _, resource := range resourceList.APIResources {
-					if resource.Kind == kind {
-						var matchedVerbs []string
-						for _, verb := range supportedVerbs {
-							for _, verb_ := range resource.Verbs {
-								if verb == verb_ {
-									matchedVerbs = append(matchedVerbs, verb)
-									break
-								}
-							}
-						}
-
-						if len(matchedVerbs) == len(supportedVerbs) {
-							gvr := gv.WithResource(resource.Name)
-							gvrs = append(gvrs, gvr)
-						}
-					}
-				}
+			case <-self.started:
+				ticker.Stop()
+				return
 			}
 		}
+	}()
+}
 
-		return gvrs, nil
-	} else {
-		return nil, err
+func (self *PodDiscovery) list() {
+	//self.log.Debugf("listing nodes: %s", self.selector)
+	if pods, err := self.pods.List(self.context, meta.ListOptions{LabelSelector: self.selector}); err == nil {
+		var list []*core.Pod
+		for _, pod := range pods.Items {
+			list = append(list, &pod)
+		}
+		self.podsDiscovered(list)
+	} else if !errors.IsNotFound(err) {
+		if self.log != nil {
+			self.log.Errorf("%s", err.Error())
+		}
 	}
 }

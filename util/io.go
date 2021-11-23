@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"io"
 	"sync"
 )
@@ -56,9 +55,7 @@ func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 }
 
 func (self BufferedWriter) CloseOnExit() ExitFunctionHandle {
-	return OnExit(func() {
-		self.Close()
-	})
+	return OnExitError(self.Close)
 }
 
 // io.Writer interface
@@ -66,7 +63,7 @@ func (self BufferedWriter) Write(p []byte) (int, error) {
 	defer func() {
 		if recover() != nil {
 			// The channel was closed
-			fmt.Println("closed!!!!")
+			//fmt.Println("closed!!!!")
 			self.writer.Write(p)
 		}
 	}()
