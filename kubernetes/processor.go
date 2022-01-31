@@ -134,7 +134,7 @@ func (self *Processor) processWorkItem(item interface{}) {
 
 type Processors struct {
 	processors     map[schema.GroupVersionKind]*Processor
-	controlledGvks map[schema.GroupVersionKind]bool
+	controlledGvks map[schema.GroupVersionKind]struct{}
 
 	log                logging.Logger
 	controlledGvksLock sync.Mutex
@@ -143,7 +143,7 @@ type Processors struct {
 func NewProcessors(toolName string) *Processors {
 	return &Processors{
 		processors:     make(map[schema.GroupVersionKind]*Processor),
-		controlledGvks: make(map[schema.GroupVersionKind]bool),
+		controlledGvks: make(map[schema.GroupVersionKind]struct{}),
 		log:            logging.GetLoggerf("%s.processors", toolName),
 	}
 }
@@ -196,7 +196,7 @@ func (self *Processors) Control(dynamic *Dynamic, controlledGvk schema.GroupVers
 
 	if _, ok := self.controlledGvks[controlledGvk]; !ok {
 		// We'll add a change handler once and only once per controlled GVK
-		self.controlledGvks[controlledGvk] = true
+		self.controlledGvks[controlledGvk] = struct{}{}
 		return dynamic.AddUnstructuredResourceChangeHandler(controlledGvk, stopChannel, self.onObjectChanged)
 	} else {
 		return nil

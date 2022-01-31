@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 )
 
@@ -12,7 +11,7 @@ import (
 
 var exitHooks []exitHook
 var exitNextHandle ExitFunctionHandle
-var exitLock sync.RWMutex
+var exitLock RWLocker = NewDefaultRWLocker()
 
 type exitHook struct {
 	function func()

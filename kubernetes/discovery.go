@@ -54,8 +54,8 @@ func (self *PodDiscovery) Stop() {
 	close(self.started)
 }
 
-func (self *PodDiscovery) start(seconds float64) {
-	ticker := time.NewTicker(time.Duration(seconds * 1000000000.0)) // seconds to nanoseconds
+func (self *PodDiscovery) start(frequency float64) {
+	ticker := time.NewTicker(time.Duration(frequency * 1000000000.0)) // seconds to nanoseconds
 	go func() {
 		for {
 			select {

@@ -5,9 +5,9 @@ import (
 	"io"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
 )
 
 //
@@ -48,18 +48,20 @@ type Problems struct {
 	Problems ProblemSlice      `json:"problems" yaml:"problems"`
 	Stylist  *terminal.Stylist `json:"-" yaml:"-"`
 
-	lock sync.RWMutex `json:"-" yaml:"-"`
+	lock util.RWLocker `json:"-" yaml:"-"`
 }
 
 func NewProblems(stylist *terminal.Stylist) *Problems {
 	return &Problems{
 		Stylist: stylist,
+		lock:    util.NewDefaultRWLocker(),
 	}
 }
 
 func (self *Problems) NewProblems() *Problems {
 	return &Problems{
 		Stylist: self.Stylist,
+		lock:    util.NewDefaultRWLocker(),
 	}
 }
 

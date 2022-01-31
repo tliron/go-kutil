@@ -3,6 +3,7 @@ package util
 import (
 	"io"
 	"sync"
+	"testing"
 )
 
 func WriteNewline(writer io.Writer) error {
@@ -37,16 +38,16 @@ func ReaderSize(reader io.Reader) (int64, error) {
 type BufferedWriter struct {
 	writer io.Writer
 	jobs   chan []byte
-	close  chan bool
-	closed chan bool
+	close  chan struct{}
+	closed chan struct{}
 }
 
 func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 	self := BufferedWriter{
 		writer: writer,
 		jobs:   make(chan []byte, size),
-		close:  make(chan bool, 1),
-		closed: make(chan bool, 1),
+		close:  make(chan struct{}, 1),
+		closed: make(chan struct{}, 1),
 	}
 
 	go self.run()
@@ -90,7 +91,7 @@ func (self BufferedWriter) run() {
 			if ok {
 				self.writer.Write(job)
 			} else {
-				self.closed <- true
+				self.closed <- struct{}{}
 				return
 			}
 		}
@@ -129,4 +130,23 @@ func (self *SyncedWriter) Close() error {
 	} else {
 		return nil
 	}
+}
+
+//
+// TestLogWriter
+//
+
+type TestLogWriter struct {
+	t *testing.T
+}
+
+func NewTestLogWriter(t *testing.T) *TestLogWriter {
+	return &TestLogWriter{t}
+}
+
+// io.Writer interface
+func (self *TestLogWriter) Write(p []byte) (n int, err error) {
+	self.t.Helper()
+	self.t.Log(p)
+	return len(p), nil
 }
