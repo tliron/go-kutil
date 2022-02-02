@@ -2,13 +2,30 @@ package util
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/sasha-s/go-deadlock"
 )
 
 func init() {
-	//deadlock.Opts.DisableLockOrderDetection = true
+	switch os.Getenv("KUTIL_LOCK_DEFAULT") {
+	case "sync":
+		defaultLockType = SYNC_LOCK
+	case "debug":
+		defaultLockType = DEBUG_LOCK
+	case "mock":
+		defaultLockType = MOCK_LOCK
+	default:
+		defaultLockType = SYNC_LOCK
+	}
+
+	switch os.Getenv("KUTIL_LOCK_DEBUG_ORDER_DETECTION") {
+	case "true":
+		deadlock.Opts.DisableLockOrderDetection = true
+	case "false":
+		deadlock.Opts.DisableLockOrderDetection = false
+	}
 }
 
 //
@@ -26,14 +43,19 @@ type LockType int
 
 const (
 	DEFAULT_LOCK = LockType(0)
-	DEBUG_LOCK   = LockType(1)
-	MOCK_LOCK    = LockType(2)
+	SYNC_LOCK    = LockType(1)
+	DEBUG_LOCK   = LockType(2)
+	MOCK_LOCK    = LockType(3)
 )
+
+var defaultLockType LockType
 
 func NewRWLocker(type_ LockType) RWLocker {
 	switch type_ {
 	case DEFAULT_LOCK:
 		return NewDefaultRWLocker()
+	case SYNC_LOCK:
+		return NewSyncRWLocker()
 	case DEBUG_LOCK:
 		return NewDebugRWLocker()
 	case MOCK_LOCK:
@@ -48,6 +70,23 @@ func NewRWLocker(type_ LockType) RWLocker {
 //
 
 func NewDefaultRWLocker() RWLocker {
+	switch defaultLockType {
+	case SYNC_LOCK:
+		return NewSyncRWLocker()
+	case DEBUG_LOCK:
+		return NewDebugRWLocker()
+	case MOCK_LOCK:
+		return NewMockRWLocker()
+	default:
+		panic(fmt.Sprintf("unsupported lock type: %d", defaultLockType))
+	}
+}
+
+//
+// SyncRWLocker
+//
+
+func NewSyncRWLocker() RWLocker {
 	return new(sync.RWMutex)
 }
 

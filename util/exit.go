@@ -11,7 +11,7 @@ import (
 
 var exitHooks []exitHook
 var exitNextHandle ExitFunctionHandle
-var exitLock RWLocker = NewDefaultRWLocker()
+var exitLock RWLocker = NewSyncRWLocker()
 
 type exitHook struct {
 	function func()

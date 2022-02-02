@@ -108,3 +108,28 @@ func TraverseEntities(entity interface{}, locking bool, traverse EntityTraverser
 		lock.Unlock()
 	}
 }
+
+//
+// EntityWork
+//
+
+type EntityWork map[interface{}]struct{}
+
+func (self EntityWork) Start(entityPtr interface{}) bool {
+	if _, ok := self[entityPtr]; ok {
+		return false
+	} else {
+		self[entityPtr] = struct{}{}
+		return true
+	}
+}
+
+func (self EntityWork) TraverseEntities(entityPtr interface{}, traverse EntityTraverser) {
+	TraverseEntities(entityPtr, false, func(entityPtr interface{}) bool {
+		if self.Start(entityPtr) {
+			return traverse(entityPtr)
+		} else {
+			return false
+		}
+	})
+}
