@@ -7,7 +7,9 @@ import (
 )
 
 func init() {
-	logging.SetBackend(NewBackend())
+	backend := NewBackend()
+	backend.Configure(0, nil)
+	logging.SetBackend(backend)
 }
 
 //

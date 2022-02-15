@@ -53,7 +53,7 @@ func NewSubLogger(logger Logger, name string) SubLogger {
 	}
 }
 
-// logging.Logger interface
+// Logger interface
 
 func (self SubLogger) Critical(message string) {
 	self.Logger.Criticalf(self.Format, self.Name, message)
@@ -111,7 +111,7 @@ type FullLogger struct {
 	Logger PartialLogger
 }
 
-// logging.Logger interface
+// Logger interface
 
 func (self FullLogger) Critical(message string) {
 	self.Logger.Critical(message)
@@ -162,6 +162,52 @@ func (self FullLogger) Debugf(format string, values ...interface{}) {
 }
 
 //
+// MockLogger
+//
+
+type MockLogger struct{}
+
+var MOCK_LOGGER MockLogger
+
+// Logger interface
+
+func (self MockLogger) Critical(message string) {
+}
+
+func (self MockLogger) Criticalf(format string, values ...interface{}) {
+}
+
+func (self MockLogger) Error(message string) {
+}
+
+func (self MockLogger) Errorf(format string, values ...interface{}) {
+}
+
+func (self MockLogger) Warning(message string) {
+}
+
+func (self MockLogger) Warningf(format string, values ...interface{}) {
+}
+
+func (self MockLogger) Notice(message string) {
+}
+
+func (self MockLogger) Noticef(format string, values ...interface{}) {
+}
+
+func (self MockLogger) Info(message string) {
+}
+
+func (self MockLogger) Infof(format string, values ...interface{}) {
+}
+
+func (self MockLogger) Debug(message string) {
+}
+
+func (self MockLogger) Debugf(format string, values ...interface{}) {
+}
+
+//
 // LazyLogger
 //
 
@@ -175,15 +221,16 @@ type LazyLogger struct {
 func (self *LazyLogger) validate() {
 	self.once.Do(func() {
 		if self.Logger == nil {
-			if backend == nil {
-				panic("logging not configured")
+			if backend != nil {
+				self.Logger = backend.GetLogger(self.Name)
+			} else {
+				self.Logger = MOCK_LOGGER
 			}
-			self.Logger = backend.GetLogger(self.Name)
 		}
 	})
 }
 
-// logging.Logger interface
+// Logger interface
 
 func (self *LazyLogger) Critical(message string) {
 	self.validate()

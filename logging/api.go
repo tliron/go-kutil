@@ -12,15 +12,23 @@ func SetBackend(backend_ Backend) {
 }
 
 func Configure(verbosity int, path *string) {
-	backend.Configure(verbosity, path)
+	if backend != nil {
+		backend.Configure(verbosity, path)
+	}
 }
 
 func GetWriter() io.Writer {
-	return backend.GetWriter()
+	if backend != nil {
+		return backend.GetWriter()
+	} else {
+		return io.Discard
+	}
 }
 
 func SetMaxLevel(name string, level Level) {
-	backend.SetMaxLevel(name, level)
+	if backend != nil {
+		backend.SetMaxLevel(name, level)
+	}
 }
 
 func GetLogger(name string) Logger {
