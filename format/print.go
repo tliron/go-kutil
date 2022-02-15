@@ -45,6 +45,9 @@ func Print(value interface{}, format string, writer io.Writer, strict bool, pret
 	case "cbor":
 		return PrintCBOR(value, writer)
 
+	case "go":
+		return PrintGo(value, writer, pretty)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -115,4 +118,12 @@ func PrintXMLDocument(xmlDocument *etree.Document, writer io.Writer, pretty bool
 
 func PrintCBOR(value interface{}, writer io.Writer) error {
 	return WriteCBOR(value, writer)
+}
+
+func PrintGo(value interface{}, writer io.Writer, pretty bool) error {
+	if pretty {
+		return WriteGo(value, writer, terminal.Indent)
+	} else {
+		return WriteGo(value, writer, "")
+	}
 }

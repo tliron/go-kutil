@@ -26,6 +26,9 @@ func Encode(value interface{}, format string, indent string, strict bool) (strin
 	case "cbor":
 		return EncodeCBOR(value)
 
+	case "go":
+		return EncodeGo(value, indent)
+
 	default:
 		return "", fmt.Errorf("unsupported format: %s", format)
 	}
@@ -74,4 +77,8 @@ func EncodeCBOR(value interface{}) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func EncodeGo(value interface{}, indent string) (string, error) {
+	return NewUtterConfig(indent).Sdump(value), nil
 }

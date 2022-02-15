@@ -7,6 +7,7 @@ import (
 	yamllexer "github.com/goccy/go-yaml/lexer"
 	yamlprinter "github.com/goccy/go-yaml/printer"
 	"github.com/hokaccha/go-prettyjson"
+	"github.com/kortschak/utter"
 	"github.com/tliron/kutil/terminal"
 )
 
@@ -73,4 +74,12 @@ func PrettifyYAML(code string, writer io.Writer) error {
 	} else {
 		return err
 	}
+}
+
+func NewUtterConfig(indent string) *utter.ConfigState {
+	var config = utter.NewDefaultConfig()
+	config.Indent = indent
+	config.SortKeys = true
+	config.CommentPointers = true
+	return config
 }

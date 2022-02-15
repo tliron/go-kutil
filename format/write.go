@@ -40,6 +40,9 @@ func Write(value interface{}, format string, indent string, strict bool, writer 
 	case "cbor":
 		return WriteCBOR(value, writer)
 
+	case "go":
+		return WriteGo(value, writer, indent)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -119,4 +122,9 @@ func WriteXMLDocument(xmlDocument *etree.Document, writer io.Writer, indent stri
 func WriteCBOR(value interface{}, writer io.Writer) error {
 	encoder := cbor.NewEncoder(writer)
 	return encoder.Encode(value)
+}
+
+func WriteGo(value interface{}, writer io.Writer, indent string) error {
+	NewUtterConfig(indent).Fdump(writer, value)
+	return nil
 }

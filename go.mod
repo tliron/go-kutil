@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/beevik/etree v1.1.0
-	github.com/dop251/goja v0.0.0-20220124171016-cfb079cdc7b4
+	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/fxamacker/cbor/v2 v2.4.0
@@ -14,6 +14,7 @@ require (
 	github.com/hashicorp/memberlist v0.3.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/klauspost/pgzip v1.2.5
+	github.com/kortschak/utter v1.5.0
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/rs/zerolog v1.26.1
@@ -23,7 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/yamlkeys v1.3.5
 	github.com/zchee/color/v2 v2.0.6
-	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.23.3
 	k8s.io/apiextensions-apiserver v0.23.3

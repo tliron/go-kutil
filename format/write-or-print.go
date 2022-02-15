@@ -9,7 +9,6 @@ import (
 )
 
 const DIRECTORY_WRITE_PERMISSIONS = 0700
-
 const FILE_WRITE_PERMISSIONS = 0600
 
 func WriteOrPrint(value interface{}, format string, writer io.Writer, strict bool, pretty bool, output string) error {
