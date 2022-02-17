@@ -27,112 +27,96 @@ const TIME_FORMAT = "2006/01/02 15:04:05.000"
 // Backend
 //
 
+// Note: using kutil to wrap zerolog will circumvent its primary optimization, which is for high
+// performance and low resource use due to aggressively avoiding allocations. If you need that
+// optimization then you should use zerolog's API directly.
+
 type Backend struct {
-	writer  io.Writer
-	loggers map[string]*Logger
+	Writer io.Writer
+
+	hierarchy *logging.Hierarchy
 }
 
-func NewBackend() Backend {
-	return Backend{
-		loggers: make(map[string]*Logger),
+func NewBackend() *Backend {
+	return &Backend{
+		hierarchy: logging.NewHierarchy(),
 	}
 }
 
 // logging.Backend interface
 
-func (self Backend) Configure(verbosity int, path *string) {
-	if verbosity == -1 {
-		self.writer = io.Discard
-		logpkg.Logger = zerolog.New(self.writer)
+func (self *Backend) Configure(verbosity int, path *string) {
+	maxLevel := logging.VerbosityToMaxLevel(verbosity)
+
+	if maxLevel == logging.None {
+		self.Writer = io.Discard
+		self.hierarchy.SetMaxLevel(nil, logging.None)
+		logpkg.Logger = zerolog.New(self.Writer)
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
 				util.OnExitError(file.Close)
-				self.writer = file
-				logpkg.Logger = zerolog.New(self.writer)
+				self.Writer = file
+				logpkg.Logger = zerolog.New(self.Writer)
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
-			self.writer = terminal.Stderr
+			self.Writer = terminal.Stderr
 			if terminal.Colorize {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        self.writer,
+					Out:        self.Writer,
 					TimeFormat: TIME_FORMAT,
 				})
 			} else {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        self.writer,
+					Out:        self.Writer,
 					TimeFormat: TIME_FORMAT,
 					NoColor:    true,
 				})
 			}
 		}
 
-		switch verbosity {
-		case 0:
-			zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		case 1:
-			zerolog.SetGlobalLevel(zerolog.DebugLevel)
-		default:
-			zerolog.SetGlobalLevel(zerolog.TraceLevel)
-		}
-
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMicro
 		logpkg.Logger = logpkg.With().Timestamp().Logger()
+
+		self.hierarchy.SetMaxLevel(nil, maxLevel)
 	}
 }
 
-func (self Backend) GetWriter() io.Writer {
-	return self.writer
+func (self *Backend) AllowLevel(id []string, level logging.Level) bool {
+	return self.hierarchy.AllowLevel(id, level)
 }
 
-func (self Backend) SetMaxLevel(name string, level logging.Level) {
-	if strings.HasSuffix(name, "*") {
-		if len(name) == 1 {
-			zerolog.SetGlobalLevel(toLevel(level))
-		} else {
-			prefix := name[:len(name)-1]
-			for name_, logger := range self.loggers {
-				if strings.HasPrefix(name_, prefix) {
-					logger.SetMaxLevel(level)
-				}
-			}
+func (self *Backend) SetMaxLevel(id []string, level logging.Level) {
+	self.hierarchy.SetMaxLevel(id, level)
+}
+
+func (self *Backend) NewMessage(id []string, level logging.Level, depth int) logging.Message {
+	if self.AllowLevel(id, level) {
+		logger := logpkg.With().Str("source", strings.Join(id, ".")).Logger()
+
+		var event *zerolog.Event
+		switch level {
+		case logging.Critical:
+			event = logger.Error()
+		case logging.Error:
+			event = logger.Error()
+		case logging.Warning:
+			event = logger.Warn()
+		case logging.Notice:
+			event = logger.Info()
+		case logging.Info:
+			event = logger.Debug()
+		case logging.Debug:
+			event = logger.Trace()
+		default:
+			panic(fmt.Sprintf("unsupported level: %d", level))
 		}
+
+		return NewMessage(event)
 	} else {
-		if logger, ok := self.loggers[name]; ok {
-			logger.SetMaxLevel(level)
-		}
-	}
-}
-
-func (self Backend) GetLogger(name string) logging.Logger {
-	// TODO: new loggers won't respect SetMaxLevel!
-	logger := &Logger{
-		Logger: logpkg.With().Str("logger", name).Logger(),
-	}
-	self.loggers[name] = logger
-	return logger
-}
-
-// Utils
-
-func toLevel(level logging.Level) zerolog.Level {
-	switch level {
-	case logging.Critical:
-		return zerolog.ErrorLevel
-	case logging.Error:
-		return zerolog.ErrorLevel
-	case logging.Warning:
-		return zerolog.WarnLevel
-	case logging.Notice:
-		return zerolog.InfoLevel
-	case logging.Info:
-		return zerolog.DebugLevel
-	case logging.Debug:
-		return zerolog.TraceLevel
-	default:
-		panic(fmt.Sprintf("unsupported level: %d", level))
+		return nil
 	}
 }

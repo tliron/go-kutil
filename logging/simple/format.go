@@ -10,10 +10,10 @@ import (
 
 const TIME_FORMAT = "2006/01/02 15:04:05.000"
 
-type FormatFunc func(message string, name string, level logging.Level, colorize bool) string
+type FormatFunc func(message string, id []string, level logging.Level, colorize bool) string
 
 // FormatFunc signature
-func DefaultFormat(message string, name string, level logging.Level, colorize bool) string {
+func DefaultFormat(message string, id []string, level logging.Level, colorize bool) string {
 	var builder strings.Builder
 
 	builder.WriteString(time.Now().Format(TIME_FORMAT))
@@ -33,7 +33,20 @@ func DefaultFormat(message string, name string, level logging.Level, colorize bo
 		builder.WriteString(" DEBUG [")
 	}
 
-	builder.WriteString(name)
+	length := len(id)
+	switch length {
+	case 0:
+	case 1:
+		builder.WriteString(id[0])
+	default:
+		last := length - 1
+		for _, i := range id[:last] {
+			builder.WriteString(i)
+			builder.WriteRune('.')
+		}
+		builder.WriteString(id[last])
+	}
+
 	builder.WriteString("] ")
 	builder.WriteString(message)
 

@@ -2,7 +2,7 @@ package logging
 
 import (
 	"fmt"
-	"io"
+	"strings"
 )
 
 var backend Backend
@@ -17,26 +17,34 @@ func Configure(verbosity int, path *string) {
 	}
 }
 
-func GetWriter() io.Writer {
+func AllowLevel(id []string, level Level) bool {
 	if backend != nil {
-		return backend.GetWriter()
+		return backend.AllowLevel(id, level)
 	} else {
-		return io.Discard
+		return false
 	}
 }
 
-func SetMaxLevel(name string, level Level) {
+func SetMaxLevel(id []string, level Level) {
 	if backend != nil {
-		backend.SetMaxLevel(name, level)
+		backend.SetMaxLevel(id, level)
 	}
 }
+
+func NewMessage(id []string, level Level, depth int) Message {
+	if backend != nil {
+		return backend.NewMessage(id, level, depth)
+	} else {
+		return nil
+	}
+}
+
+// Unstructured wrappers
 
 func GetLogger(name string) Logger {
-	return &LazyLogger{
-		Name: name,
-	}
+	return NewBackendLogger(strings.Split(name, "."))
 }
 
-func GetLoggerf(format string, arguments ...interface{}) Logger {
-	return GetLogger(fmt.Sprintf(format, arguments...))
+func GetLoggerf(format string, values ...interface{}) Logger {
+	return GetLogger(fmt.Sprintf(format, values...))
 }
