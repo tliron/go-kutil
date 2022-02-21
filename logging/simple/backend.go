@@ -36,7 +36,7 @@ func NewBackend() *Backend {
 	return &Backend{
 		Format:    DefaultFormat,
 		Buffered:  true,
-		hierarchy: logging.NewHierarchy(),
+		hierarchy: logging.NewMaxLevelHierarchy(),
 	}
 }
 
@@ -77,21 +77,21 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	}
 }
 
-func (self *Backend) AllowLevel(id []string, level logging.Level) bool {
-	return self.hierarchy.AllowLevel(id, level)
-}
-
-func (self *Backend) SetMaxLevel(id []string, level logging.Level) {
-	self.hierarchy.SetMaxLevel(id, level)
-}
-
-func (self *Backend) NewMessage(id []string, level logging.Level, depth int) logging.Message {
-	if self.AllowLevel(id, level) {
+func (self *Backend) NewMessage(name []string, level logging.Level, depth int) logging.Message {
+	if self.AllowLevel(name, level) {
 		return logging.NewUnstructuredMessage(func(message string) {
-			message = self.Format(message, id, level, self.colorize)
+			message = self.Format(message, name, level, self.colorize)
 			io.WriteString(self.Writer, message+"\n")
 		})
 	} else {
 		return nil
 	}
+}
+
+func (self *Backend) AllowLevel(name []string, level logging.Level) bool {
+	return self.hierarchy.AllowLevel(name, level)
+}
+
+func (self *Backend) SetMaxLevel(name []string, level logging.Level) {
+	self.hierarchy.SetMaxLevel(name, level)
 }

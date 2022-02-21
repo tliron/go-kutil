@@ -1,13 +1,15 @@
 package logging
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //
 // Message
 //
 
 type Message interface {
-	Set(name string, value interface{})
+	Set(key string, value interface{}) Message
 	Send()
 }
 
@@ -32,20 +34,22 @@ func NewUnstructuredMessage(send SendUnstructuredMessageFunc) *UnstructuredMessa
 
 // Message interface
 
-func (self *UnstructuredMessage) Set(name string, value interface{}) {
-	switch name {
-	case "domain":
-		self.prefix = "{" + toString(value) + "}"
-
+func (self *UnstructuredMessage) Set(key string, value interface{}) Message {
+	switch key {
 	case "message":
 		self.message = toString(value)
+
+	case "scope":
+		self.prefix = "{" + toString(value) + "}"
 
 	default:
 		if len(self.suffix) > 0 {
 			self.suffix += ", "
 		}
-		self.suffix += name + "=" + toString(value)
+		self.suffix += key + "=" + toString(value)
 	}
+
+	return self
 }
 
 func (self *UnstructuredMessage) Send() {
@@ -75,6 +79,6 @@ func toString(value interface{}) string {
 	case fmt.Stringer:
 		return value_.String()
 	default:
-		return fmt.Sprintf("%s", value_)
+		return fmt.Sprintf("%v", value_)
 	}
 }

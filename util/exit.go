@@ -10,7 +10,7 @@ import (
 // Inspired by: https://github.com/tebeka/atexit
 
 var exitHooks []exitHook
-var exitNextHandle ExitFunctionHandle
+var exitNextHandle ExitFunctionHandle = ExitFunctionHandle(1)
 var exitLock RWLocker = NewSyncRWLocker()
 
 type exitHook struct {
@@ -46,7 +46,7 @@ func Exit(code int) {
 
 	length := len(exitHooks)
 	for index := range exitHooks {
-		exitHook := exitHooks[length-index-1]
+		exitHook := exitHooks[length-index-1] // reverse order
 		func() {
 			defer func() {
 				if r := recover(); r != nil {

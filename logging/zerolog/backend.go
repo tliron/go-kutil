@@ -32,14 +32,13 @@ const TIME_FORMAT = "2006/01/02 15:04:05.000"
 // optimization then you should use zerolog's API directly.
 
 type Backend struct {
-	Writer io.Writer
-
+	writer    io.Writer
 	hierarchy *logging.Hierarchy
 }
 
 func NewBackend() *Backend {
 	return &Backend{
-		hierarchy: logging.NewHierarchy(),
+		hierarchy: logging.NewMaxLevelHierarchy(),
 	}
 }
 
@@ -49,29 +48,29 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	maxLevel := logging.VerbosityToMaxLevel(verbosity)
 
 	if maxLevel == logging.None {
-		self.Writer = io.Discard
+		self.writer = io.Discard
 		self.hierarchy.SetMaxLevel(nil, logging.None)
-		logpkg.Logger = zerolog.New(self.Writer)
+		logpkg.Logger = zerolog.New(self.writer)
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	} else {
 		if path != nil {
 			if file, err := os.OpenFile(*path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, LOG_FILE_WRITE_PERMISSIONS); err == nil {
 				util.OnExitError(file.Close)
-				self.Writer = file
-				logpkg.Logger = zerolog.New(self.Writer)
+				self.writer = file
+				logpkg.Logger = zerolog.New(self.writer)
 			} else {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
-			self.Writer = terminal.Stderr
+			self.writer = terminal.Stderr
 			if terminal.Colorize {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        self.Writer,
+					Out:        self.writer,
 					TimeFormat: TIME_FORMAT,
 				})
 			} else {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
-					Out:        self.Writer,
+					Out:        self.writer,
 					TimeFormat: TIME_FORMAT,
 					NoColor:    true,
 				})
@@ -85,17 +84,13 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	}
 }
 
-func (self *Backend) AllowLevel(id []string, level logging.Level) bool {
-	return self.hierarchy.AllowLevel(id, level)
-}
-
-func (self *Backend) SetMaxLevel(id []string, level logging.Level) {
-	self.hierarchy.SetMaxLevel(id, level)
-}
-
-func (self *Backend) NewMessage(id []string, level logging.Level, depth int) logging.Message {
-	if self.AllowLevel(id, level) {
-		logger := logpkg.With().Str("source", strings.Join(id, ".")).Logger()
+func (self *Backend) NewMessage(name []string, level logging.Level, depth int) logging.Message {
+	if self.AllowLevel(name, level) {
+		context := logpkg.With()
+		if name := strings.Join(name, "."); len(name) > 0 {
+			context = context.Str("name", name)
+		}
+		logger := context.Logger()
 
 		var event *zerolog.Event
 		switch level {
@@ -119,4 +114,12 @@ func (self *Backend) NewMessage(id []string, level logging.Level, depth int) log
 	} else {
 		return nil
 	}
+}
+
+func (self *Backend) AllowLevel(name []string, level logging.Level) bool {
+	return self.hierarchy.AllowLevel(name, level)
+}
+
+func (self *Backend) SetMaxLevel(name []string, level logging.Level) {
+	self.hierarchy.SetMaxLevel(name, level)
 }

@@ -21,43 +21,45 @@ func NewMessage(event *zerolog.Event) logging.Message {
 
 // logging.Message interface
 
-func (self *Message) Set(name string, value interface{}) {
+func (self *Message) Set(key string, value interface{}) logging.Message {
 	switch value_ := value.(type) {
 	case string:
-		self.event.Str(name, value_)
+		self.event.Str(key, value_)
 	case int:
-		self.event.Int(name, value_)
+		self.event.Int(key, value_)
 	case int64:
-		self.event.Int64(name, value_)
+		self.event.Int64(key, value_)
 	case int32:
-		self.event.Int32(name, value_)
+		self.event.Int32(key, value_)
 	case int16:
-		self.event.Int16(name, value_)
+		self.event.Int16(key, value_)
 	case int8:
-		self.event.Int8(name, value_)
+		self.event.Int8(key, value_)
 	case uint:
-		self.event.Uint(name, value_)
+		self.event.Uint(key, value_)
 	case uint64:
-		self.event.Uint64(name, value_)
+		self.event.Uint64(key, value_)
 	case uint32:
-		self.event.Uint32(name, value_)
+		self.event.Uint32(key, value_)
 	case uint16:
-		self.event.Uint16(name, value_)
+		self.event.Uint16(key, value_)
 	case uint8:
-		self.event.Uint8(name, value_)
+		self.event.Uint8(key, value_)
 	case float64:
-		self.event.Float64(name, value_)
+		self.event.Float64(key, value_)
 	case float32:
-		self.event.Float32(name, value_)
+		self.event.Float32(key, value_)
 	case bool:
-		self.event.Bool(name, value_)
+		self.event.Bool(key, value_)
 	case []byte:
-		self.event.Bytes(name, value_)
+		self.event.Bytes(key, value_)
 	case fmt.Stringer:
-		self.event.Stringer(name, value_)
+		self.event.Stringer(key, value_)
 	default:
-		self.event.Interface(name, value_)
+		self.event.Interface(key, value_)
 	}
+
+	return self
 }
 
 func (self *Message) Send() {

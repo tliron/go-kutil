@@ -6,27 +6,42 @@ package logging
 
 type Hierarchy struct {
 	root *Node
-	//lock util.RWLocker
 }
 
-func NewHierarchy() *Hierarchy {
+func NewMaxLevelHierarchy() *Hierarchy {
 	return &Hierarchy{
 		root: NewNode(),
-		//lock: util.NewDefaultRWLocker(),
 	}
 }
 
-func (self *Hierarchy) AllowLevel(id []string, level Level) bool {
-	//self.lock.RLock()
-	maxLevel := self.root.GetMaxLevel(id)
-	//self.lock.RUnlock()
-	return level <= maxLevel
+func (self *Hierarchy) AllowLevel(name []string, level Level) bool {
+	return level <= self.GetMaxLevel(name)
 }
 
-func (self *Hierarchy) SetMaxLevel(id []string, level Level) {
-	//self.lock.Lock()
-	self.root.SetMaxLevel(id, level)
-	//self.lock.Unlock()
+func (self *Hierarchy) GetMaxLevel(name []string) Level {
+	node := self.root
+	for _, segment := range name {
+		if child, ok := node.children[segment]; ok {
+			node = child
+		} else {
+			break
+		}
+	}
+	return node.maxLevel
+}
+
+func (self *Hierarchy) SetMaxLevel(name []string, level Level) {
+	node := self.root
+	for _, segment := range name {
+		if child, ok := node.children[segment]; ok {
+			node = child
+		} else {
+			child = NewNode()
+			node.children[segment] = child
+			node = child
+		}
+	}
+	node.maxLevel = level
 }
 
 //
@@ -43,30 +58,4 @@ func NewNode() *Node {
 		maxLevel: None,
 		children: make(map[string]*Node),
 	}
-}
-
-func (self *Node) GetMaxLevel(id []string) Level {
-	node := self
-	for _, i := range id {
-		if child, ok := node.children[i]; ok {
-			node = child
-		} else {
-			break
-		}
-	}
-	return node.maxLevel
-}
-
-func (self *Node) SetMaxLevel(id []string, level Level) {
-	node := self
-	for _, i := range id {
-		if child, ok := node.children[i]; ok {
-			node = child
-		} else {
-			child = NewNode()
-			node.children[i] = child
-			node = child
-		}
-	}
-	node.maxLevel = level
 }

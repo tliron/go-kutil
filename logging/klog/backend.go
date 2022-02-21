@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
@@ -28,20 +29,27 @@ func init() {
 type Backend struct {
 	Buffered bool
 
+	writer    io.Writer
 	hierarchy *logging.Hierarchy
 }
 
 func NewBackend() *Backend {
 	return &Backend{
 		Buffered:  true,
-		hierarchy: logging.NewHierarchy(),
+		hierarchy: logging.NewMaxLevelHierarchy(),
 	}
 }
 
 // logging.Backend interface
 
+var flushHandle util.ExitFunctionHandle
+
 func (self *Backend) Configure(verbosity int, path *string) {
 	// klog can also do its own configuration via klog.InitFlags
+
+	if flushHandle == 0 {
+		flushHandle = util.OnExit(klog.Flush)
+	}
 
 	maxLevel := logging.VerbosityToMaxLevel(verbosity)
 
@@ -55,6 +63,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				if self.Buffered {
 					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
 					writer.CloseOnExit()
+					self.writer = writer
 					klog.SetOutput(writer)
 				} else {
 					klog.SetOutput(util.NewSyncedWriter(file))
@@ -66,6 +75,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 			if self.Buffered {
 				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
 				writer.CloseOnExit()
+				self.writer = writer
 				klog.SetOutput(writer)
 			} else {
 				klog.SetOutput(util.NewSyncedWriter(terminal.Stderr))
@@ -76,18 +86,14 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	}
 }
 
-func (self *Backend) AllowLevel(id []string, level logging.Level) bool {
-	return self.hierarchy.AllowLevel(id, level)
-}
-
-func (self *Backend) SetMaxLevel(id []string, level logging.Level) {
-	self.hierarchy.SetMaxLevel(id, level)
-}
-
-func (self *Backend) NewMessage(id []string, level logging.Level, depth int) logging.Message {
-	if self.AllowLevel(id, level) {
+func (self *Backend) NewMessage(name []string, level logging.Level, depth int) logging.Message {
+	if self.AllowLevel(name, level) {
 		depth += 2
 		return logging.NewUnstructuredMessage(func(message string) {
+			if name := strings.Join(name, "."); len(name) > 0 {
+				message = name + ": " + message
+			}
+
 			switch level {
 			case logging.Critical:
 				klog.ErrorDepth(depth, message)
@@ -108,4 +114,12 @@ func (self *Backend) NewMessage(id []string, level logging.Level, depth int) log
 	} else {
 		return nil
 	}
+}
+
+func (self *Backend) AllowLevel(name []string, level logging.Level) bool {
+	return self.hierarchy.AllowLevel(name, level)
+}
+
+func (self *Backend) SetMaxLevel(name []string, level logging.Level) {
+	self.hierarchy.SetMaxLevel(name, level)
 }

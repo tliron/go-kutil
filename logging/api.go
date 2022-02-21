@@ -17,32 +17,34 @@ func Configure(verbosity int, path *string) {
 	}
 }
 
-func AllowLevel(id []string, level Level) bool {
+func AllowLevel(name []string, level Level) bool {
 	if backend != nil {
-		return backend.AllowLevel(id, level)
+		return backend.AllowLevel(name, level)
 	} else {
 		return false
 	}
 }
 
-func SetMaxLevel(id []string, level Level) {
+func SetMaxLevel(name []string, level Level) {
 	if backend != nil {
-		backend.SetMaxLevel(id, level)
+		backend.SetMaxLevel(name, level)
 	}
 }
 
-func NewMessage(id []string, level Level, depth int) Message {
+func NewMessage(name []string, level Level, depth int) Message {
 	if backend != nil {
-		return backend.NewMessage(id, level, depth)
+		return backend.NewMessage(name, level, depth)
 	} else {
 		return nil
 	}
 }
 
-// Unstructured wrappers
-
 func GetLogger(name string) Logger {
-	return NewBackendLogger(strings.Split(name, "."))
+	name_ := strings.Split(name, ".")
+	if len(name_) == 0 {
+		name_ = nil
+	}
+	return NewBackendLogger(name_)
 }
 
 func GetLoggerf(format string, values ...interface{}) Logger {
