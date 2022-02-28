@@ -84,6 +84,10 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	}
 }
 
+func (self *Backend) GetWriter() io.Writer {
+	return self.writer
+}
+
 func (self *Backend) NewMessage(name []string, level logging.Level, depth int) logging.Message {
 	if self.AllowLevel(name, level) {
 		context := logpkg.With()

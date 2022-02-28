@@ -2,6 +2,7 @@ package logging
 
 import (
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -14,6 +15,14 @@ func SetBackend(backend_ Backend) {
 func Configure(verbosity int, path *string) {
 	if backend != nil {
 		backend.Configure(verbosity, path)
+	}
+}
+
+func GetWriter() io.Writer {
+	if backend != nil {
+		return backend.GetWriter()
+	} else {
+		return nil
 	}
 }
 

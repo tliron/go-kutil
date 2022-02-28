@@ -22,64 +22,69 @@ Features:
   performance), and late binding, which creates the "Runtime" every time the bound object is unbound
   (high concurrency, lower performance).
 
-
 Example
 -------
 
 `start.go`:
 
-    package main
+```go
+package main
 
-    import (
-        "log"
-        "os"
+import (
+    "log"
+    "os"
 
-        "github.com/dop251/goja"
-        "github.com/tliron/kutil/js"
-        "github.com/tliron/kutil/url"
-    )
+    "github.com/dop251/goja"
+    "github.com/tliron/kutil/js"
+    "github.com/tliron/kutil/url"
+)
 
-    func main() {
-        urlContext := url.NewContext()
-        defer urlContext.Release()
+func main() {
+    urlContext := url.NewContext()
+    defer urlContext.Release()
 
-        environment := js.NewEnvironment(urlContext, nil)
-        defer environment.Release()
+    environment := js.NewEnvironment(urlContext, nil)
+    defer environment.Release()
 
-        // Implementation of "console.log"
-        environment.Extensions = append(environment.Extensions, js.Extension{
-            Name: "console",
-            Create: func(context *js.Context) goja.Value {
-                return context.Environment.Runtime.ToValue(ConsoleAPI{})
-            },
-        })
+    // Implementation of "console.log"
+    environment.Extensions = append(environment.Extensions, js.Extension{
+        Name: "console",
+        Create: func(context *js.Context) goja.Value {
+            return context.Environment.Runtime.ToValue(ConsoleAPI{})
+        },
+    })
 
-        // Support for "bind" (late binding)
-        environment.Extensions = append(environment.Extensions, js.Extension{
-            Name:   "bind",
-            Create: js.CreateLateBindExtension,
-        })
+    // Support for "bind" (late binding)
+    environment.Extensions = append(environment.Extensions, js.Extension{
+        Name:   "bind",
+        Create: js.CreateLateBindExtension,
+    })
 
-        // Start!
-        environment.RequireID("./start")
-    }
+    // Start!
+    environment.RequireID("./start")
+}
 
-    var logger = log.New(os.Stdout, "console: ", log.LstdFlags)
+var logger = log.New(os.Stdout, "console: ", log.LstdFlags)
 
-    type ConsoleAPI struct{}
+type ConsoleAPI struct{}
 
-    func (self ConsoleAPI) Log(message string) {
-        logger.Println(message)
-    }
+func (self ConsoleAPI) Log(message string) {
+    logger.Println(message)
+}
+```
 
 `start.js`:
 
-    const hello = require('./lib/hello');
+```js
+const hello = require('./lib/hello');
 
-    hello.sayit();
+hello.sayit();
+```
 
 `lib/hello.js`:
 
-    exports.sayit = function() {
-        console.log('hi!');
-    };
+```js
+exports.sayit = function() {
+    console.log('hi!');
+};
+```

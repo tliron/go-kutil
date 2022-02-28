@@ -70,8 +70,8 @@ func (self UtilAPI) Now() time.Time {
 	return time.Now()
 }
 
-func (self UtilAPI) Mutex() *sync.Mutex {
-	return new(sync.Mutex)
+func (self UtilAPI) Mutex() util.RWLocker {
+	return util.NewDefaultRWLocker()
 }
 
 var onces sync.Map

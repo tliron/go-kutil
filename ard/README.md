@@ -43,7 +43,6 @@ not define *how* the data is stored or transmitted. Thus ARD in itself is not co
 endiannes or precision of integers and floats, and also not concerned with character encodings
 (compare the Unicode standard for data vs. the UTF-8 standard for encoding that data).
 
-
 ARD and Representation Formats
 ------------------------------
 
@@ -83,7 +82,6 @@ See [our conventions here](cjson.go) or
 XML does not have a type system. Arbitrary XML cannot be parsed into ARD. 
 
 However, we support [certain conventions](xml.go) that enforce such compatibility.
-
 
 ARD and Programming Languages
 -----------------------------

@@ -1,5 +1,7 @@
 package logging
 
+import "io"
+
 //
 // Backend
 //
@@ -10,6 +12,7 @@ type Backend interface {
 	// "verbosity" 1 will add infos. "verbosity" 2 will add debugs.
 	// Set "verbostiy" to -1 to disable the log.
 	Configure(verbosity int, path *string)
+	GetWriter() io.Writer
 
 	NewMessage(name []string, level Level, depth int) Message
 	AllowLevel(name []string, level Level) bool
