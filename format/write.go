@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func Write(value interface{}, format string, indent string, strict bool, writer io.Writer) error {
+func Write(value any, format string, indent string, strict bool, writer io.Writer) error {
 	// Special handling for bare strings (format is ignored)
 	if s, ok := value.(string); ok {
 		_, err := io.WriteString(writer, s)
@@ -48,7 +48,7 @@ func Write(value interface{}, format string, indent string, strict bool, writer 
 	}
 }
 
-func WriteYAML(value interface{}, writer io.Writer, indent string, strict bool) error {
+func WriteYAML(value any, writer io.Writer, indent string, strict bool) error {
 	if strict {
 		value = ard.ToYAMLDocumentNode(value, true)
 	}
@@ -58,7 +58,7 @@ func WriteYAML(value interface{}, writer io.Writer, indent string, strict bool) 
 	encoder.SetIndent(len(indent)) // This might not work as expected for tabs!
 	// BUG: currently does not allow an indent value of 1, see: https://github.com/go-yaml/yaml/issues/501
 
-	if slice, ok := value.([]interface{}); !ok {
+	if slice, ok := value.([]any); !ok {
 		return encoder.Encode(value)
 	} else {
 		// YAML separates each entry with "---"
@@ -72,17 +72,17 @@ func WriteYAML(value interface{}, writer io.Writer, indent string, strict bool) 
 	}
 }
 
-func WriteJSON(value interface{}, writer io.Writer, indent string) error {
+func WriteJSON(value any, writer io.Writer, indent string) error {
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", indent)
 	return encoder.Encode(value)
 }
 
-func WriteCompatibleJSON(value interface{}, writer io.Writer, indent string) error {
+func WriteCompatibleJSON(value any, writer io.Writer, indent string) error {
 	return WriteJSON(ard.EnsureCompatibleJSON(value), writer, indent)
 }
 
-func WriteCompatibleXML(value interface{}, writer io.Writer, indent string) error {
+func WriteCompatibleXML(value any, writer io.Writer, indent string) error {
 	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
 	// JSON and YAML) we must canonicalize the data before encoding it
 	value, err := ard.Canonicalize(value)
@@ -119,12 +119,12 @@ func WriteXMLDocument(xmlDocument *etree.Document, writer io.Writer, indent stri
 	return err
 }
 
-func WriteCBOR(value interface{}, writer io.Writer) error {
+func WriteCBOR(value any, writer io.Writer) error {
 	encoder := cbor.NewEncoder(writer)
 	return encoder.Encode(value)
 }
 
-func WriteGo(value interface{}, writer io.Writer, indent string) error {
+func WriteGo(value any, writer io.Writer, indent string) error {
 	NewUtterConfig(indent).Fdump(writer, value)
 	return nil
 }

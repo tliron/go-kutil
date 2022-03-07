@@ -6,7 +6,7 @@ package ard
 // goja JavaScript engine will treat them as host objects instead of regular JavaScript dict
 // objects.
 
-type Value = interface{}
+type Value = any
 
 type List = []Value
 

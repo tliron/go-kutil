@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-func GetMetaObject(object interface{}, log logging.Logger) (meta.Object, error) {
+func GetMetaObject(object any, log logging.Logger) (meta.Object, error) {
 	switch o := object.(type) {
 	case meta.Object:
 		return o, nil

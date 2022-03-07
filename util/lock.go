@@ -145,7 +145,7 @@ type LockableEntity interface {
 	GetEntityLock() RWLocker
 }
 
-func GetEntityLock(entity interface{}) RWLocker {
+func GetEntityLock(entity any) RWLocker {
 	if lockable, ok := entity.(LockableEntity); ok {
 		return lockable.GetEntityLock()
 	} else {
@@ -162,7 +162,7 @@ var adHocLocks sync.Map
 // Warning: Because pointers can be re-used after the resource is freed,
 // there is no way for us to guarantee ad-hoc locks would not be reused
 // Thus this facililty should only be used for objects with a known and managed life span.
-func GetAdHocLock(pointer interface{}, type_ LockType) RWLocker {
+func GetAdHocLock(pointer any, type_ LockType) RWLocker {
 	if pointer == nil {
 		panic("no ad-hoc lock for nil")
 	}
@@ -181,7 +181,7 @@ func GetAdHocLock(pointer interface{}, type_ LockType) RWLocker {
 
 func ResetAdHocLocks() {
 	// See: https://stackoverflow.com/a/49355523
-	adHocLocks.Range(func(key interface{}, value interface{}) bool {
+	adHocLocks.Range(func(key any, value any) bool {
 		adHocLocks.Delete(key)
 		return true
 	})

@@ -56,6 +56,6 @@ func GetLogger(name string) Logger {
 	return NewBackendLogger(name_)
 }
 
-func GetLoggerf(format string, values ...interface{}) Logger {
+func GetLoggerf(format string, values ...any) Logger {
 	return GetLogger(fmt.Sprintf(format, values...))
 }

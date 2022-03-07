@@ -11,7 +11,7 @@ import (
 
 type PathElement struct {
 	Type  PathElementType
-	Value interface{} // string for FieldPathType and MapPathType, int for ListPathType and SequencedListPathType
+	Value any // string for FieldPathType and MapPathType, int for ListPathType and SequencedListPathType
 }
 
 type PathElementType uint8

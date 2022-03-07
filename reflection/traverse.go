@@ -6,10 +6,10 @@ import (
 	"github.com/tliron/kutil/util"
 )
 
-type EntityTraverser func(interface{}) bool
+type EntityTraverser func(any) bool
 
 // Ignore fields tagged with "traverse:ignore" or "lookup"
-func TraverseEntities(entity interface{}, locking bool, traverse EntityTraverser) {
+func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 	var lock util.RWLocker
 	if locking {
 		lock = util.GetEntityLock(entity)
@@ -113,9 +113,9 @@ func TraverseEntities(entity interface{}, locking bool, traverse EntityTraverser
 // EntityWork
 //
 
-type EntityWork map[interface{}]struct{}
+type EntityWork map[any]struct{}
 
-func (self EntityWork) Start(entityPtr interface{}) bool {
+func (self EntityWork) Start(entityPtr any) bool {
 	if _, ok := self[entityPtr]; ok {
 		return false
 	} else {
@@ -124,8 +124,8 @@ func (self EntityWork) Start(entityPtr interface{}) bool {
 	}
 }
 
-func (self EntityWork) TraverseEntities(entityPtr interface{}, traverse EntityTraverser) {
-	TraverseEntities(entityPtr, false, func(entityPtr interface{}) bool {
+func (self EntityWork) TraverseEntities(entityPtr any, traverse EntityTraverser) {
+	TraverseEntities(entityPtr, false, func(entityPtr any) bool {
 		if self.Start(entityPtr) {
 			return traverse(entityPtr)
 		} else {

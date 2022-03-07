@@ -11,13 +11,13 @@ import (
 	discoverypkg "k8s.io/client-go/discovery"
 )
 
-func NewUnstructuredFromYAMLTemplate(code string, data interface{}) (*unstructured.Unstructured, error) {
+func NewUnstructuredFromYAMLTemplate(code string, data any) (*unstructured.Unstructured, error) {
 	if object, err := ard.DecodeYAMLTemplate(code, data); err == nil {
 		object, _ = ard.MapsToStringMaps(object)
 		if stringMap, ok := object.(ard.StringMap); ok {
 			return &unstructured.Unstructured{Object: stringMap}, nil
 		} else {
-			return nil, fmt.Errorf("not a map[string]interface{}: %T", object)
+			return nil, fmt.Errorf("not a map[string]any: %T", object)
 		}
 	} else {
 		return nil, err
@@ -73,16 +73,16 @@ func NewUnstructuredResourceEventHandler(onAdded OnAddedFunc, onUpdated OnUpdate
 }
 
 // cache.ResourceEventHandler interface
-func (self *UnstructuredResourceEventHandler) OnAdd(object interface{}) {
+func (self *UnstructuredResourceEventHandler) OnAdd(object any) {
 	utilruntime.HandleError(self.onAdded(object.(*unstructured.Unstructured)))
 }
 
 // cache.ResourceEventHandler interface
-func (self *UnstructuredResourceEventHandler) OnUpdate(oldObject interface{}, newObject interface{}) {
+func (self *UnstructuredResourceEventHandler) OnUpdate(oldObject any, newObject any) {
 	utilruntime.HandleError(self.onUpdated(oldObject.(*unstructured.Unstructured), newObject.(*unstructured.Unstructured)))
 }
 
 // cache.ResourceEventHandler interface
-func (self *UnstructuredResourceEventHandler) OnDelete(object interface{}) {
+func (self *UnstructuredResourceEventHandler) OnDelete(object any) {
 	utilruntime.HandleError(self.onDeleted(object.(*unstructured.Unstructured)))
 }

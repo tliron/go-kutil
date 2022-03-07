@@ -75,7 +75,7 @@ func ValidateXML(code string) error {
 }
 
 func ValidateCBOR(code string) error {
-	var value interface{}
+	var value any
 	if bytes, err := util.FromBase64(code); err == nil {
 		if err := cbor.Unmarshal(bytes, &value); err == nil {
 			return nil

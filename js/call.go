@@ -6,7 +6,7 @@ import (
 
 type JavaScriptFunc = func(goja.FunctionCall) goja.Value
 
-func Call(runtime *goja.Runtime, function JavaScriptFunc, arguments ...interface{}) interface{} {
+func Call(runtime *goja.Runtime, function JavaScriptFunc, arguments ...any) any {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Errorf("%s", r)

@@ -12,7 +12,7 @@ func (self *Problems) Report(skip int, item string, message string) bool {
 	return self.ReportFull(skip+1, "", item, message, -1, -1)
 }
 
-func (self *Problems) Reportf(skip int, item string, format string, arg ...interface{}) bool {
+func (self *Problems) Reportf(skip int, item string, format string, arg ...any) bool {
 	return self.Report(skip+1, item, fmt.Sprintf(format, arg...))
 }
 

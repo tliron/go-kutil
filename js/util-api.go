@@ -62,7 +62,7 @@ func (self UtilAPI) Hash(value ard.Value) (string, error) {
 	}
 }
 
-func (self UtilAPI) Sprintf(format string, args ...interface{}) string {
+func (self UtilAPI) Sprintf(format string, args ...any) string {
 	return fmt.Sprintf(format, args...)
 }
 

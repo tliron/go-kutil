@@ -6,7 +6,7 @@ import (
 )
 
 // See: https://stackoverflow.com/a/7053871/849021
-func GetFunctionName(fn interface{}) string {
+func GetFunctionName(fn any) string {
 	if function := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()); function != nil {
 		return function.Name()
 	} else {

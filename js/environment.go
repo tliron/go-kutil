@@ -131,7 +131,7 @@ func (self *Environment) Release() error {
 	return self.StopWatcher()
 }
 
-func (self *Environment) Call(function JavaScriptFunc, arguments ...interface{}) interface{} {
+func (self *Environment) Call(function JavaScriptFunc, arguments ...any) any {
 	self.Lock.Lock()
 	defer self.Lock.Unlock()
 
@@ -139,11 +139,11 @@ func (self *Environment) Call(function JavaScriptFunc, arguments ...interface{})
 }
 
 func (self *Environment) ClearCache() {
-	self.exportsCache.Range(func(key interface{}, value interface{}) bool {
+	self.exportsCache.Range(func(key any, value any) bool {
 		self.exportsCache.Delete(key)
 		return true
 	})
-	self.programCache.Range(func(key interface{}, value interface{}) bool {
+	self.programCache.Range(func(key any, value any) bool {
 		self.programCache.Delete(key)
 		return true
 	})

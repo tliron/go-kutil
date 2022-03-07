@@ -9,7 +9,7 @@ import (
 	"github.com/tliron/kutil/util"
 )
 
-func Encode(value interface{}, format string, indent string, strict bool) (string, error) {
+func Encode(value any, format string, indent string, strict bool) (string, error) {
 	switch format {
 	case "yaml", "":
 		return EncodeYAML(value, indent, strict)
@@ -34,7 +34,7 @@ func Encode(value interface{}, format string, indent string, strict bool) (strin
 	}
 }
 
-func EncodeYAML(value interface{}, indent string, strict bool) (string, error) {
+func EncodeYAML(value any, indent string, strict bool) (string, error) {
 	var writer strings.Builder
 	if err := WriteYAML(value, &writer, indent, strict); err == nil {
 		return writer.String(), nil
@@ -43,7 +43,7 @@ func EncodeYAML(value interface{}, indent string, strict bool) (string, error) {
 	}
 }
 
-func EncodeJSON(value interface{}, indent string) (string, error) {
+func EncodeJSON(value any, indent string) (string, error) {
 	var writer strings.Builder
 	if err := WriteJSON(value, &writer, indent); err == nil {
 		s := writer.String()
@@ -57,11 +57,11 @@ func EncodeJSON(value interface{}, indent string) (string, error) {
 	}
 }
 
-func EncodeCompatibleJSON(value interface{}, indent string) (string, error) {
+func EncodeCompatibleJSON(value any, indent string) (string, error) {
 	return EncodeJSON(ard.EnsureCompatibleJSON(value), indent)
 }
 
-func EncodeCompatibleXML(value interface{}, indent string) (string, error) {
+func EncodeCompatibleXML(value any, indent string) (string, error) {
 	var writer strings.Builder
 	if err := WriteCompatibleXML(value, &writer, indent); err == nil {
 		return writer.String(), nil
@@ -71,7 +71,7 @@ func EncodeCompatibleXML(value interface{}, indent string) (string, error) {
 }
 
 // Encodes to Base64
-func EncodeCBOR(value interface{}) (string, error) {
+func EncodeCBOR(value any) (string, error) {
 	if bytes, err := cbor.Marshal(value); err == nil {
 		return util.ToBase64(bytes), nil
 	} else {
@@ -79,6 +79,6 @@ func EncodeCBOR(value interface{}) (string, error) {
 	}
 }
 
-func EncodeGo(value interface{}, indent string) (string, error) {
+func EncodeGo(value any, indent string) (string, error) {
 	return NewUtterConfig(indent).Sdump(value), nil
 }

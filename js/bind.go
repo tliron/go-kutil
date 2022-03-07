@@ -10,7 +10,7 @@ import (
 //
 
 type Bind interface {
-	Unbind() (interface{}, *Context, error)
+	Unbind() (any, *Context, error)
 }
 
 //
@@ -18,12 +18,12 @@ type Bind interface {
 //
 
 type EarlyBind struct {
-	Value   interface{}
+	Value   any
 	Context *Context
 }
 
 // Bind interface
-func (self EarlyBind) Unbind() (interface{}, *Context, error) {
+func (self EarlyBind) Unbind() (any, *Context, error) {
 	return self.Value, self.Context, nil
 }
 
@@ -34,7 +34,7 @@ func CreateEarlyBindExtension(context *Context) goja.Value {
 			childEnvironment := context.Environment.NewChild()
 			childContext := childEnvironment.NewContext(url, nil)
 			if exports, err := childEnvironment.cachedRequire(url, childContext); err == nil {
-				var value interface{}
+				var value any
 
 				if exportName == "" {
 					value = exports.Export()
@@ -66,11 +66,11 @@ type LateBind struct {
 }
 
 // Bind interface
-func (self LateBind) Unbind() (interface{}, *Context, error) {
+func (self LateBind) Unbind() (any, *Context, error) {
 	childEnvironment := self.Context.Environment.NewChild()
 	childContext := childEnvironment.NewContext(self.URL, nil)
 	if exports, err := childEnvironment.cachedRequire(self.URL, childContext); err == nil {
-		var value interface{}
+		var value any
 
 		if self.ExportName == "" {
 			value = exports.Export()

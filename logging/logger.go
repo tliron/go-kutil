@@ -14,20 +14,20 @@ type Logger interface {
 	// For unstructured logging
 
 	Log(level Level, depth int, message string)
-	Logf(level Level, depth int, format string, values ...interface{})
+	Logf(level Level, depth int, format string, values ...any)
 
 	Critical(message string)
-	Criticalf(format string, values ...interface{})
+	Criticalf(format string, values ...any)
 	Error(message string)
-	Errorf(format string, values ...interface{})
+	Errorf(format string, values ...any)
 	Warning(message string)
-	Warningf(format string, values ...interface{})
+	Warningf(format string, values ...any)
 	Notice(message string)
-	Noticef(format string, values ...interface{})
+	Noticef(format string, values ...any)
 	Info(message string)
-	Infof(format string, values ...interface{})
+	Infof(format string, values ...any)
 	Debug(message string)
-	Debugf(format string, values ...interface{})
+	Debugf(format string, values ...any)
 }
 
 //
@@ -63,7 +63,7 @@ func (self BackendLogger) Log(level Level, depth int, message string) {
 	}
 }
 
-func (self BackendLogger) Logf(level Level, depth int, format string, values ...interface{}) {
+func (self BackendLogger) Logf(level Level, depth int, format string, values ...any) {
 	if message := self.NewMessage(level, depth+1); message != nil {
 		message.Set("message", fmt.Sprintf(format, values...))
 		message.Send()
@@ -74,7 +74,7 @@ func (self BackendLogger) Critical(message string) {
 	self.Log(Critical, 1, message)
 }
 
-func (self BackendLogger) Criticalf(format string, values ...interface{}) {
+func (self BackendLogger) Criticalf(format string, values ...any) {
 	self.Logf(Critical, 1, format, values...)
 }
 
@@ -82,7 +82,7 @@ func (self BackendLogger) Error(message string) {
 	self.Log(Error, 1, message)
 }
 
-func (self BackendLogger) Errorf(format string, values ...interface{}) {
+func (self BackendLogger) Errorf(format string, values ...any) {
 	self.Logf(Error, 1, format, values...)
 }
 
@@ -90,7 +90,7 @@ func (self BackendLogger) Warning(message string) {
 	self.Log(Warning, 1, message)
 }
 
-func (self BackendLogger) Warningf(format string, values ...interface{}) {
+func (self BackendLogger) Warningf(format string, values ...any) {
 	self.Logf(Warning, 1, format, values...)
 }
 
@@ -98,7 +98,7 @@ func (self BackendLogger) Notice(message string) {
 	self.Log(Notice, 1, message)
 }
 
-func (self BackendLogger) Noticef(format string, values ...interface{}) {
+func (self BackendLogger) Noticef(format string, values ...any) {
 	self.Logf(Notice, 1, format, values...)
 }
 
@@ -106,7 +106,7 @@ func (self BackendLogger) Info(message string) {
 	self.Log(Info, 1, message)
 }
 
-func (self BackendLogger) Infof(format string, values ...interface{}) {
+func (self BackendLogger) Infof(format string, values ...any) {
 	self.Logf(Info, 1, format, values...)
 }
 
@@ -114,7 +114,7 @@ func (self BackendLogger) Debug(message string) {
 	self.Log(Debug, 1, message)
 }
 
-func (self BackendLogger) Debugf(format string, values ...interface{}) {
+func (self BackendLogger) Debugf(format string, values ...any) {
 	self.Logf(Debug, 1, format, values...)
 }
 
@@ -165,7 +165,7 @@ func (self ScopeLogger) Log(level Level, depth int, message string) {
 	}
 }
 
-func (self ScopeLogger) Logf(level Level, depth int, format string, values ...interface{}) {
+func (self ScopeLogger) Logf(level Level, depth int, format string, values ...any) {
 	if message := self.NewMessage(level, depth+1); message != nil {
 		message.Set("message", fmt.Sprintf(format, values...))
 		message.Send()
@@ -176,7 +176,7 @@ func (self ScopeLogger) Critical(message string) {
 	self.Log(Critical, 1, message)
 }
 
-func (self ScopeLogger) Criticalf(format string, values ...interface{}) {
+func (self ScopeLogger) Criticalf(format string, values ...any) {
 	self.Logf(Critical, 1, format, values...)
 }
 
@@ -184,7 +184,7 @@ func (self ScopeLogger) Error(message string) {
 	self.Log(Error, 1, message)
 }
 
-func (self ScopeLogger) Errorf(format string, values ...interface{}) {
+func (self ScopeLogger) Errorf(format string, values ...any) {
 	self.Logf(Error, 1, format, values...)
 }
 
@@ -192,7 +192,7 @@ func (self ScopeLogger) Warning(message string) {
 	self.Log(Warning, 1, message)
 }
 
-func (self ScopeLogger) Warningf(format string, values ...interface{}) {
+func (self ScopeLogger) Warningf(format string, values ...any) {
 	self.Logf(Warning, 1, format, values...)
 }
 
@@ -200,7 +200,7 @@ func (self ScopeLogger) Notice(message string) {
 	self.Log(Notice, 1, message)
 }
 
-func (self ScopeLogger) Noticef(format string, values ...interface{}) {
+func (self ScopeLogger) Noticef(format string, values ...any) {
 	self.Logf(Notice, 1, format, values...)
 }
 
@@ -208,7 +208,7 @@ func (self ScopeLogger) Info(message string) {
 	self.Log(Info, 1, message)
 }
 
-func (self ScopeLogger) Infof(format string, values ...interface{}) {
+func (self ScopeLogger) Infof(format string, values ...any) {
 	self.Logf(Info, 1, format, values...)
 }
 
@@ -216,7 +216,7 @@ func (self ScopeLogger) Debug(message string) {
 	self.Log(Debug, 1, message)
 }
 
-func (self ScopeLogger) Debugf(format string, values ...interface{}) {
+func (self ScopeLogger) Debugf(format string, values ...any) {
 	self.Logf(Debug, 1, format, values...)
 }
 
@@ -244,41 +244,41 @@ func (self MockLogger) SetMaxLevel(level Level) {
 func (self MockLogger) Log(level Level, depth int, message string) {
 }
 
-func (self MockLogger) Logf(level Level, depth int, format string, values ...interface{}) {
+func (self MockLogger) Logf(level Level, depth int, format string, values ...any) {
 }
 
 func (self MockLogger) Critical(message string) {
 }
 
-func (self MockLogger) Criticalf(format string, values ...interface{}) {
+func (self MockLogger) Criticalf(format string, values ...any) {
 }
 
 func (self MockLogger) Error(message string) {
 }
 
-func (self MockLogger) Errorf(format string, values ...interface{}) {
+func (self MockLogger) Errorf(format string, values ...any) {
 }
 
 func (self MockLogger) Warning(message string) {
 }
 
-func (self MockLogger) Warningf(format string, values ...interface{}) {
+func (self MockLogger) Warningf(format string, values ...any) {
 }
 
 func (self MockLogger) Notice(message string) {
 }
 
-func (self MockLogger) Noticef(format string, values ...interface{}) {
+func (self MockLogger) Noticef(format string, values ...any) {
 }
 
 func (self MockLogger) Info(message string) {
 }
 
-func (self MockLogger) Infof(format string, values ...interface{}) {
+func (self MockLogger) Infof(format string, values ...any) {
 }
 
 func (self MockLogger) Debug(message string) {
 }
 
-func (self MockLogger) Debugf(format string, values ...interface{}) {
+func (self MockLogger) Debugf(format string, values ...any) {
 }

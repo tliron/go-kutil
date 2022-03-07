@@ -13,7 +13,7 @@ func Fail(message string) {
 	Exit(1)
 }
 
-func Failf(f string, args ...interface{}) {
+func Failf(f string, args ...any) {
 	Fail(fmt.Sprintf(f, args...))
 }
 

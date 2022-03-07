@@ -5,7 +5,7 @@ import (
 	templatepkg "text/template"
 )
 
-func DecodeYAMLTemplate(code string, data interface{}) (Value, error) {
+func DecodeYAMLTemplate(code string, data any) (Value, error) {
 	if template, err := templatepkg.New("").Parse(code); err == nil {
 		var buffer bytes.Buffer
 		if err := template.Execute(&buffer, data); err == nil {

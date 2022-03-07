@@ -58,7 +58,7 @@ func (self FormatAPI) Decode(code string, format string, all bool) (ard.Value, e
 	}
 }
 
-func (self FormatAPI) Encode(value interface{}, format string, indent string, writer io.Writer) (string, error) {
+func (self FormatAPI) Encode(value any, format string, indent string, writer io.Writer) (string, error) {
 	if writer == nil {
 		return formatpkg.Encode(value, format, indent, false)
 	} else {

@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-func GetTaggedFields(structPtr interface{}, name string) []reflect.Value {
+func GetTaggedFields(structPtr any, name string) []reflect.Value {
 	var fields []reflect.Value
 	value := reflect.ValueOf(structPtr).Elem()
 	for fieldName := range GetFieldTagsForValue(value, name) {

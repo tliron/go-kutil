@@ -3,6 +3,7 @@ package version
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 )
 
 func Print() {
@@ -20,4 +21,7 @@ func Print() {
 	fmt.Printf("arch=%s\n", runtime.GOARCH)
 	fmt.Printf("os=%s\n", runtime.GOOS)
 	fmt.Printf("compiler=%s\n", runtime.Compiler)
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		fmt.Printf("compiler-version=%s\n", buildInfo.GoVersion)
+	}
 }

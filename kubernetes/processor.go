@@ -18,9 +18,9 @@ import (
 // Processor
 //
 
-type GetControllerObjectFunc = func(name string, namespace string) (interface{}, error)
+type GetControllerObjectFunc = func(name string, namespace string) (any, error)
 
-type ProcessFunc = func(object interface{}) (bool, error)
+type ProcessFunc = func(object any) (bool, error)
 
 type Processor struct {
 	Name                string
@@ -46,7 +46,7 @@ func NewProcessor(toolName string, name string, informer cache.SharedIndexInform
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: self.EnqueueFor,
-		UpdateFunc: func(old interface{}, new interface{}) {
+		UpdateFunc: func(old any, new any) {
 			// TODO: the informer's periodic resync will send "update" events on all resources
 			// even if they didn't change
 			self.EnqueueFor(new)
@@ -68,7 +68,7 @@ func (self *Processor) Start(concurrency uint, stopChannel <-chan struct{}) {
 	}
 }
 
-func (self *Processor) EnqueueFor(object interface{}) {
+func (self *Processor) EnqueueFor(object any) {
 	if key, err := cache.MetaNamespaceKeyFunc(object); err == nil {
 		self.Workqueue.Add(key)
 	} else {
@@ -91,7 +91,7 @@ func (self *Processor) nextWorkItem() bool {
 	}
 }
 
-func (self *Processor) processWorkItem(item interface{}) {
+func (self *Processor) processWorkItem(item any) {
 	if key, ok := item.(string); ok {
 		if namespace, name, err := cache.SplitMetaNamespaceKey(key); err == nil {
 			if object, err := self.GetControllerObject(name, namespace); err == nil {

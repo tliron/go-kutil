@@ -80,7 +80,7 @@ func CreateX509Certificate(organization string, host string, rsa bool, ca bool) 
 	}
 }
 
-func SignX509Certificate(certificate *x509.Certificate, privateKey interface{}, publicKey interface{}) (*x509.Certificate, error) {
+func SignX509Certificate(certificate *x509.Certificate, privateKey any, publicKey any) (*x509.Certificate, error) {
 	if certificateBytes, err := x509.CreateCertificate(rand.Reader, certificate, certificate, publicKey, privateKey); err == nil {
 		return x509.ParseCertificate(certificateBytes)
 	} else {

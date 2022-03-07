@@ -16,7 +16,7 @@ var CompatibleXMLMapEntryTag = "entry"
 var CompatibleXMLMapEntryKeyTag = "key"
 var CompatibleXMLMapEntryValueTag = "value"
 
-func ToCompatibleXML(data interface{}) interface{} {
+func ToCompatibleXML(data any) any {
 	if data == nil {
 		return nil
 	}
@@ -26,7 +26,7 @@ func ToCompatibleXML(data interface{}) interface{} {
 	switch value.Type().Kind() {
 	case reflect.Slice:
 		length := value.Len()
-		slice := make([]interface{}, length)
+		slice := make([]any, length)
 		for index := 0; index < length; index++ {
 			v := value.Index(index).Interface()
 			slice[index] = ToCompatibleXML(v)
@@ -50,7 +50,7 @@ func ToCompatibleXML(data interface{}) interface{} {
 	return data
 }
 
-func FromCompatibleXML(element *etree.Element) (interface{}, error) {
+func FromCompatibleXML(element *etree.Element) (any, error) {
 	fmt.Println(element.Tag)
 
 	switch element.Tag {
@@ -117,7 +117,7 @@ func FromCompatibleXML(element *etree.Element) (interface{}, error) {
 //
 
 type CompatibleXMLList struct {
-	Entries []interface{}
+	Entries []any
 }
 
 // xml.Marshaler interface
@@ -163,8 +163,8 @@ func (self CompatibleXMLMap) MarshalXML(encoder *xml.Encoder, start xml.StartEle
 //
 
 type CompatibleXMLMapEntry struct {
-	Key   interface{}
-	Value interface{}
+	Key   any
+	Value any
 }
 
 // xml.Marshaler interface
@@ -245,7 +245,7 @@ func xmlElementToString(element *etree.Element) string {
 	}
 }
 
-func getXmlElementSingleChild(element *etree.Element) (interface{}, error) {
+func getXmlElementSingleChild(element *etree.Element) (any, error) {
 	children := element.ChildElements()
 	length := len(children)
 	if length == 1 {

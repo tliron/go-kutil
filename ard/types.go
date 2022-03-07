@@ -84,13 +84,13 @@ var TypeValidators = map[TypeName]TypeValidator{
 	TypeTimestamp: IsTimestamp,
 }
 
-// Map = map[interface{}]interface{}
+// Map = map[any]any
 func IsMap(value Value) bool {
 	_, ok := value.(Map)
 	return ok
 }
 
-// List = []interface{}
+// List = []any
 func IsList(value Value) bool {
 	_, ok := value.(List)
 	return ok

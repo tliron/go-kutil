@@ -5,13 +5,13 @@ package ard
 //
 
 type Node struct {
-	Data interface{}
+	Data any
 
 	container *Node
 	key       string
 }
 
-func NewNode(data interface{}) *Node {
+func NewNode(data any) *Node {
 	return &Node{data, nil, ""}
 }
 
@@ -32,7 +32,7 @@ func (self *Node) Get(key string) *Node {
 	return NoNode
 }
 
-func (self *Node) Put(key string, value interface{}) bool {
+func (self *Node) Put(key string, value any) bool {
 	if self != NoNode {
 		if data_, ok := self.Data.(StringMap); ok {
 			data_[key] = value
@@ -45,7 +45,7 @@ func (self *Node) Put(key string, value interface{}) bool {
 	return false
 }
 
-func (self *Node) Append(value interface{}) bool {
+func (self *Node) Append(value any) bool {
 	if self != NoNode {
 		if data_, ok := self.Data.(List); ok {
 			self.container.Put(self.key, append(data_, value))

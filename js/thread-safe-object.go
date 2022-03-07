@@ -48,7 +48,7 @@ func (self *ThreadSafeObject) Delete(key string) bool {
 // goja.DynamicObject interface
 func (self *ThreadSafeObject) Keys() []string {
 	var keys []string
-	self.map_.Range(func(key interface{}, value interface{}) bool {
+	self.map_.Range(func(key any, value any) bool {
 		keys = append(keys, key.(string))
 		return true
 	})

@@ -41,8 +41,8 @@ func MapsToStringMaps(value Value) (Value, bool) {
 	return value, false
 }
 
-// Ensure data adheres to map[string]interface{}
-// (JSON encoding does not support map[interface{}]interface{})
+// Ensure data adheres to map[string]any
+// (JSON encoding does not support map[any]any)
 func EnsureStringMaps(stringMap StringMap) StringMap {
 	stringMap_, _ := MapsToStringMaps(stringMap)
 	return stringMap_.(StringMap)

@@ -10,7 +10,7 @@ import (
 	"github.com/tliron/kutil/util"
 )
 
-func Print(value interface{}, format string, writer io.Writer, strict bool, pretty bool) error {
+func Print(value any, format string, writer io.Writer, strict bool, pretty bool) error {
 	// Special handling for strings (ignore format)
 	if s, ok := value.(string); ok {
 		if _, err := io.WriteString(writer, s); err == nil {
@@ -53,7 +53,7 @@ func Print(value interface{}, format string, writer io.Writer, strict bool, pret
 	}
 }
 
-func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) error {
+func PrintYAML(value any, writer io.Writer, strict bool, pretty bool) error {
 	if pretty && terminal.Colorize {
 		if code, err := EncodeYAML(value, terminal.Indent, strict); err == nil {
 			return PrettifyYAML(code, writer)
@@ -65,7 +65,7 @@ func PrintYAML(value interface{}, writer io.Writer, strict bool, pretty bool) er
 	}
 }
 
-func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
+func PrintJSON(value any, writer io.Writer, pretty bool) error {
 	if pretty {
 		if terminal.Colorize {
 			formatter := NewJSONFormatter()
@@ -86,11 +86,11 @@ func PrintJSON(value interface{}, writer io.Writer, pretty bool) error {
 	}
 }
 
-func PrintCompatibleJSON(value interface{}, writer io.Writer, pretty bool) error {
+func PrintCompatibleJSON(value any, writer io.Writer, pretty bool) error {
 	return PrintJSON(ard.EnsureCompatibleJSON(value), writer, pretty)
 }
 
-func PrintCompatibleXML(value interface{}, writer io.Writer, pretty bool) error {
+func PrintCompatibleXML(value any, writer io.Writer, pretty bool) error {
 	indent := ""
 	if pretty {
 		indent = terminal.Indent
@@ -116,11 +116,11 @@ func PrintXMLDocument(xmlDocument *etree.Document, writer io.Writer, pretty bool
 	return err
 }
 
-func PrintCBOR(value interface{}, writer io.Writer) error {
+func PrintCBOR(value any, writer io.Writer) error {
 	return WriteCBOR(value, writer)
 }
 
-func PrintGo(value interface{}, writer io.Writer, pretty bool) error {
+func PrintGo(value any, writer io.Writer, pretty bool) error {
 	if pretty {
 		return WriteGo(value, writer, terminal.Indent)
 	} else {

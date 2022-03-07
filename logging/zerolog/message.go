@@ -21,7 +21,7 @@ func NewMessage(event *zerolog.Event) logging.Message {
 
 // logging.Message interface
 
-func (self *Message) Set(key string, value interface{}) logging.Message {
+func (self *Message) Set(key string, value any) logging.Message {
 	switch value_ := value.(type) {
 	case string:
 		self.event.Str(key, value_)

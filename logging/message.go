@@ -9,7 +9,7 @@ import (
 //
 
 type Message interface {
-	Set(key string, value interface{}) Message
+	Set(key string, value any) Message
 	Send()
 }
 
@@ -34,7 +34,7 @@ func NewUnstructuredMessage(send SendUnstructuredMessageFunc) *UnstructuredMessa
 
 // Message interface
 
-func (self *UnstructuredMessage) Set(key string, value interface{}) Message {
+func (self *UnstructuredMessage) Set(key string, value any) Message {
 	switch key {
 	case "message":
 		self.message = toString(value)
@@ -72,7 +72,7 @@ func (self *UnstructuredMessage) Send() {
 	self.send(message)
 }
 
-func toString(value interface{}) string {
+func toString(value any) string {
 	switch value_ := value.(type) {
 	case string:
 		return value_

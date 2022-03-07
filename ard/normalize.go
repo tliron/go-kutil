@@ -1,7 +1,7 @@
 package ard
 
 // Ensure data adheres to the ARD map type
-// (JSON decoding uses map[string]interface{} instead of map[interface{}]interface{})
+// (JSON decoding uses map[string]any instead of map[any]any)
 func Normalize(value Value) (Value, bool) {
 	switch value_ := value.(type) {
 	case StringMap:

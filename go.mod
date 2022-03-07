@@ -1,6 +1,6 @@
 module github.com/tliron/kutil
 
-go 1.17
+go 1.18
 
 require (
 	github.com/beevik/etree v1.1.0
@@ -16,7 +16,6 @@ require (
 	github.com/klauspost/pgzip v1.2.5
 	github.com/kortschak/utter v1.5.0
 	github.com/mitchellh/hashstructure/v2 v2.0.2
-	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/rs/zerolog v1.26.1
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/segmentio/ksuid v1.0.4
@@ -26,10 +25,10 @@ require (
 	github.com/zchee/color/v2 v2.0.6
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.23.3
-	k8s.io/apiextensions-apiserver v0.23.3
-	k8s.io/apimachinery v0.23.3
-	k8s.io/client-go v0.23.3
+	k8s.io/api v0.23.4
+	k8s.io/apiextensions-apiserver v0.23.4
+	k8s.io/apimachinery v0.23.4
+	k8s.io/client-go v0.23.4
 	k8s.io/klog/v2 v2.40.1
 )
 
@@ -77,7 +76,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/opencontainers/image-spec v1.0.2-0.20211117181255-693428a734f5 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect

@@ -3,6 +3,7 @@ package cobra
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 	"github.com/tliron/kutil/terminal"
@@ -29,6 +30,9 @@ func NewVersionCommand(name string) *cobra.Command {
 			terminal.Printf("arch=%s\n", runtime.GOARCH)
 			terminal.Printf("os=%s\n", runtime.GOOS)
 			terminal.Printf("compiler=%s\n", runtime.Compiler)
+			if buildInfo, ok := debug.ReadBuildInfo(); ok {
+				terminal.Printf("compiler-version=%s\n", buildInfo.GoVersion)
+			}
 		},
 	}
 }

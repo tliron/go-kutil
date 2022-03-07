@@ -11,7 +11,7 @@ import (
 const DIRECTORY_WRITE_PERMISSIONS = 0700
 const FILE_WRITE_PERMISSIONS = 0600
 
-func WriteOrPrint(value interface{}, format string, writer io.Writer, strict bool, pretty bool, output string) error {
+func WriteOrPrint(value any, format string, writer io.Writer, strict bool, pretty bool, output string) error {
 	if output != "" {
 		if f, err := OpenFileForWrite(output); err == nil {
 			defer f.Close()
