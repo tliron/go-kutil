@@ -11,6 +11,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/goccy/go-yaml v1.9.5
 	github.com/google/go-containerregistry v0.8.0
+	github.com/hashicorp/go-hclog v1.2.0
 	github.com/hashicorp/memberlist v0.3.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/klauspost/pgzip v1.2.5
@@ -19,11 +20,11 @@ require (
 	github.com/rs/zerolog v1.26.1
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/segmentio/ksuid v1.0.4
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/yamlkeys v1.3.5
 	github.com/zchee/color/v2 v2.0.6
-	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+	golang.org/x/crypto v0.0.0-20220314234724-5d542ad81a58
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.23.4
 	k8s.io/apiextensions-apiserver v0.23.4

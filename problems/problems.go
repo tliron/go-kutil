@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -169,6 +170,20 @@ func (self *Problems) Write(writer io.Writer, stylist *terminal.Stylist, pretty 
 		return true
 	}
 	return false
+}
+
+func (self *Problems) WithError(err error, locate bool) error {
+	var writer strings.Builder
+	if err != nil {
+		writer.WriteString(err.Error())
+	}
+	if len(self.Problems) > 0 {
+		if writer.Len() > 0 {
+			writer.WriteRune('\n')
+		}
+		writer.WriteString(self.ToString(locate))
+	}
+	return errors.New(writer.String())
 }
 
 // Print
