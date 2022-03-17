@@ -6,28 +6,28 @@ import (
 )
 
 //
-// MemberlistLogEvents
+// MemberlistEventLog
 //
 
-type MemberlistLogEvents struct {
+type MemberlistEventLog struct {
 	log logging.Logger
 }
 
-func NewMemberlistLogEvents(log logging.Logger) *MemberlistLogEvents {
-	return &MemberlistLogEvents{log}
+func NewMemberlistEventLog(log logging.Logger) *MemberlistEventLog {
+	return &MemberlistEventLog{log}
 }
 
 // memberlist.EventDelegate interface
-func (self *MemberlistLogEvents) NotifyJoin(node *memberlist.Node) {
+func (self *MemberlistEventLog) NotifyJoin(node *memberlist.Node) {
 	self.log.Infof("node has joined: %s", node.String())
 }
 
 // memberlist.EventDelegate interface
-func (self *MemberlistLogEvents) NotifyLeave(node *memberlist.Node) {
+func (self *MemberlistEventLog) NotifyLeave(node *memberlist.Node) {
 	self.log.Infof("node has left: %s", node.String())
 }
 
 // memberlist.EventDelegate interface
-func (self *MemberlistLogEvents) NotifyUpdate(node *memberlist.Node) {
+func (self *MemberlistEventLog) NotifyUpdate(node *memberlist.Node) {
 	self.log.Infof("node was updated: %s", node.String())
 }

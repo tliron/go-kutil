@@ -5,9 +5,9 @@ package terminal
 import (
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func GetSize() (int, int, error) {
-	return terminal.GetSize(int(os.Stdout.Fd()))
+	return term.GetSize(int(os.Stdout.Fd()))
 }

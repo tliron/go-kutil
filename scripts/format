@@ -7,6 +7,7 @@ HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 gofmt -w -s -e \
 	"$ROOT/ard" \
 	"$ROOT/cobra" \
+	"$ROOT/exec" \
 	"$ROOT/format" \
 	"$ROOT/fswatch" \
 	"$ROOT/js" \

@@ -133,6 +133,24 @@ func (self *SyncedWriter) Close() error {
 }
 
 //
+// ChannelWriter
+//
+
+type ChannelWriter struct {
+	ch chan []byte
+}
+
+func NewChannelWriter(ch chan []byte) *ChannelWriter {
+	return &ChannelWriter{ch}
+}
+
+// io.Writer interface
+func (self *ChannelWriter) Write(p []byte) (int, error) {
+	self.ch <- p
+	return len(p), nil
+}
+
+//
 // TestLogWriter
 //
 
