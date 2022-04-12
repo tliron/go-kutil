@@ -10,6 +10,6 @@ cd "$ROOT"
 go mod init "$MODULE"
 go mod tidy
 
-"$HERE/test"
+"$HERE/build"
 
 go mod tidy

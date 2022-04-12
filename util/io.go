@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const BUFFER_SIZE = 1
+
 func WriteNewline(writer io.Writer) error {
 	_, err := io.WriteString(writer, "\n")
 	return err
@@ -14,7 +16,7 @@ func WriteNewline(writer io.Writer) error {
 func ReaderSize(reader io.Reader) (int64, error) {
 	var size int64 = 0
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, BUFFER_SIZE)
 	for {
 		if count, err := reader.Read(buffer); err == nil {
 			size += int64(count)
@@ -146,7 +148,12 @@ func NewChannelWriter(ch chan []byte) *ChannelWriter {
 
 // io.Writer interface
 func (self *ChannelWriter) Write(p []byte) (int, error) {
-	self.ch <- p
+	if p != nil {
+		// We are copying the slice because contents might change while sending to the channel
+		p_ := make([]byte, len(p))
+		copy(p_, p)
+		self.ch <- p_
+	}
 	return len(p), nil
 }
 

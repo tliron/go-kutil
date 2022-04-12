@@ -18,6 +18,7 @@ gofmt -w -s -e \
 	"$ROOT/logging/simple" \
 	"$ROOT/logging/zerolog" \
 	"$ROOT/problems" \
+	"$ROOT/protobuf" \
 	"$ROOT/reflection" \
 	"$ROOT/terminal" \
 	"$ROOT/url" \

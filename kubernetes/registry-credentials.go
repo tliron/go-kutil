@@ -27,10 +27,10 @@ func NewRegistryCredentials(username string, password string) *RegistryCredentia
 
 func NewRegistryCredentialsFromARD(value ard.Value) (*RegistryCredentials, error) {
 	node := ard.NewNode(value)
-	if v, ok := node.Get("username").String(false); ok {
+	if v, ok := node.Get("username").String(); ok {
 		var self RegistryCredentials
 		self.Username = v
-		if v, ok := node.Get("password").String(false); ok {
+		if v, ok := node.Get("password").String(); ok {
 			self.Password = v
 			return &self, nil
 		}

@@ -1,27 +1,27 @@
 package version
 
 import (
-	"fmt"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/tliron/kutil/terminal"
 )
 
 func Print() {
-	// Why not use the version from runtime/debug.ReadBuildInfo? See:
-	// https://github.com/golang/go/issues/29228
 	if GitVersion != "" {
-		fmt.Printf("version=%s\n", GitVersion)
+		terminal.Printf("version=%s\n", GitVersion)
 	}
+	// TODO: use buildInfo.Settings's "vcs.revision" instead of version.GitRevision?
 	if GitRevision != "" {
-		fmt.Printf("revision=%s\n", GitRevision)
+		terminal.Printf("revision=%s\n", GitRevision)
 	}
 	if Timestamp != "" {
-		fmt.Printf("timestamp=%s\n", Timestamp)
+		terminal.Printf("timestamp=%s\n", Timestamp)
 	}
-	fmt.Printf("arch=%s\n", runtime.GOARCH)
-	fmt.Printf("os=%s\n", runtime.GOOS)
-	fmt.Printf("compiler=%s\n", runtime.Compiler)
+	terminal.Printf("arch=%s\n", runtime.GOARCH)
+	terminal.Printf("os=%s\n", runtime.GOOS)
+	terminal.Printf("compiler=%s\n", runtime.Compiler)
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
-		fmt.Printf("compiler-version=%s\n", buildInfo.GoVersion)
+		terminal.Printf("compiler-version=%s\n", buildInfo.GoVersion)
 	}
 }

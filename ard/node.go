@@ -9,23 +9,31 @@ type Node struct {
 
 	container *Node
 	key       string
+	allowNil  bool
 }
 
 func NewNode(data any) *Node {
-	return &Node{data, nil, ""}
+	return &Node{data, nil, "", false}
 }
 
-var NoNode = &Node{nil, nil, ""}
+var NoNode = &Node{nil, nil, "", false}
+
+func (self *Node) AllowNil() *Node {
+	if self != NoNode {
+		return &Node{self.Data, self.container, self.key, true}
+	}
+	return NoNode
+}
 
 func (self *Node) Get(key string) *Node {
 	if self != NoNode {
 		if data_, ok := self.Data.(StringMap); ok {
 			if value, ok := data_[key]; ok {
-				return &Node{value, self, key}
+				return &Node{value, self, key, self.allowNil}
 			}
 		} else if data_, ok := self.Data.(Map); ok {
 			if value, ok := data_[key]; ok {
-				return &Node{value, self, key}
+				return &Node{value, self, key, self.allowNil}
 			}
 		}
 	}
@@ -55,9 +63,9 @@ func (self *Node) Append(value any) bool {
 	return false
 }
 
-func (self *Node) Bytes(allowNil bool) ([]byte, bool) {
+func (self *Node) Bytes() ([]byte, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return nil, true
 		}
 		value, ok := self.Data.([]byte)
@@ -66,9 +74,9 @@ func (self *Node) Bytes(allowNil bool) ([]byte, bool) {
 	return nil, false
 }
 
-func (self *Node) String(allowNil bool) (string, bool) {
+func (self *Node) String() (string, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return "", true
 		}
 		value, ok := self.Data.(string)
@@ -77,9 +85,9 @@ func (self *Node) String(allowNil bool) (string, bool) {
 	return "", false
 }
 
-func (self *Node) Integer(allowNil bool) (int64, bool) {
+func (self *Node) Integer() (int64, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return 0, true
 		}
 		switch value := self.Data.(type) {
@@ -98,9 +106,44 @@ func (self *Node) Integer(allowNil bool) (int64, bool) {
 	return 0, false
 }
 
-func (self *Node) UnsignedInteger(allowNil bool) (uint64, bool) {
+func (self *Node) NumberAsInteger() (int64, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
+			return 0, true
+		}
+		switch value := self.Data.(type) {
+		case int64:
+			return value, true
+		case int32:
+			return int64(value), true
+		case int16:
+			return int64(value), true
+		case int8:
+			return int64(value), true
+		case int:
+			return int64(value), true
+		case uint64:
+			return int64(value), true
+		case uint32:
+			return int64(value), true
+		case uint16:
+			return int64(value), true
+		case uint8:
+			return int64(value), true
+		case uint:
+			return int64(value), true
+		case float64:
+			return int64(value), true
+		case float32:
+			return int64(value), true
+		}
+	}
+	return 0, false
+}
+
+func (self *Node) UnsignedInteger() (uint64, bool) {
+	if self != NoNode {
+		if self.allowNil && (self.Data == nil) {
 			return 0, true
 		}
 		switch value := self.Data.(type) {
@@ -119,9 +162,9 @@ func (self *Node) UnsignedInteger(allowNil bool) (uint64, bool) {
 	return 0, false
 }
 
-func (self *Node) Float(allowNil bool) (float64, bool) {
+func (self *Node) Float() (float64, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return 0.0, true
 		}
 		switch value := self.Data.(type) {
@@ -134,9 +177,44 @@ func (self *Node) Float(allowNil bool) (float64, bool) {
 	return 0.0, false
 }
 
-func (self *Node) Boolean(allowNil bool) (bool, bool) {
+func (self *Node) NumberAsFloat() (float64, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
+			return 0.0, true
+		}
+		switch value := self.Data.(type) {
+		case float64:
+			return value, true
+		case float32:
+			return float64(value), true
+		case int64:
+			return float64(value), true
+		case int32:
+			return float64(value), true
+		case int16:
+			return float64(value), true
+		case int8:
+			return float64(value), true
+		case int:
+			return float64(value), true
+		case uint64:
+			return float64(value), true
+		case uint32:
+			return float64(value), true
+		case uint16:
+			return float64(value), true
+		case uint8:
+			return float64(value), true
+		case uint:
+			return float64(value), true
+		}
+	}
+	return 0.0, false
+}
+
+func (self *Node) Boolean() (bool, bool) {
+	if self != NoNode {
+		if self.allowNil && (self.Data == nil) {
 			return false, true
 		}
 		if value, ok := self.Data.(bool); ok {
@@ -146,9 +224,9 @@ func (self *Node) Boolean(allowNil bool) (bool, bool) {
 	return false, false
 }
 
-func (self *Node) StringMap(allowNil bool) (StringMap, bool) {
+func (self *Node) StringMap() (StringMap, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return make(StringMap), true
 		}
 		value, ok := self.Data.(StringMap)
@@ -157,9 +235,9 @@ func (self *Node) StringMap(allowNil bool) (StringMap, bool) {
 	return nil, false
 }
 
-func (self *Node) Map(allowNil bool) (Map, bool) {
+func (self *Node) Map() (Map, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return make(Map), true
 		}
 		value, ok := self.Data.(Map)
@@ -168,9 +246,9 @@ func (self *Node) Map(allowNil bool) (Map, bool) {
 	return nil, false
 }
 
-func (self *Node) List(allowNil bool) (List, bool) {
+func (self *Node) List() (List, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return nil, true
 		}
 		value, ok := self.Data.(List)
@@ -179,9 +257,9 @@ func (self *Node) List(allowNil bool) (List, bool) {
 	return nil, false
 }
 
-func (self *Node) StringList(allowNil bool) ([]string, bool) {
+func (self *Node) StringList() ([]string, bool) {
 	if self != NoNode {
-		if allowNil && (self.Data == nil) {
+		if self.allowNil && (self.Data == nil) {
 			return nil, true
 		}
 		if value, ok := self.Data.(List); ok {

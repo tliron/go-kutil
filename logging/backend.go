@@ -1,6 +1,8 @@
 package logging
 
-import "io"
+import (
+	"io"
+)
 
 //
 // Backend
