@@ -158,6 +158,34 @@ func (self *ChannelWriter) Write(p []byte) (int, error) {
 }
 
 //
+// ChannelReader
+//
+
+type ChannelReader struct {
+	reader *io.PipeReader
+}
+
+func NewChannelReader(ch chan []byte) *ChannelReader {
+	reader, writer := io.Pipe()
+
+	go func() {
+		defer writer.Close()
+		for p := range ch {
+			if _, err := writer.Write(p); err != nil {
+				return
+			}
+		}
+	}()
+
+	return &ChannelReader{reader: reader}
+}
+
+// io.Reader interface
+func (self *ChannelReader) Read(p []byte) (n int, err error) {
+	return self.reader.Read(p)
+}
+
+//
 // TestLogWriter
 //
 

@@ -50,7 +50,7 @@ func (self UtilAPI) IsType(value ard.Value, type_ string) (bool, error) {
 	if validate, ok := ard.TypeValidators[ard.TypeName(type_)]; ok {
 		return validate(value), nil
 	} else {
-		return false, fmt.Errorf("unsupported type: %s", type_)
+		return false, fmt.Errorf("unsupported type: %q", type_)
 	}
 }
 

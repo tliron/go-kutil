@@ -54,7 +54,7 @@ func (self FormatAPI) Decode(code string, format string, all bool) (ard.Value, e
 		return value, err
 
 	default:
-		return nil, fmt.Errorf("unsupported format: %s", format)
+		return nil, fmt.Errorf("unsupported format: %q", format)
 	}
 }
 

@@ -1,3 +1,5 @@
+//go:build linux
+
 package util
 
 import (
@@ -5,16 +7,6 @@ import (
 	"os"
 	"syscall"
 )
-
-//
-// NamedPipe
-//
-
-type NamedPipe struct {
-	path   string
-	writer *os.File
-	reader *os.File
-}
 
 func NewTempNamedPipe(writer io.Writer, mode uint32) (*NamedPipe, error) {
 	var self NamedPipe
@@ -51,16 +43,4 @@ func NewTempNamedPipe(writer io.Writer, mode uint32) (*NamedPipe, error) {
 	go io.Copy(writer, self.reader)
 
 	return &self, nil
-}
-
-// io.Writer interface
-func (self *NamedPipe) Write(p []byte) (int, error) {
-	return self.writer.Write(p)
-}
-
-// io.Closer interface
-func (self *NamedPipe) Close() error {
-	self.reader.Close()
-	self.writer.Close()
-	return os.Remove(self.path)
 }

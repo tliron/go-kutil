@@ -27,7 +27,7 @@ func Validate(code string, format string) error {
 		return ValidateCBOR(code)
 
 	default:
-		return fmt.Errorf("unsupported format: %s", format)
+		return fmt.Errorf("unsupported format: %q", format)
 	}
 }
 

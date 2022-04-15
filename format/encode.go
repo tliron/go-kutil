@@ -30,7 +30,7 @@ func Encode(value any, format string, indent string, strict bool) (string, error
 		return EncodeGo(value, indent)
 
 	default:
-		return "", fmt.Errorf("unsupported format: %s", format)
+		return "", fmt.Errorf("unsupported format: %q", format)
 	}
 }
 

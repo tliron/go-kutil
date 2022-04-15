@@ -49,7 +49,7 @@ func Print(value any, format string, writer io.Writer, strict bool, pretty bool)
 		return PrintGo(value, writer, pretty)
 
 	default:
-		return fmt.Errorf("unsupported format: %s", format)
+		return fmt.Errorf("unsupported format: %q", format)
 	}
 }
 

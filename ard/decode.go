@@ -26,7 +26,7 @@ func Decode(code string, format string, locate bool) (Value, Locator, error) {
 		return DecodeCBOR(code, locate)
 
 	default:
-		return nil, nil, fmt.Errorf("unsupported format: %s", format)
+		return nil, nil, fmt.Errorf("unsupported format: %q", format)
 	}
 }
 

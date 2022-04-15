@@ -5,3 +5,8 @@ import (
 )
 
 var log = logging.GetLogger("kutil.exec")
+
+type Size struct {
+	Width  uint
+	Height uint
+}

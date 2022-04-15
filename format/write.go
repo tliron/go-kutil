@@ -44,7 +44,7 @@ func Write(value any, format string, indent string, strict bool, writer io.Write
 		return WriteGo(value, writer, indent)
 
 	default:
-		return fmt.Errorf("unsupported format: %s", format)
+		return fmt.Errorf("unsupported format: %q", format)
 	}
 }
 
