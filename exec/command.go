@@ -67,8 +67,8 @@ func (self *Command) Start() (*Process, error) {
 		go func() {
 			for {
 				select {
-				case b := <-process.stdin:
-					if b == nil {
+				case b, ok := <-process.stdin:
+					if !ok {
 						log.Debug("stdin closed")
 						return
 					}
@@ -77,7 +77,11 @@ func (self *Command) Start() (*Process, error) {
 						return
 					}
 
-				case s := <-process.resize:
+				case s, ok := <-process.resize:
+					if !ok {
+						log.Debug("resize closed")
+						return
+					}
 					if tty != nil {
 						winsize := pty.Winsize{Rows: uint16(s.Height), Cols: uint16(s.Width)}
 						if err := pty.Setsize(tty, &winsize); err != nil {

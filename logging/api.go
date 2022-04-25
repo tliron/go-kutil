@@ -59,3 +59,9 @@ func GetLogger(name string) Logger {
 func GetLoggerf(format string, values ...any) Logger {
 	return GetLogger(fmt.Sprintf(format, values...))
 }
+
+func CallAndLogError(f func() error, task string, log Logger) {
+	if err := f(); err != nil {
+		log.Errorf("%s: %s", task, err.Error())
+	}
+}

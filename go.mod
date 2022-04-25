@@ -5,9 +5,9 @@ go 1.18
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/creack/pty v1.1.18
-	github.com/dop251/goja v0.0.0-20220408131256-ffe77e20c6f1
+	github.com/dop251/goja v0.0.0-20220424120009-160b8c59fd75
 	github.com/fatih/color v1.13.0
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.5.3
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/goccy/go-yaml v1.9.5
@@ -29,10 +29,10 @@ require (
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.23.5
-	k8s.io/apiextensions-apiserver v0.23.5
-	k8s.io/apimachinery v0.23.5
-	k8s.io/client-go v0.23.5
+	k8s.io/api v0.23.6
+	k8s.io/apiextensions-apiserver v0.23.6
+	k8s.io/apimachinery v0.23.6
+	k8s.io/client-go v0.23.6
 	k8s.io/klog/v2 v2.60.1
 )
 

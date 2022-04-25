@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-const BUFFER_SIZE = 1
+const BUFFER_SIZE = 65536
 
 func WriteNewline(writer io.Writer) error {
 	_, err := io.WriteString(writer, "\n")
@@ -18,12 +18,14 @@ func ReaderSize(reader io.Reader) (int64, error) {
 
 	buffer := make([]byte, BUFFER_SIZE)
 	for {
-		if count, err := reader.Read(buffer); err == nil {
-			size += int64(count)
-		} else if err == io.EOF {
-			break
-		} else {
-			return 0, err
+		count, err := reader.Read(buffer)
+		size += int64(count)
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return 0, err
+			}
 		}
 	}
 
