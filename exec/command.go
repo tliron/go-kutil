@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/creack/pty"
 	"github.com/tliron/kutil/util"
@@ -19,6 +20,7 @@ const DEFAULT_CHANNEL_SIZE = 10
 type Command struct {
 	Name           string
 	Args           []string
+	Dir            string
 	Environment    map[string]string
 	PseudoTerminal *Size
 	ChannelSize    int
@@ -46,9 +48,22 @@ func (self *Command) Start() (*Process, error) {
 	process := newProcess(self.ChannelSize)
 
 	command := exec.Command(self.Name, self.Args...)
+	command.Dir = self.Dir
+
+	var hasHome bool
 	if self.Environment != nil {
 		for k, v := range self.Environment {
 			command.Env = append(command.Env, fmt.Sprintf("%s=%s", k, v))
+			if k == "HOME" {
+				hasHome = true
+			}
+		}
+	}
+
+	// Make sure HOME is set
+	if !hasHome {
+		if home := os.Getenv("HOME"); home != "" {
+			command.Env = append(command.Env, "HOME="+home)
 		}
 	}
 
@@ -150,6 +165,27 @@ func (self *Command) Start() (*Process, error) {
 			}
 		} else {
 			return nil, err
+		}
+	}
+}
+
+func (self *Command) AddPath(key string, path string) {
+	if self.Environment == nil {
+		self.Environment = map[string]string{key: path}
+	} else {
+		if value, ok := self.Environment[key]; ok {
+			if value == "" {
+				self.Environment[key] = path
+			} else {
+				for _, path_ := range filepath.SplitList(value) {
+					if path_ == path {
+						return
+					}
+				}
+				self.Environment[key] = value + string(os.PathListSeparator) + path
+			}
+		} else {
+			self.Environment[key] = path
 		}
 	}
 }

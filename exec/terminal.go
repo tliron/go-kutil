@@ -57,6 +57,7 @@ func NewTerminal() (*Terminal, error) {
 }
 
 func (self *Terminal) Close() error {
+	os.Stdout.WriteString("\r")
 	signal.Stop(self.sigwinch)
 	close(self.sigwinch)
 	close(self.Resize)
