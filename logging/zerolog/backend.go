@@ -43,7 +43,6 @@ func NewBackend() *Backend {
 }
 
 // logging.Backend interface
-
 func (self *Backend) Configure(verbosity int, path *string) {
 	maxLevel := logging.VerbosityToMaxLevel(verbosity)
 
@@ -84,10 +83,12 @@ func (self *Backend) Configure(verbosity int, path *string) {
 	}
 }
 
+// logging.Backend interface
 func (self *Backend) GetWriter() io.Writer {
 	return self.writer
 }
 
+// logging.Backend interface
 func (self *Backend) NewMessage(name []string, level logging.Level, depth int) logging.Message {
 	if self.AllowLevel(name, level) {
 		context := logpkg.With()
@@ -120,10 +121,12 @@ func (self *Backend) NewMessage(name []string, level logging.Level, depth int) l
 	}
 }
 
+// logging.Backend interface
 func (self *Backend) AllowLevel(name []string, level logging.Level) bool {
 	return self.hierarchy.AllowLevel(name, level)
 }
 
+// logging.Backend interface
 func (self *Backend) SetMaxLevel(name []string, level logging.Level) {
 	self.hierarchy.SetMaxLevel(name, level)
 }

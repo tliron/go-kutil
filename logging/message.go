@@ -1,8 +1,6 @@
 package logging
 
-import (
-	"fmt"
-)
+import "github.com/tliron/kutil/util"
 
 //
 // Message
@@ -37,16 +35,16 @@ func NewUnstructuredMessage(send SendUnstructuredMessageFunc) *UnstructuredMessa
 func (self *UnstructuredMessage) Set(key string, value any) Message {
 	switch key {
 	case "message":
-		self.message = toString(value)
+		self.message = util.ToString(value)
 
 	case "scope":
-		self.prefix = "{" + toString(value) + "}"
+		self.prefix = "{" + util.ToString(value) + "}"
 
 	default:
 		if len(self.suffix) > 0 {
 			self.suffix += ", "
 		}
-		self.suffix += key + "=" + toString(value)
+		self.suffix += key + "=" + util.ToString(value)
 	}
 
 	return self
@@ -70,15 +68,4 @@ func (self *UnstructuredMessage) Send() {
 	}
 
 	self.send(message)
-}
-
-func toString(value any) string {
-	switch value_ := value.(type) {
-	case string:
-		return value_
-	case fmt.Stringer:
-		return value_.String()
-	default:
-		return fmt.Sprintf("%v", value_)
-	}
 }

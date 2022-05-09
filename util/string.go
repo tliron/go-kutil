@@ -1,7 +1,9 @@
 package util
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"unsafe"
 )
 
@@ -24,4 +26,30 @@ func StringToBytes(string_ string) (bytes []byte) {
 	sliceHeader.Cap = stringHeader.Len
 	sliceHeader.Len = stringHeader.Len
 	return
+}
+
+func ToString(value any) string {
+	if value == nil {
+		return "nil"
+	}
+	switch value_ := value.(type) {
+	case string:
+		return value_
+	case fmt.Stringer:
+		return value_.String()
+	default:
+		return fmt.Sprintf("%v", value_)
+	}
+}
+
+func Joinq(s []string, sep string) string {
+	var builder strings.Builder
+	last := len(s) - 1
+	for i, s_ := range s {
+		builder.WriteString(fmt.Sprintf("%q", s_))
+		if i != last {
+			builder.WriteString(sep)
+		}
+	}
+	return builder.String()
 }
