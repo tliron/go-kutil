@@ -1,6 +1,7 @@
 package exec
 
 import (
+	contextpkg "context"
 	"fmt"
 	"io"
 	"os"
@@ -44,7 +45,7 @@ func (self *Command) Stop(err error) {
 	self.done <- err
 }
 
-func (self *Command) Start() (*Process, error) {
+func (self *Command) Start(context contextpkg.Context) (*Process, error) {
 	process := newProcess(self.ChannelSize)
 
 	command := exec.Command(self.Name, self.Args...)
@@ -78,7 +79,7 @@ func (self *Command) Start() (*Process, error) {
 			}()
 		}
 
-		// Read kill, size, stdin
+		// Read stdin, resize, context
 		go func() {
 			for {
 				select {
@@ -104,7 +105,10 @@ func (self *Command) Start() (*Process, error) {
 						}
 					}
 
-				case <-process.kill:
+				case <-context.Done():
+					if err := context.Err(); err != nil {
+						log.Errorf("done: %s", err.Error())
+					}
 					log.Info("killing process")
 					if err := command.Process.Kill(); err != nil {
 						log.Errorf("kill: %s", err.Error())
@@ -120,12 +124,10 @@ func (self *Command) Start() (*Process, error) {
 
 			if err := command.Wait(); err == nil {
 				log.Info("command exited")
+			} else if _, ok := err.(*exec.ExitError); ok {
+				exitError = err
 			} else {
-				if err_, ok := err.(*exec.ExitError); ok {
-					exitError = fmt.Errorf("%d: %s", err_.ExitCode(), err_.Stderr)
-				} else {
-					log.Errorf("command wait: %s", err.Error())
-				}
+				log.Errorf("command wait: %s", err.Error())
 			}
 
 			if err := stdinWriter.Close(); err != nil {

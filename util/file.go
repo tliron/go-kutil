@@ -2,10 +2,13 @@ package util
 
 import (
 	"errors"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
-func FileExists(path string) (bool, error) {
+func DoesFileExist(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -14,4 +17,12 @@ func FileExists(path string) (bool, error) {
 	} else {
 		return false, err
 	}
+}
+
+func IsFileHidden(path string) bool {
+	return strings.HasPrefix(filepath.Base(path), ".")
+}
+
+func IsFileExecutable(mode fs.FileMode) bool {
+	return mode&0100 != 0
 }

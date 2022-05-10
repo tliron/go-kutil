@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"unsafe"
 )
@@ -37,6 +38,8 @@ func ToString(value any) string {
 		return value_
 	case fmt.Stringer:
 		return value_.String()
+	case error:
+		return value_.Error()
 	default:
 		return fmt.Sprintf("%v", value_)
 	}
@@ -46,7 +49,7 @@ func Joinq(s []string, sep string) string {
 	var builder strings.Builder
 	last := len(s) - 1
 	for i, s_ := range s {
-		builder.WriteString(fmt.Sprintf("%q", s_))
+		builder.WriteString(strconv.Quote(s_))
 		if i != last {
 			builder.WriteString(sep)
 		}
