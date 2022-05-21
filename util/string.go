@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
+	stringspkg "strings"
 	"unsafe"
 )
 
@@ -45,13 +45,48 @@ func ToString(value any) string {
 	}
 }
 
-func Joinq(s []string, sep string) string {
-	var builder strings.Builder
-	last := len(s) - 1
-	for i, s_ := range s {
-		builder.WriteString(strconv.Quote(s_))
-		if i != last {
-			builder.WriteString(sep)
+func ToStrings(values []any) []string {
+	length := len(values)
+	if length == 0 {
+		return nil
+	}
+	strings := make([]string, length)
+	for index, value := range values {
+		strings[index] = ToString(value)
+	}
+	return strings
+}
+
+func JoinQuote(strings []string, separator string) string {
+	var builder stringspkg.Builder
+	ultimateIndex := len(strings) - 1
+	for index, value := range strings {
+		builder.WriteString(strconv.Quote(value))
+		if index != ultimateIndex {
+			builder.WriteString(separator)
+		}
+	}
+	return builder.String()
+}
+
+func JoinQuoteL(strings []string, separator string, lastSeparator string, coupleSeparator string) string {
+	var builder stringspkg.Builder
+	if len(strings) == 2 {
+		builder.WriteString(strconv.Quote(strings[0]))
+		builder.WriteString(coupleSeparator)
+		builder.WriteString(strconv.Quote(strings[1]))
+	} else {
+		ultimateIndex := len(strings) - 1
+		penultimateIndex := ultimateIndex - 1
+		for index, value := range strings {
+			builder.WriteString(strconv.Quote(value))
+			if index != ultimateIndex {
+				if index == penultimateIndex {
+					builder.WriteString(lastSeparator)
+				} else {
+					builder.WriteString(separator)
+				}
+			}
 		}
 	}
 	return builder.String()

@@ -71,7 +71,7 @@ func (self *Backend) NewMessage(name []string, level logging.Level, depth int) l
 
 		var prefix string
 		if name := strings.Join(name, "."); len(name) > 0 {
-			prefix = name + ": "
+			prefix = "[" + name + "] "
 		}
 
 		return NewMessage(priority, prefix)
