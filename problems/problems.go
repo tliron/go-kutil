@@ -112,6 +112,14 @@ func (self *Problems) ToString(locate bool) string {
 	return strings.TrimRight(writer.String(), "\n")
 }
 
+func (self *Problems) ToError(locate bool) error {
+	if !self.Empty() {
+		return errors.New(self.ToString(locate))
+	} else {
+		return nil
+	}
+}
+
 // fmt.Stringer interface
 func (self *Problems) String() string {
 	return self.ToString(false)
