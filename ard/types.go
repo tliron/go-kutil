@@ -135,3 +135,22 @@ func IsTimestamp(value Value) bool {
 	_, ok := value.(time.Time)
 	return ok
 }
+
+func IsPrimitiveType(value Value) bool {
+	switch value.(type) {
+	case string:
+		return true
+	case bool:
+		return true
+	case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint:
+		return true
+	case float64, float32:
+		return true
+	case nil:
+		return true
+	case time.Time:
+		return true
+	default:
+		return false
+	}
+}

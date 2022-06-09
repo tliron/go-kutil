@@ -8,19 +8,21 @@ gofmt -w -s -e \
 	"$ROOT/ard" \
 	"$ROOT/cobra" \
 	"$ROOT/exec" \
-	"$ROOT/format" \
 	"$ROOT/fswatch" \
 	"$ROOT/js" \
 	"$ROOT/kubernetes" \
 	"$ROOT/library" \
 	"$ROOT/logging" \
+	"$ROOT/logging/journal" \
 	"$ROOT/logging/klog" \
 	"$ROOT/logging/simple" \
+	"$ROOT/logging/sink" \
 	"$ROOT/logging/zerolog" \
 	"$ROOT/problems" \
 	"$ROOT/protobuf" \
 	"$ROOT/reflection" \
 	"$ROOT/terminal" \
+	"$ROOT/transcribe" \
 	"$ROOT/url" \
 	"$ROOT/util" \
 	"$ROOT/version"

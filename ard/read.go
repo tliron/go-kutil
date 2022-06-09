@@ -61,7 +61,7 @@ func ReadJSON(reader io.Reader, locate bool) (Value, Locator, error) {
 	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(&value); err == nil {
 		// The JSON decoder uses StringMaps, not Maps
-		value, _ := Normalize(value)
+		value, _ := NormalizeMaps(value)
 		return value, nil, nil
 	} else {
 		return nil, nil, err

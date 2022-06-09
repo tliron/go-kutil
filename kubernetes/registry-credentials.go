@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/format"
+	"github.com/tliron/kutil/transcribe"
 	"github.com/tliron/kutil/util"
 	core "k8s.io/api/core/v1"
 )
@@ -111,7 +111,7 @@ func (self RegistryCredentialsTable) ToARD() ard.Value {
 }
 
 func (self RegistryCredentialsTable) ToDockerConfigJSON() (string, error) {
-	return format.EncodeJSON(ard.StringMap{
+	return transcribe.EncodeJSON(ard.StringMap{
 		"auths": self.ToARD(),
 	}, "")
 }

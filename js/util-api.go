@@ -14,27 +14,27 @@ import (
 
 type UtilAPI struct{}
 
-func (self FormatAPI) StringToBytes(string_ string) []byte {
+func (self TranscribeAPI) StringToBytes(string_ string) []byte {
 	return util.StringToBytes(string_)
 }
 
 // Another way to achieve this in JavaScript: String.fromCharCode.apply(null, bytes)
-func (self FormatAPI) BytesToString(bytes []byte) string {
+func (self TranscribeAPI) BytesToString(bytes []byte) string {
 	return util.BytesToString(bytes)
 }
 
 // Encode bytes as base64
-func (self FormatAPI) Btoa(bytes []byte) string {
+func (self TranscribeAPI) Btoa(bytes []byte) string {
 	return util.ToBase64(bytes)
 }
 
 // Decode base64 to bytes
-func (self FormatAPI) Atob(b64 string) ([]byte, error) {
+func (self TranscribeAPI) Atob(b64 string) ([]byte, error) {
 	return util.FromBase64(b64)
 }
 
 func (self UtilAPI) DeepCopy(value ard.Value) ard.Value {
-	return ard.Copy(value)
+	return ard.SimpleCopy(value)
 }
 
 func (self UtilAPI) DeepEquals(a ard.Value, b ard.Value) bool {
