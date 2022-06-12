@@ -25,7 +25,7 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 		return
 	}
 
-	if !IsPtrToStruct(reflect.TypeOf(entity)) {
+	if !IsPointerToStruct(reflect.TypeOf(entity)) {
 		if lock != nil {
 			lock.Unlock()
 		}
@@ -55,7 +55,7 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 
 		fieldType := field.Type()
 
-		if IsPtrToStruct(fieldType) && !field.IsNil() {
+		if IsPointerToStruct(fieldType) && !field.IsNil() {
 			// Compatible with *struct{}
 			value := field.Interface()
 			if lock != nil {
@@ -65,7 +65,7 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 			if lock != nil {
 				lock.Lock()
 			}
-		} else if IsSliceOfPtrToStruct(fieldType) {
+		} else if IsSliceOfPointerToStruct(fieldType) {
 			// Compatible with []*struct{}
 			length := field.Len()
 			elements := make([]reflect.Value, length)
@@ -83,7 +83,7 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 					lock.Lock()
 				}
 			}
-		} else if IsMapOfStringToPtrToStruct(fieldType) {
+		} else if IsMapOfStringToPointerToStruct(fieldType) {
 			// Compatible with map[string]*struct{}
 			keys := field.MapKeys()
 			elements := make([]reflect.Value, len(keys))

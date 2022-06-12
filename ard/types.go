@@ -138,19 +138,77 @@ func IsTimestamp(value Value) bool {
 
 func IsPrimitiveType(value Value) bool {
 	switch value.(type) {
-	case string:
-		return true
-	case bool:
-		return true
-	case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint:
-		return true
-	case float64, float32:
-		return true
-	case nil:
-		return true
-	case time.Time:
+	case string, bool, int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint, float64, float32, nil, time.Time:
 		return true
 	default:
 		return false
+	}
+}
+
+// int64, int32, int16, int8, int
+func ToInt64(value Value) int64 {
+	switch value_ := value.(type) {
+	case int64:
+		return value_
+	case int32:
+		return int64(value_)
+	case int16:
+		return int64(value_)
+	case int8:
+		return int64(value_)
+	case int:
+		return int64(value_)
+	case uint64:
+		return int64(value_)
+	case uint32:
+		return int64(value_)
+	case uint16:
+		return int64(value_)
+	case uint8:
+		return int64(value_)
+	case uint:
+		return int64(value_)
+	default:
+		panic(fmt.Sprintf("not an integer: %T", value))
+	}
+}
+
+// uint64, uint32, uint16, uint8, uint
+func ToUInt64(value Value) uint64 {
+	switch value_ := value.(type) {
+	case uint64:
+		return value_
+	case uint32:
+		return uint64(value_)
+	case uint16:
+		return uint64(value_)
+	case uint8:
+		return uint64(value_)
+	case uint:
+		return uint64(value_)
+	case int64:
+		return uint64(value_)
+	case int32:
+		return uint64(value_)
+	case int16:
+		return uint64(value_)
+	case int8:
+		return uint64(value_)
+	case int:
+		return uint64(value_)
+	default:
+		panic(fmt.Sprintf("not an integer: %T", value))
+	}
+}
+
+// float64, float32
+func ToFloat64(value Value) float64 {
+	switch value_ := value.(type) {
+	case float64:
+		return value_
+	case float32:
+		return float64(value_)
+	default:
+		panic(fmt.Sprintf("not a float: %T", value))
 	}
 }

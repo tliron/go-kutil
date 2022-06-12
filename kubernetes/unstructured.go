@@ -13,7 +13,7 @@ import (
 
 func NewUnstructuredFromYAMLTemplate(code string, data any) (*unstructured.Unstructured, error) {
 	if object, err := ard.DecodeYAMLTemplate(code, data); err == nil {
-		object, _ = ard.MapsToStringMaps(object)
+		object, _ = ard.NormalizeStringMaps(object)
 		if stringMap, ok := object.(ard.StringMap); ok {
 			return &unstructured.Unstructured{Object: stringMap}, nil
 		} else {
