@@ -2,6 +2,7 @@ package url
 
 import (
 	"io"
+	neturl "net/url"
 	"os"
 
 	"github.com/tliron/kutil/ard"
@@ -10,6 +11,22 @@ import (
 )
 
 var log = logging.GetLogger("kutil.url")
+
+func ToNetURL(url URL) (*neturl.URL, error) {
+	return neturl.ParseRequestURI(url.String())
+}
+
+func GetPath(url URL) (string, error) {
+	if url_, err := ToNetURL(url); err == nil {
+		if url_.Path != "" {
+			return neturl.PathUnescape(url_.Path)
+		} else {
+			return neturl.PathUnescape(url_.Opaque)
+		}
+	} else {
+		return "", err
+	}
+}
 
 func ReadBytes(url URL) ([]byte, error) {
 	if reader, err := url.Open(); err == nil {

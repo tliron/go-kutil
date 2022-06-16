@@ -155,7 +155,7 @@ func (self *ZipURL) Context() *Context {
 }
 
 func (self *ZipURL) OpenArchive() (*ZipReader, error) {
-	if file, err := self.ArchiveURL.Context().Open(self.ArchiveURL); err == nil {
+	if file, err := self.ArchiveURL.Context().OpenFile(self.ArchiveURL); err == nil {
 		return OpenZipFromFile(file)
 	} else {
 		return nil, err

@@ -71,10 +71,19 @@ func (self *Context) GetCredentials(host string) *Credentials {
 	}
 }
 
-func (self *Context) Open(url URL) (*os.File, error) {
+func (self *Context) OpenFile(url URL) (*os.File, error) {
+	if path, err := self.GetLocalPath(url); err == nil {
+		return os.Open(path)
+	} else {
+		return nil, err
+	}
+}
+
+// Will download the file to the local temporary directory if not already locally available
+func (self *Context) GetLocalPath(url URL) (string, error) {
 	if fileUrl, ok := url.(*FileURL); ok {
 		// No need to download file URLs
-		return os.Open(fileUrl.Path)
+		return fileUrl.Path, nil
 	}
 
 	key := url.Key()
@@ -84,12 +93,14 @@ func (self *Context) Open(url URL) (*os.File, error) {
 
 	if self.files != nil {
 		if path, ok := self.files[key]; ok {
-			if file, err := os.Open(path); err == nil {
-				return file, nil
-			} else if os.IsNotExist(err) {
-				delete(self.files, key)
+			if ok, err := util.DoesFileExist(path); err == nil {
+				if ok {
+					return path, nil
+				} else {
+					delete(self.files, key)
+				}
 			} else {
-				return nil, err
+				return "", err
 			}
 		}
 	}
@@ -99,10 +110,11 @@ func (self *Context) Open(url URL) (*os.File, error) {
 		if self.files == nil {
 			self.files = make(map[string]string)
 		}
-		self.files[key] = file.Name()
-		return file, nil
+		path := file.Name()
+		self.files[key] = path
+		return path, nil
 	} else {
-		return nil, err
+		return "", err
 	}
 }
 
