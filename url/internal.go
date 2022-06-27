@@ -18,7 +18,7 @@ var internal sync.Map
 
 // `content` must be []byte or string
 func RegisterInternalURL(path string, content any) error {
-	if _, loaded := internal.LoadOrStore(path, toBytes(content)); !loaded {
+	if _, loaded := internal.LoadOrStore(path, util.ToBytes(content)); !loaded {
 		return nil
 	} else {
 		return fmt.Errorf("internal URL conflict: %s", path)
@@ -30,7 +30,7 @@ func DeregisterInternalURL(path string) {
 }
 
 func UpdateInternalURL(path string, content any) {
-	internal.Store(path, toBytes(content))
+	internal.Store(path, util.ToBytes(content))
 }
 
 func ReadToInternalURL(path string, reader io.Reader) (*InternalURL, error) {
@@ -98,7 +98,7 @@ func NewValidRelativeInternalURL(path string, origin *InternalURL) (*InternalURL
 }
 
 func (self *InternalURL) SetContent(content any) {
-	self.Content = toBytes(content)
+	self.Content = util.ToBytes(content)
 }
 
 // URL interface
@@ -143,14 +143,4 @@ func (self *InternalURL) Open() (io.ReadCloser, error) {
 // URL interface
 func (self *InternalURL) Context() *Context {
 	return self.context
-}
-
-// Utils
-
-func toBytes(content any) []byte {
-	if bytes, ok := content.([]byte); ok {
-		return bytes
-	} else {
-		return util.StringToBytes(util.ToString(content))
-	}
 }

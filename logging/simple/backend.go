@@ -53,7 +53,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				util.OnExitError(file.Close)
 				if self.Buffered {
 					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
-					writer.CloseOnExit()
+					util.OnExitError(writer.Close)
 					self.Writer = writer
 				} else {
 					self.Writer = util.NewSyncedWriter(file)
@@ -65,7 +65,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 			self.colorize = terminal.Colorize
 			if self.Buffered {
 				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
-				writer.CloseOnExit()
+				util.OnExitError(writer.Close)
 				self.Writer = writer
 			} else {
 				self.Writer = util.NewSyncedWriter(terminal.Stderr)

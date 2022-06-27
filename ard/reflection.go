@@ -3,10 +3,13 @@ package ard
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/tliron/kutil/reflection"
 )
+
+type StructFieldNameMapperFunc func(fieldName string) string
 
 //
 // Reflector
@@ -15,10 +18,13 @@ import (
 type Reflector struct {
 	IgnoreMissingStructFields bool
 	NilMeansZero              bool
+	StructFieldNameMapper     StructFieldNameMapperFunc
+
+	fieldNamesCache sync.Map
 }
 
 func NewReflector() *Reflector {
-	return &Reflector{}
+	return new(Reflector)
 }
 
 func (self *Reflector) ToComposite(value Value, compositeValuePtr any) error {
@@ -134,7 +140,7 @@ func (self *Reflector) ToCompositeReflect(value Value, compositeValue reflect.Va
 			}
 
 		case reflect.Struct:
-			fieldNames := NewFieldNames(compositeType)
+			fieldNames := self.NewFieldNames(compositeType)
 			for k, v := range value_ {
 				if k_, ok := k.(string); ok {
 					if err := self.setStructField(compositeValue, k_, v, fieldNames); err != nil {
@@ -173,7 +179,7 @@ func (self *Reflector) ToCompositeReflect(value Value, compositeValue reflect.Va
 			}
 
 		case reflect.Struct:
-			fieldNames := NewFieldNames(compositeType)
+			fieldNames := self.NewFieldNames(compositeType)
 			for k, v := range value_ {
 				if err := self.setStructField(compositeValue, k, v, fieldNames); err != nil {
 					return err
@@ -249,7 +255,7 @@ func (self *Reflector) FromCompositeReflect(compositeValue reflect.Value) (Value
 
 	case reflect.Struct:
 		map_ := make(Map)
-		fieldNames := NewFieldNames(compositeType)
+		fieldNames := self.NewFieldNames(compositeType)
 		for name, fieldName := range fieldNames {
 			elem := compositeValue.FieldByName(fieldName)
 			if elem_, err := self.FromCompositeReflect(elem); err == nil {
@@ -292,24 +298,34 @@ func (self *Reflector) setStructField(structValue reflect.Value, fieldName strin
 
 type FieldNames map[string]string // ARD name to struct field name
 
-func NewFieldNames(type_ reflect.Type) FieldNames {
-	self := make(FieldNames)
+func (self *Reflector) NewFieldNames(type_ reflect.Type) FieldNames {
+	if v, ok := self.fieldNamesCache.Load(type_); ok {
+		return v.(FieldNames)
+	}
+
+	fieldNames := make(FieldNames)
 	tags := reflection.GetFieldTagsForType(type_, "ard")
 
 	// Tagged fields
 	for fieldName, tag := range tags {
-		self[tag] = fieldName
+		fieldNames[tag] = fieldName
 	}
 
 	// Untagged fields
 	for _, field := range reflection.GetStructFields(type_) {
 		fieldName := field.Name
 		if _, ok := tags[fieldName]; !ok {
-			self[fieldName] = fieldName
+			if self.StructFieldNameMapper != nil {
+				fieldNames[self.StructFieldNameMapper(fieldName)] = fieldName
+			} else {
+				fieldNames[fieldName] = fieldName
+			}
 		}
 	}
 
-	return self
+	self.fieldNamesCache.Store(type_, fieldNames)
+
+	return fieldNames
 }
 
 func (self FieldNames) GetField(structValue reflect.Value, name string) reflect.Value {

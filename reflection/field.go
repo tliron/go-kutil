@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+var structFieldsCache sync.Map
+
 // Includes fields "inherited" from anonymous struct pointer fields
 // The order of field definition is important! Later fields will override previous fields
 func GetStructFields(type_ reflect.Type) []reflect.StructField {
@@ -46,8 +48,6 @@ func appendStructField(structFields []reflect.StructField, structField reflect.S
 	}
 	return structFields
 }
-
-var structFieldsCache sync.Map
 
 func GetReferredField(entity reflect.Value, referenceFieldName string, referredFieldName string) (reflect.Value, reflect.Value, bool) {
 	referenceField := entity.FieldByName(referenceFieldName)

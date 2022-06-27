@@ -59,10 +59,6 @@ func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 	return self
 }
 
-func (self BufferedWriter) CloseOnExit() ExitFunctionHandle {
-	return OnExitError(self.Close)
-}
-
 // io.Writer interface
 func (self BufferedWriter) Write(p []byte) (int, error) {
 	defer func() {

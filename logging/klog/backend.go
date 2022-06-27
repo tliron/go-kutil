@@ -61,7 +61,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				util.OnExitError(file.Close)
 				if self.Buffered {
 					writer := util.NewBufferedWriter(file, BUFFER_SIZE)
-					writer.CloseOnExit()
+					util.OnExitError(writer.Close)
 					self.writer = writer
 					klog.SetOutput(writer)
 				} else {
@@ -73,7 +73,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 		} else {
 			if self.Buffered {
 				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
-				writer.CloseOnExit()
+				util.OnExitError(writer.Close)
 				self.writer = writer
 				klog.SetOutput(writer)
 			} else {

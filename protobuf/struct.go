@@ -130,7 +130,7 @@ func ToCompatibleValue(value any) (any, error) {
 		for index := 0; index < length; index++ {
 			field := type_.Field(index)
 			v := value_.Field(index).Interface()
-			if map_[util.ToCamelCase(field.Name)], err = ToCompatibleValue(v); err != nil {
+			if map_[util.ToDromedaryCase(field.Name)], err = ToCompatibleValue(v); err != nil {
 				return nil, err
 			}
 		}
@@ -210,7 +210,7 @@ func UnpackReflectValue(value any, field reflect.Value) error {
 			length := type_.NumField()
 			for index := 0; index < length; index++ {
 				field_ := type_.Field(index)
-				key := util.ToCamelCase(field_.Name)
+				key := util.ToDromedaryCase(field_.Name)
 				if v, ok := map_[key]; ok {
 					if err := UnpackReflectValue(v, field.Field(index)); err != nil {
 						return err

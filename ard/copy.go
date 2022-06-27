@@ -1,14 +1,6 @@
 package ard
 
-import (
-	"bytes"
-
-	"github.com/fxamacker/cbor/v2"
-	"github.com/tliron/yamlkeys"
-	"gopkg.in/yaml.v3"
-)
-
-func AgnosticCopy(value Value) (Value, error) {
+func CopyToARD(value Value) (Value, error) {
 	if IsPrimitiveType(value) {
 		return value, nil
 	} else {
@@ -17,7 +9,7 @@ func AgnosticCopy(value Value) (Value, error) {
 		case Map:
 			map_ := make(Map)
 			for key, value_ := range value_ {
-				if map_[key], err = AgnosticCopy(value_); err != nil {
+				if map_[key], err = CopyToARD(value_); err != nil {
 					return nil, err
 				}
 			}
@@ -26,7 +18,7 @@ func AgnosticCopy(value Value) (Value, error) {
 		case StringMap:
 			map_ := make(StringMap)
 			for key, value_ := range value_ {
-				if map_[key], err = AgnosticCopy(value_); err != nil {
+				if map_[key], err = CopyToARD(value_); err != nil {
 					return nil, err
 				}
 			}
@@ -35,7 +27,7 @@ func AgnosticCopy(value Value) (Value, error) {
 		case List:
 			list := make(List, len(value_))
 			for index, entry := range value_ {
-				if list[index], err = AgnosticCopy(entry); err != nil {
+				if list[index], err = CopyToARD(entry); err != nil {
 					return nil, err
 				}
 			}
@@ -43,38 +35,13 @@ func AgnosticCopy(value Value) (Value, error) {
 
 		default:
 			// TODO: not very efficient
-			return AgnosticCopyThroughCBOR(value)
+			return RoundtripCBOR(value)
 		}
 	}
 }
 
-func AgnosticCopyThroughCBOR(value Value) (Value, error) {
-	if code, err := cbor.Marshal(value); err == nil {
-		var value_ Value
-		if err := cbor.Unmarshal(code, &value_); err == nil {
-			return value_, nil
-		} else {
-			return nil, err
-		}
-	} else {
-		return nil, err
-	}
-}
-
-func AgnosticCopyThroughYAML(value Value) (Value, error) {
-	if code, err := yaml.Marshal(value); err == nil {
-		if value, err := yamlkeys.Decode(bytes.NewReader(code)); err == nil {
-			return value, nil
-		} else {
-			return nil, err
-		}
-	} else {
-		return nil, err
-	}
-}
-
-func NormalizeMapsAgnosticCopy(value Value) (Value, error) {
-	if value_, err := AgnosticCopy(value); err == nil {
+func NormalizeMapsCopyToARD(value Value) (Value, error) {
+	if value_, err := CopyToARD(value); err == nil {
 		value_, _ = NormalizeMaps(value_)
 		return value_, nil
 	} else {
@@ -82,8 +49,8 @@ func NormalizeMapsAgnosticCopy(value Value) (Value, error) {
 	}
 }
 
-func NormalizeStringMapsAgnosticCopy(value Value) (Value, error) {
-	if value_, err := AgnosticCopy(value); err == nil {
+func NormalizeStringMapsCopyToARD(value Value) (Value, error) {
+	if value_, err := CopyToARD(value); err == nil {
 		value_, _ = NormalizeStringMaps(value_)
 		return value_, nil
 	} else {
@@ -91,6 +58,7 @@ func NormalizeStringMapsAgnosticCopy(value Value) (Value, error) {
 	}
 }
 
+// Will leave non-ARD types as is
 func SimpleCopy(value Value) Value {
 	switch value_ := value.(type) {
 	case Map:

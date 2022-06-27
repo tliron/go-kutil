@@ -41,7 +41,7 @@ func ToString(value any) string {
 	case error:
 		return value_.Error()
 	default:
-		return fmt.Sprintf("%v", value_)
+		return fmt.Sprintf("%+v", value_)
 	}
 }
 

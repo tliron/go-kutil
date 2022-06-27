@@ -49,7 +49,7 @@ func NewEnvironment(urlContext *urlpkg.Context, path []urlpkg.URL) *Environment 
 
 	self.Modules = NewThreadSafeObject().NewDynamicObject(self.Runtime)
 
-	self.Runtime.SetFieldNameMapper(CamelCaseMapper)
+	self.Runtime.SetFieldNameMapper(DromedaryCaseMapper)
 
 	return &self
 }
