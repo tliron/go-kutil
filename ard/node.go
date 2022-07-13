@@ -1,6 +1,8 @@
 package ard
 
-import "github.com/tliron/yamlkeys"
+import (
+	"github.com/tliron/yamlkeys"
+)
 
 //
 // Node

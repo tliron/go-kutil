@@ -45,6 +45,9 @@ func Print(value any, format string, writer io.Writer, strict bool, pretty bool)
 	case "cbor":
 		return PrintCBOR(value, writer)
 
+	case "messagepack":
+		return PrintMessagePack(value, writer)
+
 	case "go":
 		return PrintGo(value, writer, pretty)
 
@@ -118,6 +121,10 @@ func PrintXMLDocument(xmlDocument *etree.Document, writer io.Writer, pretty bool
 
 func PrintCBOR(value any, writer io.Writer) error {
 	return WriteCBOR(value, writer)
+}
+
+func PrintMessagePack(value any, writer io.Writer) error {
+	return WriteMessagePack(value, writer)
 }
 
 func PrintGo(value any, writer io.Writer, pretty bool) error {

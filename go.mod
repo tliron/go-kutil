@@ -6,7 +6,7 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/creack/pty v1.1.18
-	github.com/dop251/goja v0.0.0-20220516123900-4418d4575a41
+	github.com/dop251/goja v0.0.0-20220705101429-189bfeb9f530
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/fxamacker/cbor/v2 v2.4.0
@@ -26,6 +26,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/yamlkeys v1.3.5
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 	github.com/zchee/color/v2 v2.0.6
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
@@ -35,7 +36,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.24.2
 	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.2
-	k8s.io/klog/v2 v2.70.0
+	k8s.io/klog/v2 v2.70.1
 )
 
 require (
@@ -98,6 +99,7 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20220524220425-1d687d428aca // indirect

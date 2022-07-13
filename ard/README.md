@@ -3,6 +3,8 @@ Agnostic Raw Data (ARD)
 
 This library is [also implemented in Python](https://github.com/tliron/python-ard).
 
+And check out the [ardconv](https://github.com/tliron/ardconv) ARD conversion tool.
+
 What is "agnostic raw data"?
 
 ### Agnostic
@@ -36,6 +38,9 @@ Data validation is out of scope for ARD. There's no schema. The idea is to suppo
 data of any structure and size. Once the ARD is made available other layers can validate its
 structure and otherwise process the values.
 
+This library does support such schema validation via conversion to Go structs using a
+[reflector](reflection.go).
+
 ### Data
 
 This is about *data* as opposed to the *representation of data*. What's the difference? ARD does
@@ -46,9 +51,10 @@ endiannes or precision of integers and floats, and also not concerned with chara
 ARD and Representation Formats
 ------------------------------
 
-### CBOR
+### CBOR and MessagePack
 
-[CBOR](https://cbor.io/) supports everything! The only caveat is that it is not human-readable.
+[CBOR](https://cbor.io/) and [MessagePack](https://msgpack.org/) support everything! Though note
+that they are not human-readable.
 
 ### YAML
 
@@ -70,10 +76,10 @@ support `!!omap` by default, so this use case may become less and less common.
 ### JSON
 
 JSON can be read into ARD. However, because JSON has fewer types and more limitations than YAML
-(no integers, only floats; map keys can only be strings), ARD will lose quite a bit of type
-information when translated into JSON.
+(no signed and unsigned integers, only floats; map keys can only be strings), ARD will lose quite a
+bit of type information when translated into JSON.
 
-We can overcome this challenge by extending JSON with some conventions for encoding extra types.
+We overcome this challenge by extending JSON with some conventions for encoding extra types.
 See [our conventions here](cjson.go) or
 [in the Python ARD library](https://github.com/tliron/python-ard/blob/main/ard/cjson.py).
 

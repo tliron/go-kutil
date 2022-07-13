@@ -1,6 +1,7 @@
 package transcribe
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -25,6 +26,9 @@ func Encode(value any, format string, indent string, strict bool) (string, error
 
 	case "cbor":
 		return EncodeCBOR(value)
+
+	case "messagepack":
+		return EncodeMessagePack(value)
 
 	case "go":
 		return EncodeGo(value, indent)
@@ -74,6 +78,17 @@ func EncodeCompatibleXML(value any, indent string) (string, error) {
 func EncodeCBOR(value any) (string, error) {
 	if bytes, err := cbor.Marshal(value); err == nil {
 		return util.ToBase64(bytes), nil
+	} else {
+		return "", err
+	}
+}
+
+// Encodes to Base64
+func EncodeMessagePack(value any) (string, error) {
+	var buffer bytes.Buffer
+	encoder := util.NewMessagePackEncoder(&buffer)
+	if err := encoder.Encode(value); err == nil {
+		return util.ToBase64(buffer.Bytes()), nil
 	} else {
 		return "", err
 	}

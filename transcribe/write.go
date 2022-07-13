@@ -9,6 +9,7 @@ import (
 	"github.com/beevik/etree"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/tliron/kutil/ard"
+	"github.com/tliron/kutil/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -39,6 +40,9 @@ func Write(value any, format string, indent string, strict bool, writer io.Write
 
 	case "cbor":
 		return WriteCBOR(value, writer)
+
+	case "messagepack":
+		return WriteMessagePack(value, writer)
 
 	case "go":
 		return WriteGo(value, writer, indent)
@@ -121,6 +125,11 @@ func WriteXMLDocument(xmlDocument *etree.Document, writer io.Writer, indent stri
 
 func WriteCBOR(value any, writer io.Writer) error {
 	encoder := cbor.NewEncoder(writer)
+	return encoder.Encode(value)
+}
+
+func WriteMessagePack(value any, writer io.Writer) error {
+	encoder := util.NewMessagePackEncoder(writer)
 	return encoder.Encode(value)
 }
 

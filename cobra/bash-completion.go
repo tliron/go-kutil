@@ -7,6 +7,8 @@ import (
 	"github.com/tliron/kutil/terminal"
 )
 
+// TODO: This is not needed anymore with new versions of Cobra
+
 func NewBashCompletionCommand(name string, rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "bash",

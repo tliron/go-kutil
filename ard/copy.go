@@ -35,7 +35,7 @@ func CopyToARD(value Value) (Value, error) {
 
 		default:
 			// TODO: not very efficient
-			return RoundtripCBOR(value)
+			return Roundtrip(value, "")
 		}
 	}
 }
@@ -58,7 +58,7 @@ func NormalizeStringMapsCopyToARD(value Value) (Value, error) {
 	}
 }
 
-// Will leave non-ARD types as is
+// Will leave primitive and non-ARD types as is
 func SimpleCopy(value Value) Value {
 	switch value_ := value.(type) {
 	case Map:

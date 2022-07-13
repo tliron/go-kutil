@@ -2,12 +2,12 @@ package ard
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 
 	"github.com/beevik/etree"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/tliron/kutil/util"
 	"github.com/tliron/yamlkeys"
 	"gopkg.in/yaml.v3"
 )
@@ -27,7 +27,10 @@ func Read(reader io.Reader, format string, locate bool) (Value, Locator, error) 
 		return ReadCompatibleXML(reader, locate)
 
 	case "cbor":
-		return ReadCBOR(reader, locate)
+		return ReadCBOR(reader)
+
+	case "messagepack":
+		return ReadMessagePack(reader)
 
 	default:
 		return nil, nil, fmt.Errorf("unsupported format: %q", format)
@@ -83,21 +86,33 @@ func ReadCompatibleXML(reader io.Reader, locate bool) (Value, Locator, error) {
 	document := etree.NewDocument()
 	if _, err := document.ReadFrom(reader); err == nil {
 		elements := document.ChildElements()
-		if len(elements) == 1 {
+		if length := len(elements); length == 1 {
 			value, err := FromCompatibleXML(elements[0])
 			return value, nil, err
 		} else {
-			return nil, nil, errors.New("unsupported XML")
+			return nil, nil, fmt.Errorf("unsupported XML: %d documents", length)
 		}
 	} else {
 		return nil, nil, err
 	}
 }
 
-func ReadCBOR(reader io.Reader, locate bool) (Value, Locator, error) {
+func ReadCBOR(reader io.Reader) (Value, Locator, error) {
 	var value Value
 	decoder := cbor.NewDecoder(reader)
 	if err := decoder.Decode(&value); err == nil {
+		return value, nil, nil
+	} else {
+		return nil, nil, err
+	}
+}
+
+func ReadMessagePack(reader io.Reader) (Value, Locator, error) {
+	var value Value
+	decoder := util.NewMessagePackDecoder(reader)
+	if err := decoder.Decode(&value); err == nil {
+		// The MessagePack decoder uses StringMaps, not Maps
+		value, _ := NormalizeMaps(value)
 		return value, nil, nil
 	} else {
 		return nil, nil, err

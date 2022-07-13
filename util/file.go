@@ -26,3 +26,15 @@ func IsFileHidden(path string) bool {
 func IsFileExecutable(mode fs.FileMode) bool {
 	return mode&0100 != 0
 }
+
+func Touch(path string, permissions fs.FileMode, dirPermissions fs.FileMode) error {
+	if err := os.MkdirAll(filepath.Dir(path), dirPermissions); err == nil {
+		if file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, permissions); err == nil {
+			return file.Close()
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+}

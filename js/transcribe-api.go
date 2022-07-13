@@ -49,7 +49,12 @@ func (self TranscribeAPI) Decode(code string, format string, all bool) (ard.Valu
 		return value, err
 
 	case "cbor":
-		value, _, err := ard.DecodeCBOR(code, false)
+		value, _, err := ard.DecodeCBOR(code)
+		value, _ = ard.NormalizeStringMaps(value)
+		return value, err
+
+	case "messagepack":
+		value, _, err := ard.DecodeMessagePack(code)
 		value, _ = ard.NormalizeStringMaps(value)
 		return value, err
 
