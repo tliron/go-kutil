@@ -19,12 +19,14 @@ func Roundtrip(value Value, format string) (Value, error) {
 		return RoundtripYAML(value)
 
 	case "cjson":
+		// broken
 		return RoundtripCompatibleJSON(value)
 
-	case "xml":
+	case "xml", "":
+		// broken
 		return RoundtripCompatibleXML(value)
 
-	case "cbor", "":
+	case "cbor":
 		return RoundtripCBOR(value)
 
 	case "messagepack":

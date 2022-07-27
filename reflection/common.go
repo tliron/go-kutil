@@ -17,7 +17,7 @@ func GetFunctionName(fn any) string {
 func IsNil(value reflect.Value) bool {
 	// https://golang.org/pkg/reflect/#Value.IsNil
 	switch value.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Slice, reflect.Ptr:
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Slice, reflect.Pointer:
 		return value.IsNil()
 
 	default:
@@ -31,7 +31,7 @@ func IsZero(value reflect.Value) bool {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Slice:
 		return value.IsNil()
 
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return value.IsNil() || IsZero(value.Elem())
 
 	case reflect.Array:
@@ -56,4 +56,28 @@ func IsZero(value reflect.Value) bool {
 		zero := reflect.Zero(value.Type()).Interface()
 		return value.Interface() == zero
 	}
+}
+
+func IsEmpty(value any) bool {
+	// From JSON documentaiton:
+	// defined as false, 0, a nil pointer, a nil interface value, and any empty array, slice, map, or string
+
+	switch value_ := value.(type) {
+	case bool:
+		return value_ == false
+	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8, float64, float32:
+		return value_ == 0
+	case string:
+		return len(value_) == 0
+	}
+
+	value_ := reflect.ValueOf(value)
+	switch value_.Kind() {
+	case reflect.Map, reflect.Slice, reflect.Array:
+		if value_.Len() == 0 {
+			return true
+		}
+	}
+
+	return value == nil
 }

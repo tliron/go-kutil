@@ -8,22 +8,26 @@ import (
 
 var structFieldsCache sync.Map
 
-// Includes fields "inherited" from anonymous struct pointer fields
+// Includes fields "inherited" from anonymous struct fields
 // The order of field definition is important! Later fields will override previous fields
 func GetStructFields(type_ reflect.Type) []reflect.StructField {
-	if v, ok := structFieldsCache.Load(type_); ok {
-		return v.([]reflect.StructField)
+	if structFields, ok := structFieldsCache.Load(type_); ok {
+		return structFields.([]reflect.StructField)
 	}
 
 	var structFields []reflect.StructField
-	fields := type_.NumField()
-	for index := 0; index < fields; index++ {
+	length := type_.NumField()
+	for index := 0; index < length; index++ {
 		structField := type_.Field(index)
-		if structField.Anonymous && (structField.Type.Kind() == reflect.Ptr) {
-			for _, structField = range GetStructFields(structField.Type.Elem()) {
+		if structField.Anonymous {
+			embedded := structField.Type
+			for embedded.Kind() == reflect.Pointer {
+				embedded = embedded.Elem()
+			}
+			for _, structField = range GetStructFields(embedded) {
 				structFields = appendStructField(structFields, structField)
 			}
-		} else {
+		} else if structField.IsExported() {
 			structFields = appendStructField(structFields, structField)
 		}
 	}
@@ -34,18 +38,14 @@ func GetStructFields(type_ reflect.Type) []reflect.StructField {
 }
 
 func appendStructField(structFields []reflect.StructField, structField reflect.StructField) []reflect.StructField {
-	found := false
 	for index, f := range structFields {
 		if f.Name == structField.Name {
 			// Override
 			structFields[index] = structField
-			found = true
-			break
+			return structFields
 		}
 	}
-	if !found {
-		structFields = append(structFields, structField)
-	}
+	structFields = append(structFields, structField)
 	return structFields
 }
 
@@ -54,7 +54,7 @@ func GetReferredField(entity reflect.Value, referenceFieldName string, referredF
 	if !referenceField.IsValid() {
 		panic(fmt.Sprintf("tag refers to unknown field %q in struct: %s", referenceFieldName, entity.Type()))
 	}
-	if referenceField.Type().Kind() != reflect.Ptr {
+	if referenceField.Type().Kind() != reflect.Pointer {
 		panic(fmt.Sprintf("tag refers to non-pointer field %q in struct: %s", referenceFieldName, entity.Type()))
 	}
 

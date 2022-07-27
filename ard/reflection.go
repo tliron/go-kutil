@@ -3,6 +3,7 @@ package ard
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,126 +12,138 @@ import (
 
 type StructFieldNameMapperFunc func(fieldName string) string
 
+type FromARD interface {
+	FromARD(reflector *Reflector) (any, error)
+}
+
+type ToARD interface {
+	ToARD(reflector *Reflector) (any, error)
+}
+
 //
 // Reflector
 //
 
+var defaultStructFieldTags = []string{"ard", "yaml", "json"}
+
 type Reflector struct {
 	IgnoreMissingStructFields bool
 	NilMeansZero              bool
+	StructFieldTags           []string // in order
 	StructFieldNameMapper     StructFieldNameMapperFunc
 
-	fieldNamesCache sync.Map
+	reflectFieldsCache sync.Map
 }
 
 func NewReflector() *Reflector {
-	return new(Reflector)
+	return &Reflector{StructFieldTags: defaultStructFieldTags}
 }
 
-func (self *Reflector) ToComposite(value Value, compositeValuePtr any) error {
-	compositeValuePtr_ := reflect.ValueOf(compositeValuePtr)
+// Fills in Go struct fields from ARD maps
+func (self *Reflector) Pack(value Value, packedValuePtr any) error {
+	compositeValuePtr_ := reflect.ValueOf(packedValuePtr)
 	if compositeValuePtr_.Kind() == reflect.Pointer {
-		return self.ToCompositeReflect(value, compositeValuePtr_)
+		return self.PackReflect(value, compositeValuePtr_)
 	} else {
-		return fmt.Errorf("not a pointer: %T", compositeValuePtr)
+		return fmt.Errorf("not a pointer: %T", packedValuePtr)
 	}
 }
 
-func (self *Reflector) ToCompositeReflect(value Value, compositeValue reflect.Value) error {
-	compositeType := compositeValue.Type()
+func (self *Reflector) PackReflect(value Value, packedValue reflect.Value) error {
+	packedType := packedValue.Type()
 
 	// Dereference pointers
-	if compositeType.Kind() == reflect.Pointer {
+	for packedType.Kind() == reflect.Pointer {
 		if value == nil {
 			return nil
 		}
 
-		compositeType = compositeType.Elem()
-		if compositeValue.IsNil() {
-			// Zero value
-			compositeValue.Set(reflect.New(compositeType))
+		packedType = packedType.Elem()
+		if packedValue.IsNil() {
+			// Allocate zero value on heap
+			packedValue.Set(reflect.New(packedType))
 		}
-		compositeValue = compositeValue.Elem()
+		packedValue = packedValue.Elem()
 	}
 
 	switch value_ := value.(type) {
 	case nil:
 		if self.NilMeansZero {
-			compositeValue.Set(reflect.Zero(compositeType))
+			packedValue.Set(reflect.Zero(packedType))
 		} else {
-			kind := compositeValue.Kind()
+			kind := packedValue.Kind()
 			if (kind != reflect.Map) && (kind != reflect.Slice) {
-				return fmt.Errorf("not a pointer, map, or slice: %s", compositeType.String())
+				return fmt.Errorf("not a pointer, map, or slice: %s", packedType.String())
 			}
 		}
 
 	case string:
-		if compositeValue.Kind() == reflect.String {
-			compositeValue.SetString(value_)
+		if packedValue.Kind() == reflect.String {
+			packedValue.SetString(value_)
 		} else {
-			return fmt.Errorf("not a string: %s", compositeType.String())
+			return fmt.Errorf("not a string: %s", packedType.String())
 		}
 
 	case bool:
-		if compositeValue.Kind() == reflect.Bool {
-			compositeValue.SetBool(value_)
+		if packedValue.Kind() == reflect.Bool {
+			packedValue.SetBool(value_)
 		} else {
-			return fmt.Errorf("not a bool: %s", compositeType.String())
+			return fmt.Errorf("not a bool: %s", packedType.String())
 		}
 
 	case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint:
-		if reflection.IsInteger(compositeValue.Kind()) {
-			compositeValue.SetInt(ToInt64(value_))
-		} else if reflection.IsUInteger(compositeValue.Kind()) {
-			compositeValue.SetUint(ToUInt64(value_))
+		if reflection.IsInteger(packedValue.Kind()) {
+			packedValue.SetInt(ToInt64(value_))
+		} else if reflection.IsUInteger(packedValue.Kind()) {
+			packedValue.SetUint(ToUInt64(value_))
 		} else {
-			return fmt.Errorf("not an integer: %s", compositeType.String())
+			return fmt.Errorf("not an integer: %s", packedType.String())
 		}
 
 	case float64, float32:
-		if reflection.IsFloat(compositeValue.Kind()) {
-			compositeValue.SetFloat(ToFloat64(value_))
+		if reflection.IsFloat(packedValue.Kind()) {
+			packedValue.SetFloat(ToFloat64(value_))
 		} else {
-			return fmt.Errorf("not a float: %s", compositeType.String())
+			return fmt.Errorf("not a float: %s", packedType.String())
 		}
 
 	case time.Time: // as-is values
-		if compositeType == reflect.TypeOf(value_) {
-			compositeValue.Set(reflect.ValueOf(value_))
+		if packedType == reflect.TypeOf(value_) {
+			packedValue.Set(reflect.ValueOf(value_))
 		} else {
-			return fmt.Errorf("not a %T: %s", value, compositeType.String())
+			return fmt.Errorf("not a %T: %s", value, packedType.String())
 		}
 
 	case List:
-		if compositeValue.Kind() == reflect.Slice {
-			elemType := compositeType.Elem()
+		if packedValue.Kind() == reflect.Slice {
+			elemType := packedType.Elem()
 			length := len(value_)
 			list := reflect.MakeSlice(reflect.SliceOf(elemType), length, length)
 			for index, elem := range value_ {
-				if err := self.ToCompositeReflect(elem, list.Index(index)); err != nil {
+				if err := self.PackReflect(elem, list.Index(index)); err != nil {
 					return fmt.Errorf("slice element %d %s", index, err.Error())
 				}
 			}
-			compositeValue.Set(list)
+			packedValue.Set(list)
 		} else {
-			return fmt.Errorf("not a slice: %s", compositeType.String())
+			return fmt.Errorf("not a slice: %s", packedType.String())
 		}
 
 	case Map:
-		switch compositeValue.Kind() {
+		switch packedValue.Kind() {
 		case reflect.Map:
-			if compositeValue.IsNil() {
-				compositeValue.Set(reflect.MakeMap(compositeType))
+			if packedValue.IsNil() {
+				packedValue.Set(reflect.MakeMap(packedType))
 			}
 
-			keyType := compositeType.Key()
-			valueType := compositeType.Elem()
+			keyType := packedType.Key()
+			valueType := packedType.Elem()
 			for k, v := range value_ {
 				k_ := reflect.New(keyType)
-				if err := self.ToCompositeReflect(k, k_); err == nil {
+				if err := self.PackReflect(k, k_); err == nil {
 					v_ := reflect.New(valueType)
-					if err := self.ToCompositeReflect(v, v_); err == nil {
-						compositeValue.SetMapIndex(k_.Elem(), v_.Elem())
+					if err := self.PackReflect(v, v_); err == nil {
+						packedValue.SetMapIndex(k_.Elem(), v_.Elem())
 					} else {
 						return fmt.Errorf("map value %s", err)
 					}
@@ -140,36 +153,45 @@ func (self *Reflector) ToCompositeReflect(value Value, compositeValue reflect.Va
 			}
 
 		case reflect.Struct:
-			fieldNames := self.NewFieldNames(compositeType)
+			if fromArd, ok := packedValue.Interface().(FromARD); ok {
+				if value__, err := fromArd.FromARD(self); err == nil {
+					packedValue.Set(reflect.ValueOf(value__))
+					return nil
+				} else {
+					return err
+				}
+			}
+
+			reflectFields := self.NewReflectFields(packedType)
 			for k, v := range value_ {
 				if k_, ok := k.(string); ok {
-					if err := self.setStructField(compositeValue, k_, v, fieldNames); err != nil {
+					if err := self.setStructField(packedValue, k_, v, reflectFields); err != nil {
 						return err
 					}
 				} else {
-					return fmt.Errorf("key not a string: %T", k)
+					return fmt.Errorf("key %q not a string: %T", k, k)
 				}
 			}
 
 		default:
-			return fmt.Errorf("not a map or struct: %s", compositeType.String())
+			return fmt.Errorf("not a map or struct: %s", packedType.String())
 		}
 
 	case StringMap:
-		switch compositeValue.Kind() {
+		switch packedValue.Kind() {
 		case reflect.Map:
-			if compositeValue.IsNil() {
-				compositeValue.Set(reflect.MakeMap(compositeType))
+			if packedValue.IsNil() {
+				packedValue.Set(reflect.MakeMap(packedType))
 			}
 
-			keyType := compositeType.Key()
-			valueType := compositeType.Elem()
+			keyType := packedType.Key()
+			valueType := packedType.Elem()
 			for k, v := range value_ {
 				k_ := reflect.New(keyType)
-				if err := self.ToCompositeReflect(k, k_); err == nil {
+				if err := self.PackReflect(k, k_); err == nil {
 					v_ := reflect.New(valueType)
-					if err := self.ToCompositeReflect(v, v_); err == nil {
-						compositeValue.SetMapIndex(k_.Elem(), v_.Elem())
+					if err := self.PackReflect(v, v_); err == nil {
+						packedValue.SetMapIndex(k_.Elem(), v_.Elem())
 					} else {
 						return fmt.Errorf("map value %s", err)
 					}
@@ -179,58 +201,80 @@ func (self *Reflector) ToCompositeReflect(value Value, compositeValue reflect.Va
 			}
 
 		case reflect.Struct:
-			fieldNames := self.NewFieldNames(compositeType)
+			if fromArd, ok := packedValue.Interface().(FromARD); ok {
+				if value__, err := fromArd.FromARD(self); err == nil {
+					packedValue.Set(reflect.ValueOf(value__))
+					return nil
+				} else {
+					return err
+				}
+			}
+
+			reflectFields := self.NewReflectFields(packedType)
 			for k, v := range value_ {
-				if err := self.setStructField(compositeValue, k, v, fieldNames); err != nil {
+				if err := self.setStructField(packedValue, k, v, reflectFields); err != nil {
 					return err
 				}
 			}
 
 		default:
-			return fmt.Errorf("not a map or struct: %s", compositeType.String())
+			return fmt.Errorf("not a map or struct: %s", packedType.String())
 		}
 
 	default:
-		return fmt.Errorf("unsupported type: %s", compositeType.String())
+		return fmt.Errorf("unsupported type: %s", packedType.String())
 	}
 
 	return nil
 }
 
-func (self *Reflector) FromComposite(compositeValue any) (Value, error) {
-	return self.FromCompositeReflect(reflect.ValueOf(compositeValue))
+// Converts Go structs to ARD maps
+func (self *Reflector) Unpack(packedValue any) (Value, error) {
+	return self.UnpackReflect(reflect.ValueOf(packedValue))
 }
 
 var time_ time.Time
 var timeType = reflect.TypeOf(time_)
 
-func (self *Reflector) FromCompositeReflect(compositeValue reflect.Value) (Value, error) {
-	compositeType := compositeValue.Type()
+func (self *Reflector) UnpackReflect(packedValue reflect.Value) (Value, error) {
+	if toArd, ok := packedValue.Interface().(ToARD); ok {
+		return toArd.ToARD(self)
+	}
+
+	packedType := packedValue.Type()
+	kind := packedType.Kind()
 
 	// Dereference pointers
-	if compositeType.Kind() == reflect.Pointer {
-		if compositeValue.IsNil() {
+	for (kind == reflect.Pointer) || (kind == reflect.Interface) {
+		if packedValue.IsNil() {
 			return nil, nil
 		}
 
-		compositeType = compositeType.Elem()
-		compositeValue = compositeValue.Elem()
+		packedValue = packedValue.Elem()
+
+		if toArd, ok := packedValue.Interface().(ToARD); ok {
+			return toArd.ToARD(self)
+		}
+
+		packedType = packedValue.Type()
+		kind = packedType.Kind()
 	}
 
-	if compositeType == timeType {
-		return compositeValue.Interface(), nil
+	if packedType == timeType {
+		return packedValue.Interface(), nil
 	}
 
-	switch compositeType.Kind() {
-	case reflect.String, reflect.Bool, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint, reflect.Float64, reflect.Float32:
-		return compositeValue.Interface(), nil
+	switch kind {
+	case reflect.String, reflect.Bool, reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Float64, reflect.Float32:
+		return packedValue.Interface(), nil
 
 	case reflect.Slice:
-		length := compositeValue.Len()
+		length := packedValue.Len()
 		list := make(List, length)
 		for index := 0; index < length; index++ {
+			value_ := packedValue.Index(index)
 			var err error
-			if list[index], err = self.FromCompositeReflect(compositeValue.Index(index)); err != nil {
+			if list[index], err = self.UnpackReflect(value_); err != nil {
 				return nil, fmt.Errorf("list element %d %s", index, err.Error())
 			}
 		}
@@ -238,39 +282,39 @@ func (self *Reflector) FromCompositeReflect(compositeValue reflect.Value) (Value
 
 	case reflect.Map:
 		map_ := make(Map)
-		keys := compositeValue.MapKeys()
+		keys := packedValue.MapKeys()
 		for _, key := range keys {
-			if key_, err := self.FromCompositeReflect(key); err == nil {
-				elem := compositeValue.MapIndex(key)
-				if elem_, err := self.FromCompositeReflect(elem); err == nil {
-					map_[key_] = elem_
-				} else {
-					return nil, fmt.Errorf("map element %q %s", key_, err.Error())
+			if key_, err := self.UnpackReflect(key); err == nil {
+				value_ := packedValue.MapIndex(key)
+				if map_[key_], err = self.UnpackReflect(value_); err != nil {
+					return nil, fmt.Errorf("map value %q %s", key_, err.Error())
 				}
 			} else {
-				return nil, fmt.Errorf("map key %q %s", key_, err.Error())
+				return nil, fmt.Errorf("map key %q %s", key, err.Error())
 			}
 		}
 		return map_, nil
 
 	case reflect.Struct:
 		map_ := make(Map)
-		fieldNames := self.NewFieldNames(compositeType)
-		for name, fieldName := range fieldNames {
-			elem := compositeValue.FieldByName(fieldName)
-			if elem_, err := self.FromCompositeReflect(elem); err == nil {
-				map_[name] = elem_
+		for name, field := range self.NewReflectFields(packedType) {
+			value_ := packedValue.FieldByName(field.Name)
+			if value__, err := self.UnpackReflect(value_); err == nil {
+				if !field.OmitEmpty || !reflection.IsEmpty(value__) {
+					map_[name] = value__
+				}
 			} else {
-				return nil, fmt.Errorf("struct field %q %s", fieldName, err.Error())
+				return nil, fmt.Errorf("struct field %q %s", field.Name, err.Error())
 			}
 		}
 		return map_, nil
-	}
 
-	return nil, fmt.Errorf("unsupported type: %s", compositeType.String())
+	default:
+		return nil, fmt.Errorf("unsupported type: %s", packedType.String())
+	}
 }
 
-func (self *Reflector) setStructField(structValue reflect.Value, fieldName string, value Value, fieldNames FieldNames) error {
+func (self *Reflector) setStructField(structValue reflect.Value, fieldName string, value Value, fieldNames ReflectFields) error {
 	field := fieldNames.GetField(structValue, fieldName)
 
 	if !field.IsValid() {
@@ -285,7 +329,7 @@ func (self *Reflector) setStructField(structValue reflect.Value, fieldName strin
 		return fmt.Errorf("field %q cannot be set", fieldName)
 	}
 
-	if err := self.ToCompositeReflect(value, field); err == nil {
+	if err := self.PackReflect(value, field); err == nil {
 		return nil
 	} else {
 		return fmt.Errorf("field %q %s", fieldName, err.Error())
@@ -293,41 +337,60 @@ func (self *Reflector) setStructField(structValue reflect.Value, fieldName strin
 }
 
 //
-// FieldNames
+// ReflectField
 //
 
-type FieldNames map[string]string // ARD name to struct field name
+type ReflectField struct {
+	Name      string
+	OmitEmpty bool
+}
 
-func (self *Reflector) NewFieldNames(type_ reflect.Type) FieldNames {
-	if v, ok := self.fieldNamesCache.Load(type_); ok {
-		return v.(FieldNames)
+type ReflectFields map[string]ReflectField // ARD name
+
+func (self *Reflector) NewReflectFields(type_ reflect.Type) ReflectFields {
+	if reflectFields, ok := self.reflectFieldsCache.Load(type_); ok {
+		return reflectFields.(ReflectFields)
 	}
 
-	fieldNames := make(FieldNames)
-	tags := reflection.GetFieldTagsForType(type_, "ard")
+	reflectFields := make(ReflectFields)
 
-	// Tagged fields
-	for fieldName, tag := range tags {
-		fieldNames[tag] = fieldName
-	}
+	for _, structField := range reflection.GetStructFields(type_) {
+		reflectField := ReflectField{Name: structField.Name}
 
-	// Untagged fields
-	for _, field := range reflection.GetStructFields(type_) {
-		fieldName := field.Name
-		if _, ok := tags[fieldName]; !ok {
+		// Try tags in order
+		tagged := false
+		for _, structFieldTag := range self.StructFieldTags {
+			if tag, ok := structField.Tag.Lookup(structFieldTag); ok {
+				splitTag := strings.Split(tag, ",")
+				if length := len(splitTag); length > 0 {
+					name := splitTag[0]
+					if name != "-" {
+						if (length > 1) && (splitTag[1] == "omitempty") {
+							reflectField.OmitEmpty = true
+						}
+						reflectFields[name] = reflectField
+					}
+				}
+
+				tagged = true
+				break
+			}
+		}
+
+		if !tagged {
 			if self.StructFieldNameMapper != nil {
-				fieldNames[self.StructFieldNameMapper(fieldName)] = fieldName
+				reflectFields[self.StructFieldNameMapper(reflectField.Name)] = reflectField
 			} else {
-				fieldNames[fieldName] = fieldName
+				reflectFields[reflectField.Name] = reflectField
 			}
 		}
 	}
 
-	self.fieldNamesCache.Store(type_, fieldNames)
+	self.reflectFieldsCache.Store(type_, reflectFields)
 
-	return fieldNames
+	return reflectFields
 }
 
-func (self FieldNames) GetField(structValue reflect.Value, name string) reflect.Value {
-	return structValue.FieldByName(self[name])
+func (self ReflectFields) GetField(structValue reflect.Value, name string) reflect.Value {
+	return structValue.FieldByName(self[name].Name)
 }
