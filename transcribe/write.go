@@ -83,18 +83,18 @@ func WriteJSON(value any, writer io.Writer, indent string) error {
 }
 
 func WriteCompatibleJSON(value any, writer io.Writer, indent string) error {
-	return WriteJSON(ard.EnsureCompatibleJSON(value), writer, indent)
+	if value_, err := ard.EnsureCompatibleJSON(value); err == nil {
+		return WriteJSON(value_, writer, indent)
+	} else {
+		return err
+	}
 }
 
 func WriteCompatibleXML(value any, writer io.Writer, indent string) error {
-	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
-	// JSON and YAML) we must canonicalize the data before encoding it
-	value, err := ard.Canonicalize(value)
+	value, err := ard.EnsureCompatibleXML(value)
 	if err != nil {
 		return err
 	}
-
-	value = ard.ToCompatibleXML(value)
 
 	if _, err := io.WriteString(writer, xml.Header); err != nil {
 		return err

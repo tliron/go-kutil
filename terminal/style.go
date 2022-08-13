@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-var Stylize = NewStylist(false)
+var DefaultStylist = NewStylist(false)
 
 //
 // Stylist

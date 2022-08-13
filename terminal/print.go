@@ -2,32 +2,33 @@ package terminal
 
 import (
 	"fmt"
+	"os"
 )
 
 // stdout
 
 func Print(args ...any) (int, error) {
-	return fmt.Fprint(Stdout, args...)
+	return fmt.Print(args...)
 }
 
 func Println(args ...any) (int, error) {
-	return fmt.Fprintln(Stdout, args...)
+	return fmt.Println(args...)
 }
 
 func Printf(format string, args ...any) (int, error) {
-	return fmt.Fprintf(Stdout, format, args...)
+	return fmt.Printf(format, args...)
 }
 
 // stderr
 
 func Eprint(args ...any) (int, error) {
-	return fmt.Fprint(Stderr, args...)
+	return fmt.Fprint(os.Stderr, args...)
 }
 
 func Eprintln(args ...any) (int, error) {
-	return fmt.Fprintln(Stderr, args...)
+	return fmt.Fprintln(os.Stderr, args...)
 }
 
 func Eprintf(format string, args ...any) (int, error) {
-	return fmt.Fprintf(Stderr, format, args...)
+	return fmt.Fprintf(os.Stderr, format, args...)
 }

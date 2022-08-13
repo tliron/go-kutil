@@ -59,7 +59,7 @@ func Print(value any, format string, writer io.Writer, strict bool, pretty bool)
 func PrintYAML(value any, writer io.Writer, strict bool, pretty bool) error {
 	if pretty && terminal.Colorize {
 		if code, err := EncodeYAML(value, terminal.Indent, strict); err == nil {
-			return PrettifyYAML(code, writer)
+			return ColorizeYAML(code, writer)
 		} else {
 			return err
 		}
@@ -71,7 +71,7 @@ func PrintYAML(value any, writer io.Writer, strict bool, pretty bool) error {
 func PrintJSON(value any, writer io.Writer, pretty bool) error {
 	if pretty {
 		if terminal.Colorize {
-			formatter := NewJSONFormatter()
+			formatter := NewJSONColorFormatter(terminal.IndentSpaces)
 			if bytes, err := formatter.Marshal(value); err == nil {
 				if _, err := writer.Write(bytes); err == nil {
 					return util.WriteNewline(writer)
@@ -90,7 +90,11 @@ func PrintJSON(value any, writer io.Writer, pretty bool) error {
 }
 
 func PrintCompatibleJSON(value any, writer io.Writer, pretty bool) error {
-	return PrintJSON(ard.EnsureCompatibleJSON(value), writer, pretty)
+	if value_, err := ard.EnsureCompatibleJSON(value); err == nil {
+		return PrintJSON(value_, writer, pretty)
+	} else {
+		return err
+	}
 }
 
 func PrintCompatibleXML(value any, writer io.Writer, pretty bool) error {

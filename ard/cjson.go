@@ -20,18 +20,23 @@ This particular implementation is not designed for performance but rather for
 widest compability, relying on Go's built-in JSON support or 3rd-party
 implementations compatible with it.
 
-Inspired by: https://docs.mongodb.com/manual/reference/mongodb-Compatible-json/
+Inspired by: https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/
 */
 
-var CompatibleJSONIntegerCode = "$ard.integer"
-var CompatibleJSONUIntegerCode = "$ard.uinteger"
-var CompatibleJSONBytesCode = "$ard.bytes"
-var CompatibleJSONMapCode = "$ard.map"
+const (
+	CompatibleJSONIntegerCode  = "$ard.integer"
+	CompatibleJSONUIntegerCode = "$ard.uinteger"
+	CompatibleJSONBytesCode    = "$ard.bytes"
+	CompatibleJSONMapCode      = "$ard.map"
+)
 
-func EnsureCompatibleJSON(value Value) Value {
-	value, _ = Canonicalize(value)
-	value, _ = ToCompatibleJSON(value)
-	return value
+func EnsureCompatibleJSON(value Value) (Value, error) {
+	if value_, err := Canonicalize(value); err == nil {
+		value_, _ = ToCompatibleJSON(value_)
+		return value_, nil
+	} else {
+		return nil, err
+	}
 }
 
 func ToCompatibleJSON(value Value) (Value, bool) {
@@ -276,15 +281,15 @@ func (self CompatibleJSONMap) MarshalJSON() ([]byte, error) {
 func DecodeCompatibleJSONMap(code StringMap) (Map, bool) {
 	if map_, ok := code[CompatibleJSONMapCode]; ok {
 		if map__, ok := map_.(List); ok {
-			r := make(Map)
+			map___ := make(Map)
 			for _, entry := range map__ {
 				if entry_, ok := DecodeCompatibleJSONMapEntry(entry); ok {
-					r[entry_.Key] = entry_.Value
+					map___[entry_.Key] = entry_.Value
 				} else {
 					return nil, false
 				}
 			}
-			return r, true
+			return map___, true
 		}
 	}
 	return nil, false

@@ -26,6 +26,7 @@ const (
 
 	// Other schemas: https://yaml.org/spec/1.2/spec.html#id2805770
 	TypeNull      TypeName = "ard.null"
+	TypeBytes     TypeName = "ard.bytes"
 	TypeTimestamp TypeName = "ard.timestamp"
 )
 
@@ -45,6 +46,8 @@ func GetTypeName(value Value) TypeName {
 		return TypeFloat
 	case nil:
 		return TypeNull
+	case []byte:
+		return TypeBytes
 	case time.Time:
 		return TypeTimestamp
 	default:
@@ -64,6 +67,7 @@ var TypeZeroes = map[TypeName]Value{
 	TypeInteger:   int(0),       // YAML parser returns int
 	TypeFloat:     float64(0.0), // YAML and JSON parsers return float64
 	TypeNull:      nil,
+	TypeBytes:     []byte{},
 	TypeTimestamp: time.Time{}, // YAML parser returns time.Time
 }
 
@@ -81,6 +85,7 @@ var TypeValidators = map[TypeName]TypeValidator{
 	TypeInteger:   IsInteger,
 	TypeFloat:     IsFloat,
 	TypeNull:      IsNull,
+	TypeBytes:     IsBytes,
 	TypeTimestamp: IsTimestamp,
 }
 
@@ -130,6 +135,11 @@ func IsNull(value Value) bool {
 	return value == nil
 }
 
+func IsBytes(value Value) bool {
+	_, ok := value.([]byte)
+	return ok
+}
+
 // time.Time
 func IsTimestamp(value Value) bool {
 	_, ok := value.(time.Time)
@@ -138,7 +148,7 @@ func IsTimestamp(value Value) bool {
 
 func IsPrimitiveType(value Value) bool {
 	switch value.(type) {
-	case string, bool, int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint, float64, float32, nil, time.Time:
+	case string, bool, int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint, float64, float32, nil, []byte, time.Time:
 		return true
 	default:
 		return false

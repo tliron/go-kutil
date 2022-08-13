@@ -64,11 +64,11 @@ func (self *Backend) Configure(verbosity int, path *string) {
 		} else {
 			self.colorize = terminal.Colorize
 			if self.Buffered {
-				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
+				writer := util.NewBufferedWriter(os.Stderr, BUFFER_SIZE)
 				util.OnExitError(writer.Close)
 				self.Writer = writer
 			} else {
-				self.Writer = util.NewSyncedWriter(terminal.Stderr)
+				self.Writer = util.NewSyncedWriter(os.Stderr)
 			}
 		}
 

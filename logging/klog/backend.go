@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/tliron/kutil/logging"
-	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 	"k8s.io/klog/v2"
 )
@@ -72,12 +71,12 @@ func (self *Backend) Configure(verbosity int, path *string) {
 			}
 		} else {
 			if self.Buffered {
-				writer := util.NewBufferedWriter(terminal.Stderr, BUFFER_SIZE)
+				writer := util.NewBufferedWriter(os.Stderr, BUFFER_SIZE)
 				util.OnExitError(writer.Close)
 				self.writer = writer
 				klog.SetOutput(writer)
 			} else {
-				klog.SetOutput(util.NewSyncedWriter(terminal.Stderr))
+				klog.SetOutput(util.NewSyncedWriter(os.Stderr))
 			}
 		}
 

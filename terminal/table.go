@@ -3,6 +3,7 @@ package terminal
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -226,7 +227,7 @@ func (self *Table) Write(writer io.Writer, stylist *Stylist) {
 }
 
 func (self *Table) Print() {
-	self.Write(Stdout, Stylize)
+	self.Write(os.Stdout, DefaultStylist)
 }
 
 // Utils

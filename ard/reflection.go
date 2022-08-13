@@ -41,9 +41,9 @@ func NewReflector() *Reflector {
 
 // Fills in Go struct fields from ARD maps
 func (self *Reflector) Pack(value Value, packedValuePtr any) error {
-	compositeValuePtr_ := reflect.ValueOf(packedValuePtr)
-	if compositeValuePtr_.Kind() == reflect.Pointer {
-		return self.PackReflect(value, compositeValuePtr_)
+	packedValuePtr_ := reflect.ValueOf(packedValuePtr)
+	if packedValuePtr_.Kind() == reflect.Pointer {
+		return self.PackReflect(value, packedValuePtr_)
 	} else {
 		return fmt.Errorf("not a pointer: %T", packedValuePtr)
 	}
@@ -107,7 +107,7 @@ func (self *Reflector) PackReflect(value Value, packedValue reflect.Value) error
 			return fmt.Errorf("not a float: %s", packedType.String())
 		}
 
-	case time.Time: // as-is values
+	case []byte, time.Time: // as-is values
 		if packedType == reflect.TypeOf(value_) {
 			packedValue.Set(reflect.ValueOf(value_))
 		} else {
@@ -269,6 +269,11 @@ func (self *Reflector) UnpackReflect(packedValue reflect.Value) (Value, error) {
 		return packedValue.Interface(), nil
 
 	case reflect.Slice:
+		if packedType.Elem().Kind() == reflect.Uint8 {
+			// []byte
+			return packedValue.Interface(), nil
+		}
+
 		length := packedValue.Len()
 		list := make(List, length)
 		for index := 0; index < length; index++ {
@@ -298,13 +303,13 @@ func (self *Reflector) UnpackReflect(packedValue reflect.Value) (Value, error) {
 	case reflect.Struct:
 		map_ := make(Map)
 		for name, field := range self.NewReflectFields(packedType) {
-			value_ := packedValue.FieldByName(field.Name)
+			value_ := packedValue.FieldByName(field.name)
 			if value__, err := self.UnpackReflect(value_); err == nil {
-				if !field.OmitEmpty || !reflection.IsEmpty(value__) {
+				if !field.omitEmpty || !reflection.IsEmpty(value__) {
 					map_[name] = value__
 				}
 			} else {
-				return nil, fmt.Errorf("struct field %q %s", field.Name, err.Error())
+				return nil, fmt.Errorf("struct field %q %s", field.name, err.Error())
 			}
 		}
 		return map_, nil
@@ -341,8 +346,8 @@ func (self *Reflector) setStructField(structValue reflect.Value, fieldName strin
 //
 
 type ReflectField struct {
-	Name      string
-	OmitEmpty bool
+	name      string
+	omitEmpty bool
 }
 
 type ReflectFields map[string]ReflectField // ARD name
@@ -355,7 +360,7 @@ func (self *Reflector) NewReflectFields(type_ reflect.Type) ReflectFields {
 	reflectFields := make(ReflectFields)
 
 	for _, structField := range reflection.GetStructFields(type_) {
-		reflectField := ReflectField{Name: structField.Name}
+		reflectField := ReflectField{name: structField.Name}
 
 		// Try tags in order
 		tagged := false
@@ -366,7 +371,7 @@ func (self *Reflector) NewReflectFields(type_ reflect.Type) ReflectFields {
 					name := splitTag[0]
 					if name != "-" {
 						if (length > 1) && (splitTag[1] == "omitempty") {
-							reflectField.OmitEmpty = true
+							reflectField.omitEmpty = true
 						}
 						reflectFields[name] = reflectField
 					}
@@ -379,9 +384,9 @@ func (self *Reflector) NewReflectFields(type_ reflect.Type) ReflectFields {
 
 		if !tagged {
 			if self.StructFieldNameMapper != nil {
-				reflectFields[self.StructFieldNameMapper(reflectField.Name)] = reflectField
+				reflectFields[self.StructFieldNameMapper(reflectField.name)] = reflectField
 			} else {
-				reflectFields[reflectField.Name] = reflectField
+				reflectFields[reflectField.name] = reflectField
 			}
 		}
 	}
@@ -392,5 +397,5 @@ func (self *Reflector) NewReflectFields(type_ reflect.Type) ReflectFields {
 }
 
 func (self ReflectFields) GetField(structValue reflect.Value, name string) reflect.Value {
-	return structValue.FieldByName(self[name].Name)
+	return structValue.FieldByName(self[name].name)
 }

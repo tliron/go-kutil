@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fxamacker/cbor/v2"
+	"github.com/kortschak/utter"
 	"github.com/tliron/kutil/ard"
 	"github.com/tliron/kutil/util"
 )
@@ -62,7 +63,11 @@ func EncodeJSON(value any, indent string) (string, error) {
 }
 
 func EncodeCompatibleJSON(value any, indent string) (string, error) {
-	return EncodeJSON(ard.EnsureCompatibleJSON(value), indent)
+	if value_, err := ard.EnsureCompatibleJSON(value); err == nil {
+		return EncodeJSON(value_, indent)
+	} else {
+		return "", err
+	}
 }
 
 func EncodeCompatibleXML(value any, indent string) (string, error) {
@@ -92,6 +97,14 @@ func EncodeMessagePack(value any) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func NewUtterConfig(indent string) *utter.ConfigState {
+	var config = utter.NewDefaultConfig()
+	config.Indent = indent
+	config.SortKeys = true
+	config.CommentPointers = true
+	return config
 }
 
 func EncodeGo(value any, indent string) (string, error) {

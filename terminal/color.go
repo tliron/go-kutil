@@ -2,90 +2,89 @@ package terminal
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
-	"github.com/zchee/color/v2"
+	"github.com/muesli/termenv"
 )
 
 var Colorize = false
 
-func EnableColor(force bool) {
-	if force {
-		color.NoColor = false
-	}
+type Cleanup func() error
 
-	Colorize = !color.NoColor
+const (
+	escapePrefix = "\x1b["
+	escapeSuffix = "m"
+
+	ResetCode   = escapePrefix + "0" + escapeSuffix
+	RedCode     = escapePrefix + "31" + escapeSuffix
+	GreenCode   = escapePrefix + "32" + escapeSuffix
+	YellowCode  = escapePrefix + "33" + escapeSuffix
+	BlueCode    = escapePrefix + "34" + escapeSuffix
+	MagentaCode = escapePrefix + "35" + escapeSuffix
+	CyanCode    = escapePrefix + "36" + escapeSuffix
+)
+
+func EnableColor(force bool) (Cleanup, error) {
+	if force {
+		Colorize = true
+	} else {
+		Colorize = termenv.EnvColorProfile() != termenv.Ascii
+	}
 
 	if Colorize {
-		Stdout = color.Output
-		Stderr = color.Error
-		Stylize = NewStylist(true)
+		DefaultStylist = NewStylist(true)
+		return enableColor()
 	} else {
-		Stdout = os.Stdout
-		Stderr = os.Stderr
-		Stylize = NewStylist(false)
+		DefaultStylist = NewStylist(false)
+		return nil, nil
 	}
 }
 
-func ProcessColorizeFlag(colorize string) error {
+func ProcessColorizeFlag(colorize string) (Cleanup, error) {
 	if colorize == "force" {
-		EnableColor(true)
+		return EnableColor(true)
 	} else if colorize_, err := strconv.ParseBool(colorize); err == nil {
 		if colorize_ {
-			EnableColor(false)
+			return EnableColor(false)
 		}
 	} else {
-		return fmt.Errorf("\"--colorize\" must be boolean or \"force\": %s", colorize)
+		return nil, fmt.Errorf("\"--colorize\" must be boolean or \"force\": %s", colorize)
 	}
-	return nil
+	return nil, nil
 }
-
-// Codes
-
-const escapePrefix = "\x1b["
-const escapeSuffix = "m"
-
-var ResetCode = escapePrefix + color.Reset.String() + escapeSuffix
-var RedCode = escapePrefix + color.FgRed.String() + escapeSuffix
-var GreenCode = escapePrefix + color.FgGreen.String() + escapeSuffix
-var YellowCode = escapePrefix + color.FgYellow.String() + escapeSuffix
-var BlueCode = escapePrefix + color.FgBlue.String() + escapeSuffix
-var MagentaCode = escapePrefix + color.FgMagenta.String() + escapeSuffix
-var CyanCode = escapePrefix + color.FgCyan.String() + escapeSuffix
 
 //
 // Colorizer
 //
 
-type Colorizer = func(name string) string
+type Colorizer func(name string) string
 
 // Colorizer signature
-func ColorRed(name string) string {
-	return color.RedString(name)
+func ColorRed(s string) string {
+	return RedCode + s + ResetCode
 }
 
 // Colorizer signature
-func ColorGreen(name string) string {
-	return color.GreenString(name)
+func ColorGreen(s string) string {
+	return GreenCode + s + ResetCode
 }
 
 // Colorizer signature
-func ColorYellow(name string) string {
-	return color.YellowString(name)
+func ColorYellow(s string) string {
+	return YellowCode + s + ResetCode
 }
 
 // Colorizer signature
-func ColorBlue(name string) string {
-	return color.BlueString(name)
+func ColorBlue(s string) string {
+	return BlueCode + s + ResetCode
 }
 
 // Colorizer signature
-func ColorMagenta(name string) string {
-	return color.MagentaString(name)
+func ColorMagenta(s string) string {
+	return MagentaCode + s + ResetCode
 }
 
 // Colorizer signature
-func ColorCyan(name string) string {
-	return color.CyanString(name)
+func ColorCyan(s string) string {
+	return CyanCode + s + ResetCode
 }

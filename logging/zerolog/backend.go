@@ -61,7 +61,7 @@ func (self *Backend) Configure(verbosity int, path *string) {
 				util.Failf("log file error: %s", err.Error())
 			}
 		} else {
-			self.writer = terminal.Stderr
+			self.writer = os.Stderr
 			if terminal.Colorize {
 				logpkg.Logger = zerolog.New(zerolog.ConsoleWriter{
 					Out:        self.writer,

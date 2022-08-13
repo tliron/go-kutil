@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tliron/kutil/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,8 +30,6 @@ func ToYAMLDocumentNode(value Value, verbose bool) *yaml.Node {
 }
 
 func ToYAMLNode(value Value, verbose bool) (*yaml.Node, bool) {
-	// See: https://yaml.org/type/
-
 	var node yaml.Node
 	if verbose {
 		node.Style = yaml.TaggedStyle
@@ -149,6 +148,12 @@ func ToYAMLNode(value Value, verbose bool) (*yaml.Node, bool) {
 		node.Value = fixFloat(strconv.FormatFloat(float64(value_), 'g', -1, 32))
 
 	// Other schemas: https://yaml.org/spec/1.2/spec.html#id2805770
+
+	case []byte:
+		// See: https://yaml.org/type/binary.html
+		node.Kind = yaml.ScalarNode
+		node.Tag = "!!binary"
+		node.Value = util.ToBase64(value_)
 
 	case time.Time:
 		// See: https://yaml.org/type/timestamp.html

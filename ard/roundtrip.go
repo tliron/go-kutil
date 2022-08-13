@@ -18,15 +18,16 @@ func Roundtrip(value Value, format string) (Value, error) {
 	case "yaml":
 		return RoundtripYAML(value)
 
+	case "json":
+		return RoundtripJSON(value)
+
 	case "cjson":
-		// broken
 		return RoundtripCompatibleJSON(value)
 
-	case "xml", "":
-		// broken
+	case "xml":
 		return RoundtripCompatibleXML(value)
 
-	case "cbor":
+	case "cbor", "":
 		return RoundtripCBOR(value)
 
 	case "messagepack":
@@ -48,28 +49,39 @@ func RoundtripYAML(value Value) (Value, error) {
 	}
 }
 
-func RoundtripCompatibleJSON(value Value) (Value, error) {
-	value = EnsureCompatibleJSON(value)
+func RoundtripJSON(value Value) (Value, error) {
 	var writer strings.Builder
 	encoder := json.NewEncoder(&writer)
 	if err := encoder.Encode(value); err == nil {
-		value_, _, err := ReadCompatibleJSON(strings.NewReader(writer.String()), false)
+		value_, _, err := ReadJSON(strings.NewReader(writer.String()), false)
 		return value_, err
 	} else {
 		return nil, err
 	}
 }
 
+func RoundtripCompatibleJSON(value Value) (Value, error) {
+	if value_, err := EnsureCompatibleJSON(value); err == nil {
+		var writer strings.Builder
+		encoder := json.NewEncoder(&writer)
+		if err := encoder.Encode(value_); err == nil {
+			value__, _, err := ReadCompatibleJSON(strings.NewReader(writer.String()), false)
+			return value__, err
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
+}
+
 func RoundtripCompatibleXML(value Value) (Value, error) {
-	// Because we don't provide explicit marshalling for XML in the codebase (as we do for
-	// JSON and YAML) we must canonicalize the data before encoding it
-	if value, err := Canonicalize(value); err == nil {
-		value = ToCompatibleXML(value)
+	if value_, err := EnsureCompatibleXML(value); err == nil {
 		var writer strings.Builder
 		if _, err := writer.WriteString(xml.Header); err == nil {
 			encoder := xml.NewEncoder(&writer)
 			encoder.Indent("", "")
-			if err := encoder.Encode(value); err == nil {
+			if err := encoder.Encode(value_); err == nil {
 				value_, _, err := ReadCompatibleXML(strings.NewReader(writer.String()), false)
 				return value_, err
 			} else {

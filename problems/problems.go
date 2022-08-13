@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 
@@ -167,5 +168,5 @@ func (self *Problems) WithError(err error, locate bool) error {
 // Print
 
 func (self *Problems) Print(locate bool) bool {
-	return self.Write(terminal.Stderr, terminal.Stylize, true, locate)
+	return self.Write(os.Stderr, terminal.DefaultStylist, true, locate)
 }
