@@ -40,12 +40,6 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 			continue
 		}
 
-		// Ignore if has "lookup" tag
-		// TODO: should this be *here*?
-		if _, ok := structField.Tag.Lookup("lookup"); ok {
-			continue
-		}
-
 		field := value.FieldByName(structField.Name)
 
 		// Ignore unexported fields
@@ -55,50 +49,56 @@ func TraverseEntities(entity any, locking bool, traverse EntityTraverser) {
 
 		fieldType := field.Type()
 
-		if IsPointerToStruct(fieldType) && !field.IsNil() {
+		if IsPointerToStruct(fieldType) {
 			// Compatible with *struct{}
-			value := field.Interface()
-			if lock != nil {
-				lock.Unlock()
-			}
-			TraverseEntities(value, locking, traverse)
-			if lock != nil {
-				lock.Lock()
-			}
-		} else if IsSliceOfPointerToStruct(fieldType) {
-			// Compatible with []*struct{}
-			length := field.Len()
-			elements := make([]reflect.Value, length)
-			for index := 0; index < length; index++ {
-				elements[index] = field.Index(index)
-			}
-
-			for _, element := range elements {
-				value := element.Interface()
+			if !field.IsNil() {
+				value := field.Interface()
 				if lock != nil {
 					lock.Unlock()
 				}
 				TraverseEntities(value, locking, traverse)
 				if lock != nil {
 					lock.Lock()
+				}
+			}
+		} else if IsSliceOfPointerToStruct(fieldType) {
+			// Compatible with []*struct{}
+			if !field.IsNil() {
+				length := field.Len()
+				elements := make([]reflect.Value, length)
+				for index := 0; index < length; index++ {
+					elements[index] = field.Index(index)
+				}
+
+				for _, element := range elements {
+					value := element.Interface()
+					if lock != nil {
+						lock.Unlock()
+					}
+					TraverseEntities(value, locking, traverse)
+					if lock != nil {
+						lock.Lock()
+					}
 				}
 			}
 		} else if IsMapOfStringToPointerToStruct(fieldType) {
 			// Compatible with map[string]*struct{}
-			keys := field.MapKeys()
-			elements := make([]reflect.Value, len(keys))
-			for index, key := range keys {
-				elements[index] = field.MapIndex(key)
-			}
-
-			for _, element := range elements {
-				value := element.Interface()
-				if lock != nil {
-					lock.Unlock()
+			if !field.IsNil() {
+				keys := field.MapKeys()
+				elements := make([]reflect.Value, len(keys))
+				for index, key := range keys {
+					elements[index] = field.MapIndex(key)
 				}
-				TraverseEntities(value, locking, traverse)
-				if lock != nil {
-					lock.Lock()
+
+				for _, element := range elements {
+					value := element.Interface()
+					if lock != nil {
+						lock.Unlock()
+					}
+					TraverseEntities(value, locking, traverse)
+					if lock != nil {
+						lock.Lock()
+					}
 				}
 			}
 		}

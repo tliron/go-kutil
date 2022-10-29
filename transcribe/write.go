@@ -54,7 +54,10 @@ func Write(value any, format string, indent string, strict bool, writer io.Write
 
 func WriteYAML(value any, writer io.Writer, indent string, strict bool) error {
 	if strict {
-		value = ard.ToYAMLDocumentNode(value, true)
+		var err error
+		if value, err = ard.ToYAMLDocumentNode(value, true); err != nil {
+			return err
+		}
 	}
 
 	encoder := yaml.NewEncoder(writer)

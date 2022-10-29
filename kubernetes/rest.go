@@ -70,7 +70,7 @@ func Exec(rest restpkg.Interface, config *restpkg.Config, namespace string, podN
 		if err = executor.Stream(streamOptions); err == nil {
 			return nil
 		} else {
-			return NewExecError(err, stderrCapture.String())
+			return NewExecError(err, strings.TrimRight(stderrCapture.String(), "\n"))
 		}
 	} else {
 		return err

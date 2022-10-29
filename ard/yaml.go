@@ -9,23 +9,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func ToYAMLDocumentNode(value Value, verbose bool) *yaml.Node {
-	var node *yaml.Node
-	var ok bool
-	if node, ok = ToYAMLNode(value, verbose); !ok {
-		// Try again after canonicalization
-		var err error
-		if value, err = Canonicalize(value); err == nil {
-			if node, ok = ToYAMLNode(value, verbose); !ok {
-				panic(fmt.Sprintf("unsupported value type: %T", value))
-			}
+func ToYAMLDocumentNode(value Value, verbose bool) (*yaml.Node, error) {
+	if value_, err := Canonicalize(value); err == nil {
+		if node, ok := ToYAMLNode(value_, verbose); ok {
+			return &yaml.Node{
+				Kind:    yaml.DocumentNode,
+				Content: []*yaml.Node{node},
+			}, nil
 		} else {
-			panic(err)
+			return nil, fmt.Errorf("unsupported value type: %T", value_)
 		}
-	}
-	return &yaml.Node{
-		Kind:    yaml.DocumentNode,
-		Content: []*yaml.Node{node},
+	} else {
+		return nil, err
 	}
 }
 
