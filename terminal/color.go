@@ -3,8 +3,6 @@ package terminal
 import (
 	"fmt"
 	"strconv"
-
-	"github.com/muesli/termenv"
 )
 
 var Colorize = false
@@ -23,22 +21,6 @@ const (
 	MagentaCode = escapePrefix + "35" + escapeSuffix
 	CyanCode    = escapePrefix + "36" + escapeSuffix
 )
-
-func EnableColor(force bool) (Cleanup, error) {
-	if force {
-		Colorize = true
-	} else {
-		Colorize = termenv.EnvColorProfile() != termenv.Ascii
-	}
-
-	if Colorize {
-		DefaultStylist = NewStylist(true)
-		return enableColor()
-	} else {
-		DefaultStylist = NewStylist(false)
-		return nil, nil
-	}
-}
 
 func ProcessColorizeFlag(colorize string) (Cleanup, error) {
 	if colorize == "force" {

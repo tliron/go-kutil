@@ -141,9 +141,20 @@ func (self *Problems) Write(writer io.Writer, stylist *terminal.Stylist, pretty 
 			fmt.Fprint(writer, terminal.IndentString(2))
 			fmt.Fprintf(writer, "%s\n", problem)
 
-			if locate && (problem.SourceFile != "") {
-				fmt.Fprint(writer, terminal.IndentString(2))
-				fmt.Fprintf(writer, "└─%s:%d\n", problem.SourceFile, problem.SourceLine)
+			if locate && (len(problem.Callers) > 0) {
+				for index, caller := range problem.Callers {
+					fmt.Fprint(writer, terminal.IndentString(2))
+					if index == 0 {
+						fmt.Fprintf(writer, "└─%s()\n", caller.Function)
+					} else {
+						fmt.Fprintf(writer, "  %s()\n", caller.Function)
+					}
+
+					fmt.Fprint(writer, terminal.IndentString(2))
+					fmt.Fprint(writer, "  ")
+					fmt.Fprint(writer, terminal.IndentString(1))
+					fmt.Fprintf(writer, "%s:%d\n", caller.File, caller.Line)
+				}
 			}
 		}
 		return true

@@ -1,15 +1,29 @@
+//go:build windows
+
 package terminal
 
 import (
 	"github.com/muesli/termenv"
 )
 
-func enableColor() (Cleanup, error) {
-	if mode, err := termenv.EnableWindowsANSIConsole(); err == nil {
-		return func() error {
-			return termenv.RestoreWindowsConsole(mode)
-		}, nil
+func EnableColor(force bool) (Cleanup, error) {
+	if force {
+		Colorize = true
 	} else {
-		return nil, err
+		Colorize = termenv.EnvColorProfile() != termenv.Ascii
+	}
+
+	if Colorize {
+		DefaultStylist = NewStylist(true)
+		if mode, err := termenv.EnableWindowsANSIConsole(); err == nil {
+			return func() error {
+				return termenv.RestoreWindowsConsole(mode)
+			}, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		DefaultStylist = NewStylist(false)
+		return nil, nil
 	}
 }

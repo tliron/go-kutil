@@ -50,6 +50,7 @@ func NewGitURL(path string, repositoryUrl string, context *Context) *GitURL {
 			neturl.User = nil
 		}
 		self.Reference = neturl.Fragment
+		neturl.Fragment = ""
 		self.RepositoryURL = neturl.String()
 	} else {
 		self.RepositoryURL = repositoryUrl
@@ -184,9 +185,12 @@ func (self *GitURL) OpenRepository() (*git.Repository, error) {
 			self.context.dirs[key] = clonePath
 
 			// Clone
+			fmt.Println(self.RepositoryURL)
 			if repository, err := git.PlainClone(clonePath, false, &git.CloneOptions{
-				URL:  self.RepositoryURL,
-				Auth: self.getAuth(),
+				URL:   self.RepositoryURL,
+				Auth:  self.getAuth(),
+				Depth: 1,
+				Tags:  git.NoTags,
 			}); err == nil {
 				if reference, err := self.findReference(repository); err == nil {
 					if reference != nil {

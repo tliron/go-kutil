@@ -19,4 +19,5 @@ type Backend interface {
 	NewMessage(name []string, level Level, depth int) Message
 	AllowLevel(name []string, level Level) bool
 	SetMaxLevel(name []string, level Level)
+	GetMaxLevel(name []string) Level
 }

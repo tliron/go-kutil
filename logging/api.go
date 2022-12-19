@@ -40,6 +40,14 @@ func SetMaxLevel(name []string, level Level) {
 	}
 }
 
+func GetMaxLevel(name []string) Level {
+	if backend != nil {
+		return backend.GetMaxLevel(name)
+	} else {
+		return None
+	}
+}
+
 func NewMessage(name []string, level Level, depth int) Message {
 	if backend != nil {
 		return backend.NewMessage(name, level, depth)

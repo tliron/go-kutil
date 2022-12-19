@@ -130,3 +130,8 @@ func (self *Backend) AllowLevel(name []string, level logging.Level) bool {
 func (self *Backend) SetMaxLevel(name []string, level logging.Level) {
 	self.hierarchy.SetMaxLevel(name, level)
 }
+
+// logging.Backend interface
+func (self *Backend) GetMaxLevel(name []string) logging.Level {
+	return self.hierarchy.GetMaxLevel(name)
+}
