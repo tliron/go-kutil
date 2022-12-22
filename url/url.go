@@ -25,6 +25,12 @@ type URL interface {
 }
 
 func NewURL(url string, context *Context) (URL, error) {
+	if context != nil {
+		if url_, ok := context.GetMapping(url); ok {
+			url = url_
+		}
+	}
+
 	neturl, err := neturlpkg.ParseRequestURI(url)
 	if err != nil {
 		return nil, fmt.Errorf("unsupported URL format: %s", url)
@@ -58,6 +64,12 @@ func NewURL(url string, context *Context) (URL, error) {
 }
 
 func NewValidURL(url string, origins []URL, context *Context) (URL, error) {
+	if context != nil {
+		if url_, ok := context.GetMapping(url); ok {
+			url = url_
+		}
+	}
+
 	neturl, err := neturlpkg.ParseRequestURI(url)
 	if err != nil {
 		// Malformed URL, so it might be a relative path

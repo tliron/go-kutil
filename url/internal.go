@@ -33,7 +33,7 @@ func UpdateInternalURL(path string, content any) {
 	internal.Store(path, util.ToBytes(content))
 }
 
-func ReadToInternalURL(path string, reader io.Reader) (*InternalURL, error) {
+func ReadToInternalURL(path string, reader io.Reader, context *Context) (*InternalURL, error) {
 	if closer, ok := reader.(io.Closer); ok {
 		defer closer.Close()
 	}
@@ -44,15 +44,15 @@ func ReadToInternalURL(path string, reader io.Reader) (*InternalURL, error) {
 	} else {
 		return nil, err
 	}
-	return NewValidInternalURL(path, nil)
+	return NewValidInternalURL(path, context)
 }
 
-func ReadToInternalURLFromStdin(format string) (*InternalURL, error) {
+func ReadToInternalURLFromStdin(format string, context *Context) (*InternalURL, error) {
 	path := fmt.Sprintf("<stdin:%s>", ksuid.New().String())
 	if format != "" {
 		path = fmt.Sprintf("%s.%s", path, format)
 	}
-	return ReadToInternalURL(path, os.Stdin)
+	return ReadToInternalURL(path, os.Stdin, context)
 }
 
 //

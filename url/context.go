@@ -20,6 +20,7 @@ type Credentials struct {
 //
 
 type Context struct {
+	mappings          map[string]string
 	files             map[string]string
 	dirs              map[string]string
 	httpRoundTrippers map[string]http.RoundTripper
@@ -29,6 +30,26 @@ type Context struct {
 
 func NewContext() *Context {
 	return &Context{}
+}
+
+// Set mapping to empty string to delete it
+func (self *Context) Map(fromUrl string, toUrl string) {
+	if self.mappings == nil {
+		self.mappings = make(map[string]string)
+	}
+	if toUrl == "" {
+		delete(self.mappings, fromUrl)
+	} else {
+		self.mappings[fromUrl] = toUrl
+	}
+}
+
+func (self *Context) GetMapping(fromUrl string) (string, bool) {
+	if self.mappings == nil {
+		return "", false
+	}
+	toUrl, ok := self.mappings[fromUrl]
+	return toUrl, ok
 }
 
 // Not thread-safe
