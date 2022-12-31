@@ -11,10 +11,26 @@ func GetFormat(path string) string {
 	if extension == "" {
 		return ""
 	}
+
 	extension = strings.ToLower(extension[1:])
-	if extension == "yml" {
-		extension = "yaml"
+
+	// Special handling for tarballs
+	if pre4start := len(path) - len(extension) - 5; pre4start > 0 {
+		pre4 := path[pre4start : pre4start+4]
+		if pre4 == ".tar" {
+			return "tar." + extension
+		}
 	}
+
+	// Special handling for alternative extensions
+	switch extension {
+	case "yml":
+		return "yaml"
+
+	case "tgz":
+		return "tar.gz"
+	}
+
 	return extension
 }
 

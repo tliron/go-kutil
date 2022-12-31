@@ -89,7 +89,7 @@ func NewValidInternalURL(path string, context *Context) (*InternalURL, error) {
 			context: context,
 		}, nil
 	} else {
-		return nil, fmt.Errorf("internal URL not found: %s", path)
+		return nil, NewNotFoundf("internal URL not found: %s", path)
 	}
 }
 

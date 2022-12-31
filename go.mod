@@ -6,7 +6,7 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/creack/pty v1.1.18
-	github.com/dop251/goja v0.0.0-20221118162653-d4bf6fde1b86
+	github.com/dop251/goja v0.0.0-20221229151140-b95230a9dbad
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/fxamacker/cbor/v2 v2.4.0

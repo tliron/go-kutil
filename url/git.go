@@ -265,7 +265,7 @@ func (self *GitURL) findReference(repository *git.Repository) (*plumbing.Referen
 						return reference, nil
 					}
 				} else if err == io.EOF {
-					return nil, fmt.Errorf("reference %q not found in git repository: %s", self.Reference, self.RepositoryURL)
+					return nil, NewNotFoundf("reference %q not found in git repository: %s", self.Reference, self.RepositoryURL)
 				} else {
 					return nil, err
 				}

@@ -43,6 +43,9 @@ func NewURL(url string, context *Context) (URL, error) {
 			// Go's "net/http" only handles "http:" and "https:"
 			return NewNetworkURL(neturl, context), nil
 
+		case "tar":
+			return ParseTarballURL(url, context)
+
 		case "zip":
 			return ParseZipURL(url, context)
 
@@ -83,6 +86,9 @@ func NewValidURL(url string, origins []URL, context *Context) (URL, error) {
 		case "http", "https":
 			// Go's "net/http" package only handles "http:" and "https:"
 			return NewValidNetworkURL(neturl, context)
+
+		case "tar":
+			return ParseValidTarballURL(url, context)
 
 		case "zip":
 			return ParseValidZipURL(url, context)
@@ -127,6 +133,11 @@ func newValidRelativeURL(path string, origins []URL, context *Context, onlyFileU
 					url, err = NewValidRelativeNetworkURL(path, origin_)
 				}
 
+			case *TarballURL:
+				if !onlyFileURLs {
+					url, err = NewValidRelativeTarballURL(path, origin_)
+				}
+
 			case *ZipURL:
 				if !onlyFileURLs {
 					url, err = NewValidRelativeZipURL(path, origin_)
@@ -151,7 +162,7 @@ func newValidRelativeURL(path string, origins []URL, context *Context, onlyFileU
 		// Try file relative to current directory
 		url, err := NewValidFileURL(path, context)
 		if err != nil {
-			return nil, fmt.Errorf("URL not found: %s", path)
+			return nil, NewNotFoundf("URL not found: %s", path)
 		}
 
 		return url, nil

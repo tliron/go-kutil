@@ -2,7 +2,6 @@ package url
 
 import (
 	"archive/tar"
-	"errors"
 	"io"
 	"strings"
 	"sync"
@@ -64,7 +63,7 @@ func (self *ContainerImageLayerDecoder) copy() {
 				}
 			}
 		} else if err == io.EOF {
-			self.pipeWriter.CloseWithError(errors.New("\"*.tar.gz\" not found in tar"))
+			self.pipeWriter.CloseWithError(NewNotFound("\"*.tar.gz\" not found in tar"))
 			break
 		} else {
 			self.pipeWriter.CloseWithError(err)
