@@ -124,6 +124,18 @@ func (self *Dynamic) UpdateResource(object *unstructured.Unstructured) (*unstruc
 	}
 }
 
+func (self *Dynamic) UpdateResourceStatus(object *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	if gvr, err := FindResourceForUnstructured(self.Discovery, object, "update", "create"); err == nil {
+		if object, err = self.Dynamic.Resource(gvr).Namespace(object.GetNamespace()).UpdateStatus(self.context, object, meta.UpdateOptions{}); err == nil {
+			return object, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
+}
+
 func (self *Dynamic) GetInformers(gvk schema.GroupVersionKind) ([]cache.SharedInformer, []cache.SharedInformer, error) {
 	// We can only get informers for resources that support the "watch" verb
 	if gvrs, err := FindResourcesForKind(self.Discovery, gvk, "watch", "create"); err == nil {

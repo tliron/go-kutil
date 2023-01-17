@@ -25,7 +25,7 @@ type Context struct {
 	dirs              map[string]string
 	httpRoundTrippers map[string]http.RoundTripper
 	credentials       map[string]*Credentials
-	lock              sync.Mutex // for paths
+	lock              sync.Mutex // for files
 }
 
 func NewContext() *Context {
