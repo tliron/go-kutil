@@ -73,7 +73,8 @@ func NewUnstructuredResourceEventHandler(onAdded OnAddedFunc, onUpdated OnUpdate
 }
 
 // cache.ResourceEventHandler interface
-func (self *UnstructuredResourceEventHandler) OnAdd(object any) {
+func (self *UnstructuredResourceEventHandler) OnAdd(object any, isInInitialList bool) {
+	// TODO: do we care about isInInitialList?
 	utilruntime.HandleError(self.onAdded(object.(*unstructured.Unstructured)))
 }
 

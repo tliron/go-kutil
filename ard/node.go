@@ -236,8 +236,7 @@ func (self *Node) Boolean() (bool, bool) {
 	if self != NoNode {
 		if self.nilMeansZero && (self.Value == nil) {
 			return false, true
-		}
-		if value, ok := self.Value.(bool); ok {
+		} else if value, ok := self.Value.(bool); ok {
 			return value, true
 		}
 	}
@@ -249,8 +248,7 @@ func (self *Node) StringMap() (StringMap, bool) {
 	if self != NoNode {
 		if self.nilMeansZero && (self.Value == nil) {
 			return make(StringMap), true
-		}
-		if stringMap, ok := self.Value.(StringMap); ok {
+		} else if stringMap, ok := self.Value.(StringMap); ok {
 			return stringMap, true
 		} else if self.convertSimilar {
 			if map_, ok := self.Value.(Map); ok {
@@ -269,8 +267,7 @@ func (self *Node) Map() (Map, bool) {
 	if self != NoNode {
 		if self.nilMeansZero && (self.Value == nil) {
 			return make(Map), true
-		}
-		if map_, ok := self.Value.(Map); ok {
+		} else if map_, ok := self.Value.(Map); ok {
 			return map_, true
 		} else if self.convertSimilar {
 			if stringMap, ok := self.Value.(StringMap); ok {
@@ -280,6 +277,28 @@ func (self *Node) Map() (Map, bool) {
 				}
 				return map_, true
 			}
+		}
+	}
+	return nil, false
+}
+
+func (self *Node) EnsureMap(keys ...string) (Map, bool) {
+	if self != NoNode {
+		if map_, ok := self.Value.(Map); ok {
+			for _, key := range keys {
+				if value, ok := map_[key]; ok {
+					if map__, ok := value.(Map); ok {
+						map_ = map__
+					} else {
+						return nil, false
+					}
+				} else {
+					map__ := make(Map)
+					map_[key] = map__
+					map_ = map__
+				}
+			}
+			return map_, true
 		}
 	}
 	return nil, false
