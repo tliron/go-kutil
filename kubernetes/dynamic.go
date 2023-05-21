@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	labelspkg "k8s.io/apimachinery/pkg/labels"
@@ -28,7 +28,7 @@ type Dynamic struct {
 	Dynamic         dynamicpkg.Interface
 	Discovery       discovery.DiscoveryInterface
 	InformerFactory dynamicinformer.DynamicSharedInformerFactory
-	Log             logging.Logger
+	Log             commonlog.Logger
 
 	informers     map[schema.GroupVersionResource]cache.SharedIndexInformer
 	informersLock sync.Mutex
@@ -47,7 +47,7 @@ func NewDynamic(toolName string, dynamic dynamicpkg.Interface, discovery discove
 		Dynamic:         dynamic,
 		Discovery:       discovery,
 		InformerFactory: informerFactory,
-		Log:             logging.GetLoggerf("%s.dynamic.%s", toolName, namespace),
+		Log:             commonlog.GetLoggerf("%s.dynamic.%s", toolName, namespace),
 		informers:       make(map[schema.GroupVersionResource]cache.SharedIndexInformer),
 		context:         context,
 	}

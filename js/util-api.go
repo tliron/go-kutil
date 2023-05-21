@@ -8,7 +8,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/mitchellh/hashstructure/v2"
-	"github.com/tliron/kutil/ard"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/kutil/util"
 )
 

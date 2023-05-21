@@ -3,12 +3,12 @@ package fswatch
 import (
 	"errors"
 
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 )
 
 type Watcher struct{}
 
-func NewWatcher(context *urlpkg.Context) (*Watcher, error) {
+func NewWatcher(context *exturl.Context) (*Watcher, error) {
 	return nil, errors.New("watching is not supported on this platform")
 }
 

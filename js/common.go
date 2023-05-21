@@ -1,7 +1,7 @@
 package js
 
 import (
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 )
 
-var log = logging.GetLogger("kutil.js")
+var log = commonlog.GetLogger("kutil.js")

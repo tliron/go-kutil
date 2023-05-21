@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/beevik/etree"
-	"github.com/tliron/kutil/ard"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/kutil/transcribe"
 	"github.com/tliron/yamlkeys"
 )

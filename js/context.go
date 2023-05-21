@@ -2,7 +2,7 @@ package js
 
 import (
 	"github.com/dop251/goja"
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 )
 
 //
@@ -17,7 +17,7 @@ type Context struct {
 	Extensions  []goja.Value
 }
 
-func (self *Environment) NewContext(url urlpkg.URL, parent *Context) *Context {
+func (self *Environment) NewContext(url exturl.URL, parent *Context) *Context {
 	context := Context{
 		Environment: self,
 		Parent:      parent,

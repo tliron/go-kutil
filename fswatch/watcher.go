@@ -4,15 +4,15 @@ package fswatch
 
 import (
 	"github.com/fsnotify/fsnotify"
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 )
 
 type Watcher struct {
 	watcher *fsnotify.Watcher
-	context *urlpkg.Context
+	context *exturl.Context
 }
 
-func NewWatcher(context *urlpkg.Context) (*Watcher, error) {
+func NewWatcher(context *exturl.Context) (*Watcher, error) {
 	if watcher, err := fsnotify.NewWatcher(); err == nil {
 		return &Watcher{
 			watcher: watcher,
@@ -40,7 +40,7 @@ func (self *Watcher) Start(onChanged OnChangedFunc) {
 					return
 				}
 
-				onChanged(urlpkg.NewFileURL(event.Name, self.context))
+				onChanged(exturl.NewFileURL(event.Name, self.context))
 
 			case err, ok := <-self.watcher.Errors:
 				if !ok {

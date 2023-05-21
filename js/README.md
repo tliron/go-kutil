@@ -36,11 +36,11 @@ import (
 
     "github.com/dop251/goja"
     "github.com/tliron/kutil/js"
-    "github.com/tliron/kutil/url"
+    "github.com/tliron/exturl"
 )
 
 func main() {
-    urlContext := url.NewContext()
+    urlContext := exturl.NewContext()
     defer urlContext.Release()
 
     environment := js.NewEnvironment(urlContext, nil)

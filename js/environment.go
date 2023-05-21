@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/dop251/goja"
+	"github.com/tliron/commonlog"
+	"github.com/tliron/exturl"
 	"github.com/tliron/kutil/fswatch"
-	"github.com/tliron/kutil/logging"
-	urlpkg "github.com/tliron/kutil/url"
 )
 
 //
@@ -17,14 +17,14 @@ import (
 
 type Environment struct {
 	Runtime        *goja.Runtime
-	URLContext     *urlpkg.Context
-	Path           []urlpkg.URL
+	URLContext     *exturl.Context
+	Path           []exturl.URL
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
 	CreateResolver CreateResolverFunc
 	OnChanged      OnChangedFunc
-	Log            logging.Logger
+	Log            commonlog.Logger
 	Lock           sync.Mutex
 
 	watcher      *fswatch.Watcher
@@ -33,11 +33,11 @@ type Environment struct {
 	programCache *sync.Map
 }
 
-type PrecompileFunc func(url urlpkg.URL, script string, context *Context) (string, error)
+type PrecompileFunc func(url exturl.URL, script string, context *Context) (string, error)
 
 type OnChangedFunc func(id string, module *Module)
 
-func NewEnvironment(urlContext *urlpkg.Context, path []urlpkg.URL) *Environment {
+func NewEnvironment(urlContext *exturl.Context, path []exturl.URL) *Environment {
 	self := Environment{
 		Runtime:        goja.New(),
 		URLContext:     urlContext,
@@ -84,7 +84,7 @@ func (self *Environment) RestartWatcher() error {
 
 	var err error
 	if self.watcher, err = fswatch.NewWatcher(self.URLContext); err == nil {
-		self.watcher.Start(func(fileUrl *urlpkg.FileURL) {
+		self.watcher.Start(func(fileUrl *exturl.FileURL) {
 			self.Lock.Lock()
 			id := fileUrl.Key()
 			var module *Module
@@ -154,7 +154,7 @@ func (self *Environment) RequireID(id string) (*goja.Object, error) {
 	return self.requireId(id, self.NewContext(nil, nil))
 }
 
-func (self *Environment) RequireURL(url urlpkg.URL) (*goja.Object, error) {
+func (self *Environment) RequireURL(url exturl.URL) (*goja.Object, error) {
 	return self.cachedRequire(url, self.NewContext(url, nil))
 }
 
@@ -167,7 +167,7 @@ func (self *Environment) requireId(id string, context *Context) (*goja.Object, e
 	}
 }
 
-func (self *Environment) cachedRequire(url urlpkg.URL, context *Context) (*goja.Object, error) {
+func (self *Environment) cachedRequire(url exturl.URL, context *Context) (*goja.Object, error) {
 	key := url.Key()
 
 	// Try cache
@@ -190,7 +190,7 @@ func (self *Environment) cachedRequire(url urlpkg.URL, context *Context) (*goja.
 	}
 }
 
-func (self *Environment) require(url urlpkg.URL, context *Context) (*goja.Object, error) {
+func (self *Environment) require(url exturl.URL, context *Context) (*goja.Object, error) {
 	// Create a child context
 	context = self.NewContext(url, context)
 
@@ -225,7 +225,7 @@ func (self *Environment) require(url urlpkg.URL, context *Context) (*goja.Object
 	}
 }
 
-func (self *Environment) cachedCompile(url urlpkg.URL, context *Context) (*goja.Program, error) {
+func (self *Environment) cachedCompile(url exturl.URL, context *Context) (*goja.Program, error) {
 	key := url.Key()
 
 	// Try cache
@@ -248,8 +248,8 @@ func (self *Environment) cachedCompile(url urlpkg.URL, context *Context) (*goja.
 	}
 }
 
-func (self *Environment) compile(url urlpkg.URL, context *Context) (*goja.Program, error) {
-	if script, err := urlpkg.ReadString(url); err == nil {
+func (self *Environment) compile(url exturl.URL, context *Context) (*goja.Program, error) {
+	if script, err := exturl.ReadString(url); err == nil {
 		// Precompile
 		if self.Precompile != nil {
 			if script, err = self.Precompile(url, script, context); err != nil {

@@ -1,10 +1,10 @@
 package fswatch
 
 import (
-	"github.com/tliron/kutil/logging"
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/commonlog"
+	"github.com/tliron/exturl"
 )
 
-var log = logging.GetLogger("kutil.fswatch")
+var log = commonlog.GetLogger("kutil.fswatch")
 
-type OnChangedFunc func(fileUrl *urlpkg.FileURL)
+type OnChangedFunc func(fileUrl *exturl.FileURL)

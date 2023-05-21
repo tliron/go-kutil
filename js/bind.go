@@ -2,7 +2,7 @@ package js
 
 import (
 	"github.com/dop251/goja"
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 )
 
 //
@@ -60,7 +60,7 @@ func CreateEarlyBindExtension(context *Context) goja.Value {
 //
 
 type LateBind struct {
-	URL        urlpkg.URL
+	URL        exturl.URL
 	ExportName string
 	Context    *Context
 }

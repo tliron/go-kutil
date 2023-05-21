@@ -6,15 +6,15 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 	"github.com/tliron/kutil/util"
 )
 
 type FileAPI struct {
-	context *urlpkg.Context
+	context *exturl.Context
 }
 
-func NewFileAPI(context *urlpkg.Context) FileAPI {
+func NewFileAPI(context *exturl.Context) FileAPI {
 	return FileAPI{
 		context: context,
 	}
@@ -50,8 +50,8 @@ func (self FileAPI) TemporaryDirectory(pattern string, directory string) (string
 }
 
 func (self FileAPI) Download(sourceUrl string, targetPath string) error {
-	if sourceUrl_, err := urlpkg.NewURL(sourceUrl, self.context); err == nil {
-		return urlpkg.DownloadTo(sourceUrl_, targetPath)
+	if sourceUrl_, err := exturl.NewURL(sourceUrl, self.context); err == nil {
+		return exturl.DownloadTo(sourceUrl_, targetPath)
 	} else {
 		return err
 	}

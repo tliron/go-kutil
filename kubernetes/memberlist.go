@@ -2,7 +2,7 @@ package kubernetes
 
 import (
 	"github.com/hashicorp/memberlist"
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 	core "k8s.io/api/core/v1"
 )
 
@@ -13,10 +13,10 @@ import (
 type MemberlistPodDiscovery struct {
 	cluster      *memberlist.Memberlist
 	podDiscovery *PodDiscovery
-	log          logging.Logger
+	log          commonlog.Logger
 }
 
-func StartMemberlistPodDiscovery(cluster *memberlist.Memberlist, namespace string, selector string, frequency float64, log logging.Logger) (*MemberlistPodDiscovery, error) {
+func StartMemberlistPodDiscovery(cluster *memberlist.Memberlist, namespace string, selector string, frequency float64, log commonlog.Logger) (*MemberlistPodDiscovery, error) {
 	self := MemberlistPodDiscovery{
 		cluster: cluster,
 		log:     log,

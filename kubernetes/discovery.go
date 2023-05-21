@@ -4,7 +4,7 @@ import (
 	contextpkg "context"
 	"time"
 
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,13 +23,13 @@ type PodDiscovery struct {
 	selector       string
 	context        contextpkg.Context
 	podsDiscovered PodsDiscoveredFunc
-	log            logging.Logger
+	log            commonlog.Logger
 
 	pods    typedcore.PodInterface
 	started chan struct{}
 }
 
-func StartPodDiscovery(namespace string, selector string, frequency float64, podsDiscovered PodsDiscoveredFunc, log logging.Logger) (*PodDiscovery, error) {
+func StartPodDiscovery(namespace string, selector string, frequency float64, podsDiscovered PodsDiscoveredFunc, log commonlog.Logger) (*PodDiscovery, error) {
 	self := PodDiscovery{
 		selector:       selector,
 		context:        contextpkg.TODO(),

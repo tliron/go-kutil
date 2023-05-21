@@ -7,7 +7,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/kortschak/utter"
-	"github.com/tliron/kutil/ard"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/kutil/util"
 )
 

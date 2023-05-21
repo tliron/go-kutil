@@ -1,10 +1,10 @@
 package exec
 
 import (
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 )
 
-var log = logging.GetLogger("kutil.exec")
+var log = commonlog.GetLogger("kutil.exec")
 
 type Size struct {
 	Width  uint

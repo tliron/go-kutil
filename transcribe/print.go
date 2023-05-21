@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/beevik/etree"
-	"github.com/tliron/kutil/ard"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 )

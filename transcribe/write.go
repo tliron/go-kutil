@@ -8,7 +8,7 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/fxamacker/cbor/v2"
-	"github.com/tliron/kutil/ard"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/kutil/util"
 	"gopkg.in/yaml.v3"
 )

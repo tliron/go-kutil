@@ -15,6 +15,7 @@ func NewVersionCommand(name string) *cobra.Command {
 		Use:   "version",
 		Short: fmt.Sprintf("Show the version of %s", name),
 		Long:  fmt.Sprintf(`Shows the version of %s.`, name),
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			if version.GitVersion != "" {
 				terminal.Printf("version=%s\n", version.GitVersion)

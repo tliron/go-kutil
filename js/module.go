@@ -2,7 +2,7 @@ package js
 
 import (
 	"github.com/dop251/goja"
-	urlpkg "github.com/tliron/kutil/url"
+	"github.com/tliron/exturl"
 )
 
 //
@@ -34,13 +34,13 @@ func (self *Environment) NewModule() *Module {
 	}
 }
 
-func (self *Environment) AddModule(url urlpkg.URL, module *Module) {
+func (self *Environment) AddModule(url exturl.URL, module *Module) {
 	module.Id = url.Key()
 	module.IsPreloading = false
 	module.Loaded = true
-	if fileUrl, ok := url.(*urlpkg.FileURL); ok {
+	if fileUrl, ok := url.(*exturl.FileURL); ok {
 		module.Filename = fileUrl.Path
-		if fileOrigin, ok := fileUrl.Origin().(*urlpkg.FileURL); ok {
+		if fileOrigin, ok := fileUrl.Origin().(*exturl.FileURL); ok {
 			module.Path = fileOrigin.Path
 		}
 
