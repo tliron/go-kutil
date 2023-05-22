@@ -59,7 +59,7 @@ func IsZero(value reflect.Value) bool {
 }
 
 func IsEmpty(value any) bool {
-	// From JSON documentaiton:
+	// From JSON documentation:
 	// defined as false, 0, a nil pointer, a nil interface value, and any empty array, slice, map, or string
 
 	switch value_ := value.(type) {
