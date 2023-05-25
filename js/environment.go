@@ -1,6 +1,7 @@
 package js
 
 import (
+	contextpkg "context"
 	"fmt"
 	"strings"
 	"sync"
@@ -249,7 +250,7 @@ func (self *Environment) cachedCompile(url exturl.URL, context *Context) (*goja.
 }
 
 func (self *Environment) compile(url exturl.URL, context *Context) (*goja.Program, error) {
-	if script, err := exturl.ReadString(url); err == nil {
+	if script, err := exturl.ReadString(contextpkg.TODO(), url); err == nil {
 		// Precompile
 		if self.Precompile != nil {
 			if script, err = self.Precompile(url, script, context); err != nil {

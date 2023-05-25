@@ -1,6 +1,7 @@
 package util
 
 import (
+	contextpkg "context"
 	"io"
 	"sync"
 	"testing"
@@ -30,6 +31,14 @@ func ReaderSize(reader io.Reader) (int64, error) {
 	}
 
 	return size, nil
+}
+
+func ContextualRead(context contextpkg.Context, reader io.Reader, p []byte) (int, error) {
+	if err := context.Err(); err == nil {
+		return reader.Read(p)
+	} else {
+		return 0, err
+	}
 }
 
 //
@@ -181,6 +190,50 @@ func NewChannelReader(ch chan []byte) *ChannelReader {
 // io.Reader interface
 func (self *ChannelReader) Read(p []byte) (n int, err error) {
 	return self.reader.Read(p)
+}
+
+//
+// ContextualReader
+//
+
+// https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer.html
+// https://medium.com/@zombiezen/canceling-i-o-in-go-capn-proto-5ae8c09c5b29
+
+type ContextualReader struct {
+	reader  io.Reader
+	context contextpkg.Context
+}
+
+func NewContextualReader(context contextpkg.Context, reader io.Reader) io.Reader {
+	return &ContextualReader{reader: reader, context: context}
+}
+
+// io.Reader interface
+func (self *ContextualReader) Read(p []byte) (int, error) {
+	return ContextualRead(self.context, self.reader, p)
+}
+
+//
+// ContextualReadCloser
+//
+
+type ContextualReadCloser struct {
+	reader  io.ReadCloser
+	context contextpkg.Context
+}
+
+func NewContextualReadCloser(context contextpkg.Context, reader io.ReadCloser) io.ReadCloser {
+	return &ContextualReadCloser{reader: reader, context: context}
+}
+
+// io.Reader interface
+func (self *ContextualReadCloser) Read(p []byte) (int, error) {
+	return ContextualRead(self.context, self.reader, p)
+}
+
+// io.Closer interface
+func (self ContextualReadCloser) Close() error {
+	return self.reader.Close()
 }
 
 //

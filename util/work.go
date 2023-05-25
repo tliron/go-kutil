@@ -1,6 +1,7 @@
 package util
 
 import (
+	contextpkg "context"
 	"sync"
 )
 
@@ -18,8 +19,13 @@ func (self Promise) Release() {
 	close(self)
 }
 
-func (self Promise) Wait() {
-	<-self
+func (self Promise) Wait(context contextpkg.Context) error {
+	select {
+	case <-context.Done():
+		return context.Err()
+	case <-self:
+		return nil
+	}
 }
 
 //
@@ -34,13 +40,13 @@ func NewCoordinatedWork() *CoordinatedWork {
 	return &CoordinatedWork{}
 }
 
-func (self *CoordinatedWork) Start(key string) (Promise, bool) {
+func (self *CoordinatedWork) Start(context contextpkg.Context, key string) (Promise, bool) {
 	promise := NewPromise()
 	if existing, loaded := self.LoadOrStore(key, promise); !loaded {
 		return promise, true
 	} else {
 		promise = existing.(Promise)
-		promise.Wait()
+		promise.Wait(context)
 		return nil, false
 	}
 }

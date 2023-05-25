@@ -20,8 +20,8 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/commonlog v0.1.0
-	github.com/tliron/exturl v0.1.0
-	github.com/tliron/go-ard v0.1.0
+	github.com/tliron/exturl v0.2.0
+	github.com/tliron/go-ard v0.1.1
 	github.com/tliron/yamlkeys v1.3.6
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	golang.org/x/crypto v0.9.0

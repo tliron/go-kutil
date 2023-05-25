@@ -8,15 +8,15 @@ import (
 )
 
 type Watcher struct {
-	watcher *fsnotify.Watcher
-	context *exturl.Context
+	watcher    *fsnotify.Watcher
+	urlContext *exturl.Context
 }
 
 func NewWatcher(context *exturl.Context) (*Watcher, error) {
 	if watcher, err := fsnotify.NewWatcher(); err == nil {
 		return &Watcher{
-			watcher: watcher,
-			context: context,
+			watcher:    watcher,
+			urlContext: context,
 		}, nil
 	} else {
 		return nil, err
@@ -40,7 +40,7 @@ func (self *Watcher) Start(onChanged OnChangedFunc) {
 					return
 				}
 
-				onChanged(exturl.NewFileURL(event.Name, self.context))
+				onChanged(self.urlContext.NewFileURL(event.Name))
 
 			case err, ok := <-self.watcher.Errors:
 				if !ok {

@@ -1,6 +1,7 @@
 package js
 
 import (
+	contextpkg "context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -50,8 +51,8 @@ func (self FileAPI) TemporaryDirectory(pattern string, directory string) (string
 }
 
 func (self FileAPI) Download(sourceUrl string, targetPath string) error {
-	if sourceUrl_, err := exturl.NewURL(sourceUrl, self.context); err == nil {
-		return exturl.DownloadTo(sourceUrl_, targetPath)
+	if sourceUrl_, err := self.context.NewURL(sourceUrl); err == nil {
+		return exturl.DownloadTo(contextpkg.TODO(), sourceUrl_, targetPath)
 	} else {
 		return err
 	}
