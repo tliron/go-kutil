@@ -8,7 +8,6 @@ gofmt -w -s -e \
 	"$ROOT/cobra" \
 	"$ROOT/exec" \
 	"$ROOT/fswatch" \
-	"$ROOT/js" \
 	"$ROOT/kubernetes" \
 	"$ROOT/library" \
 	"$ROOT/problems" \
