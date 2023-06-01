@@ -5,24 +5,17 @@ HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$HERE/_env"
 
 gofmt -w -s -e \
-	"$ROOT/ard" \
 	"$ROOT/cobra" \
 	"$ROOT/exec" \
 	"$ROOT/fswatch" \
 	"$ROOT/js" \
 	"$ROOT/kubernetes" \
 	"$ROOT/library" \
-	"$ROOT/logging" \
-	"$ROOT/logging/journal" \
-	"$ROOT/logging/klog" \
-	"$ROOT/logging/simple" \
-	"$ROOT/logging/sink" \
-	"$ROOT/logging/zerolog" \
 	"$ROOT/problems" \
 	"$ROOT/protobuf" \
 	"$ROOT/reflection" \
+	"$ROOT/streampackage" \
 	"$ROOT/terminal" \
 	"$ROOT/transcribe" \
-	"$ROOT/url" \
 	"$ROOT/util" \
 	"$ROOT/version"

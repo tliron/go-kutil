@@ -1,0 +1,82 @@
+package streampackage
+
+import (
+	contextpkg "context"
+	"io"
+
+	"github.com/klauspost/compress/zip"
+	"github.com/tliron/kutil/util"
+)
+
+//
+// ZipStreamPackage
+//
+
+type ZipStreamPackage struct {
+	zipReader *zip.ReadCloser
+
+	streams []*ZipStream
+	index   int
+}
+
+func NewZipStreamPackage(path string) (*ZipStreamPackage, error) {
+	var self ZipStreamPackage
+	var err error
+	if self.zipReader, err = zip.OpenReader(path); err == nil {
+		for _, file := range self.zipReader.File {
+			if !file.FileInfo().IsDir() {
+				self.streams = append(self.streams, NewZipStream(file))
+			}
+		}
+		return &self, nil
+	} else {
+		return nil, err
+	}
+}
+
+// StreamPackage interface
+func (self *ZipStreamPackage) Next() (Stream, error) {
+	if self.index < len(self.streams) {
+		source := self.streams[self.index]
+		self.index++
+		return source, nil
+	} else {
+		return nil, nil
+	}
+}
+
+// StreamPackage interface
+func (self *ZipStreamPackage) Close() error {
+	return self.zipReader.Close()
+}
+
+//
+// ZipStream
+//
+
+type ZipStream struct {
+	file *zip.File
+
+	reader io.ReadCloser
+}
+
+func NewZipStream(file *zip.File) *ZipStream {
+	return &ZipStream{
+		file: file,
+	}
+}
+
+// Stream interface
+func (self *ZipStream) Open(context contextpkg.Context) (string, bool, io.Reader, error) {
+	var err error
+	if self.reader, err = self.file.Open(); err == nil {
+		return self.file.Name, util.IsFileExecutable(self.file.Mode()), self.reader, nil
+	} else {
+		return "", false, nil, err
+	}
+}
+
+// Stream interface
+func (self *ZipStream) Close() error {
+	return self.reader.Close()
+}

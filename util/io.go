@@ -198,6 +198,8 @@ func (self *ChannelReader) Read(p []byte) (n int, err error) {
 
 // https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer.html
 // https://medium.com/@zombiezen/canceling-i-o-in-go-capn-proto-5ae8c09c5b29
+// https://benjamincongdon.me/blog/2020/04/23/Cancelable-Reads-in-Go/
+// https://github.com/muesli/cancelreader
 
 type ContextualReader struct {
 	reader  io.Reader

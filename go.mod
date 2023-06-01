@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/beevik/etree v1.2.0
 	github.com/creack/pty v1.1.18
-	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f
+	github.com/dop251/goja v0.0.0-20230531210528-d7324b2d74f7
 	github.com/fatih/color v1.15.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/fxamacker/cbor/v2 v2.4.0
@@ -13,6 +13,8 @@ require (
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/iancoleman/strcase v0.2.0
+	github.com/klauspost/compress v1.16.5
+	github.com/klauspost/pgzip v1.2.6
 	github.com/kortschak/utter v1.5.0
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/muesli/termenv v0.15.1
@@ -20,7 +22,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/commonlog v0.1.0
-	github.com/tliron/exturl v0.2.1
+	github.com/tliron/exturl v0.2.3
 	github.com/tliron/go-ard v0.1.1
 	github.com/tliron/yamlkeys v1.3.6
 	github.com/vmihailenco/msgpack/v5 v5.3.5
@@ -80,8 +82,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.16.5 // indirect
-	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
