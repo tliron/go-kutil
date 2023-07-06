@@ -24,43 +24,65 @@ func IsUDPAddrEqual(a *net.UDPAddr, b *net.UDPAddr) bool {
 	return a.IP.Equal(b.IP) && (a.Port == b.Port) && (a.Zone == b.Zone)
 }
 
-func ToReachableIPAddress(address string) (string, error) {
+func ToReachableIPAddress(address string) (string, string, error) {
 	if net.ParseIP(address).IsUnspecified() {
-		v6 := IsIPv6(address)
+		isIpv6 := IsIPv6(address)
+
 		if interfaces, err := net.Interfaces(); err == nil {
+			// Try a global unicast first
 			for _, interface_ := range interfaces {
 				if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) {
 					if addrs, err := interface_.Addrs(); err == nil {
 						for _, addr := range addrs {
 							if addr_, ok := addr.(*net.IPNet); ok {
-								//DumpIPAddress(addr_.IP.String())
+								//util.DumpIPAddress(addr_.IP.String())
 								if addr_.IP.IsGlobalUnicast() {
 									ip := addr_.IP.String()
-									if v6 == IsIPv6(ip) {
-										return ip, nil
+									if isIpv6 == IsIPv6(ip) {
+										return ip, "", nil
 									}
 								}
 							}
 						}
 					} else {
-						return "", err
+						return "", "", err
 					}
 				}
 			}
-			return "", fmt.Errorf("cannot find an equivalent reachable address for: %s", address)
+
+			// No global unicast available
+			for _, interface_ := range interfaces {
+				if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) {
+					if addrs, err := interface_.Addrs(); err == nil {
+						for _, addr := range addrs {
+							if addr_, ok := addr.(*net.IPNet); ok {
+								ip := addr_.IP.String()
+								if isIpv6 == IsIPv6(ip) {
+									// The zone is the interface name
+									return ip, interface_.Name, nil
+								}
+							}
+						}
+					} else {
+						return "", "", err
+					}
+				}
+			}
+
+			return "", "", fmt.Errorf("cannot find an equivalent reachable address for: %s", address)
 		} else {
-			return "", err
+			return "", "", err
 		}
 	}
 
-	return address, nil
+	return address, "", nil
 }
 
-func ToBroadcastIPAddress(address string) (string, error) {
+func ToBroadcastIPAddress(address string) (string, string, error) {
 	// Note: net.ParseIP can't parse IPv6 zone
 	if ip, err := netip.ParseAddr(address); err == nil {
 		if !ip.IsMulticast() {
-			return "", fmt.Errorf("not a multicast address: %s", address)
+			return "", "", fmt.Errorf("not a multicast address: %s", address)
 		}
 
 		if IsIPv6(address) && ip.Zone() == "" {
@@ -69,18 +91,20 @@ func ToBroadcastIPAddress(address string) (string, error) {
 					//fmt.Printf("%s\n", interface_.Flags.String())
 					if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) &&
 						(interface_.Flags&net.FlagBroadcast != 0) && (interface_.Flags&net.FlagMulticast != 0) {
-						return address + "%" + interface_.Name, nil
+						// The zone is the interface name
+						return address, interface_.Name, nil
 					}
 				}
 			} else {
-				return "", err
+				return "", "", err
 			}
-			return "", fmt.Errorf("cannot find a zone for: %s", address)
+
+			return "", "", fmt.Errorf("cannot find a zone for: %s", address)
 		}
 
-		return address, nil
+		return address, "", nil
 	} else {
-		return "", err
+		return "", "", err
 	}
 }
 
