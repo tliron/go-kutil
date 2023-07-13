@@ -29,7 +29,7 @@ func ToReachableIPAddress(address string) (string, string, error) {
 		isIpv6 := IsIPv6(address)
 
 		if interfaces, err := net.Interfaces(); err == nil {
-			// Try a global unicast first
+			// Try to find a global unicast first
 			for _, interface_ := range interfaces {
 				if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) {
 					if addrs, err := interface_.Addrs(); err == nil {
@@ -58,7 +58,7 @@ func ToReachableIPAddress(address string) (string, string, error) {
 							if addr_, ok := addr.(*net.IPNet); ok {
 								ip := addr_.IP.String()
 								if isIpv6 == IsIPv6(ip) {
-									// The zone is the interface name
+									// The zone (required when not global unicast) is the interface name
 									return ip, interface_.Name, nil
 								}
 							}

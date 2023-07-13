@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	stringspkg "strings"
 	"unsafe"
@@ -12,21 +11,32 @@ import (
 // https://go101.org/article/unsafe.html
 // https://github.com/golang/go/issues/25484
 // https://github.com/golang/go/issues/19367
-// https://golang.org/src/strings/builder.go#L45
+// https://golang.org/src/strings/builder.go
 
-// This casting *does not* copy data. Note that casting via "string(value)" *does* copy data.
+// This conversion *does not* copy data. Note that converting via "(string)([]byte)" *does* copy data.
+// Also note that you *should not* change the byte slice after conversion, because Go strings
+// are treated as immutable. This would cause a segmentation violation panic.
 func BytesToString(bytes []byte) string {
-	return *(*string)(unsafe.Pointer(&bytes))
+	return unsafe.String(unsafe.SliceData(bytes), len(bytes))
+
+	// return *(*string)(unsafe.Pointer(&bytes))
 }
 
-// This casting *does not* copy data. Note that casting via "[]byte(value)" *does* copy data.
+// This conversion *does not* copy data. Note that converting via "([]byte)(string)" *does* copy data.
+// Also note that you *should not* change the byte slice after conversion, because Go strings
+// are treated as immutable. This would cause a segmentation violation panic.
 func StringToBytes(string_ string) (bytes []byte) {
-	stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&string_))
-	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
-	sliceHeader.Data = stringHeader.Data
-	sliceHeader.Cap = stringHeader.Len
-	sliceHeader.Len = stringHeader.Len
-	return
+	return unsafe.Slice(unsafe.StringData(string_), len(string_))
+
+	/*
+		// StringHeader and SliceHeader have been deprecated in Go 1.21
+		stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&string_))
+		sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
+		sliceHeader.Data = stringHeader.Data
+		sliceHeader.Cap = stringHeader.Len
+		sliceHeader.Len = stringHeader.Len
+		return
+	*/
 }
 
 func ToString(value any) string {
@@ -38,6 +48,8 @@ func ToString(value any) string {
 		return value_
 	case fmt.Stringer:
 		return value_.String()
+	case []byte:
+		return BytesToString(value_)
 	case error:
 		return value_.Error()
 	default:

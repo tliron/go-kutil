@@ -11,7 +11,7 @@ require (
 	github.com/goccy/go-yaml v1.11.0
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
-	github.com/iancoleman/strcase v0.2.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/klauspost/compress v1.16.7
 	github.com/klauspost/pgzip v1.2.6
 	github.com/kortschak/utter v1.5.0
