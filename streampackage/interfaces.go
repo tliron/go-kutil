@@ -19,6 +19,5 @@ type StreamPackage interface {
 //
 
 type Stream interface {
-	Open(context contextpkg.Context) (string, bool, io.Reader, error)
-	Close() error
+	Open(context contextpkg.Context) (io.ReadCloser, string, bool, error) // path, isExecutable
 }

@@ -11,13 +11,13 @@ import (
 func init() {
 	switch os.Getenv("KUTIL_LOCK_DEFAULT") {
 	case "sync":
-		defaultLockType = SYNC_LOCK
+		defaultLockType = SyncLock
 	case "debug":
-		defaultLockType = DEBUG_LOCK
+		defaultLockType = DebugLock
 	case "mock":
-		defaultLockType = MOCK_LOCK
+		defaultLockType = MockLock
 	default:
-		defaultLockType = SYNC_LOCK
+		defaultLockType = SyncLock
 	}
 
 	switch os.Getenv("KUTIL_LOCK_DEBUG_ORDER_DETECTION") {
@@ -42,23 +42,23 @@ type RWLocker interface {
 type LockType int
 
 const (
-	DEFAULT_LOCK = LockType(0)
-	SYNC_LOCK    = LockType(1)
-	DEBUG_LOCK   = LockType(2)
-	MOCK_LOCK    = LockType(3)
+	DefaultLock LockType = 0
+	SyncLock    LockType = 1
+	DebugLock   LockType = 2
+	MockLock    LockType = 3
 )
 
 var defaultLockType LockType
 
 func NewRWLocker(type_ LockType) RWLocker {
 	switch type_ {
-	case DEFAULT_LOCK:
+	case DefaultLock:
 		return NewDefaultRWLocker()
-	case SYNC_LOCK:
+	case SyncLock:
 		return NewSyncRWLocker()
-	case DEBUG_LOCK:
+	case DebugLock:
 		return NewDebugRWLocker()
-	case MOCK_LOCK:
+	case MockLock:
 		return NewMockRWLocker()
 	default:
 		panic(fmt.Sprintf("unsupported lock type: %d", type_))
@@ -71,11 +71,11 @@ func NewRWLocker(type_ LockType) RWLocker {
 
 func NewDefaultRWLocker() RWLocker {
 	switch defaultLockType {
-	case SYNC_LOCK:
+	case SyncLock:
 		return NewSyncRWLocker()
-	case DEBUG_LOCK:
+	case DebugLock:
 		return NewDebugRWLocker()
-	case MOCK_LOCK:
+	case MockLock:
 		return NewMockRWLocker()
 	default:
 		panic(fmt.Sprintf("unsupported lock type: %d", defaultLockType))

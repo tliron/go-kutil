@@ -9,8 +9,8 @@ import (
 	"github.com/tliron/exturl"
 )
 
-// `unpack` can be "tgz" or "zip"
-func NewStreamPackage(context contextpkg.Context, url exturl.URL, unpack string) (StreamPackage, error) {
+// `archiveFormat` can be "tar", "tgz", or "zip"
+func NewStreamPackage(context contextpkg.Context, url exturl.URL, archiveFormat string) (StreamPackage, error) {
 	var isFile bool
 	var isDir bool
 
@@ -26,11 +26,11 @@ func NewStreamPackage(context contextpkg.Context, url exturl.URL, unpack string)
 	if isDir {
 		return NewDirStreamPackage(url.(*exturl.FileURL).Path)
 	} else {
-		switch unpack {
+		switch archiveFormat {
 		case "":
 			if isFile {
 				path := url.(*exturl.FileURL).Path
-				return NewStaticStreamPackage(NewDirStream(path, filepath.Base(path))), nil
+				return NewStaticStreamPackage(NewFileStream(path, filepath.Base(path))), nil
 			} else {
 				return NewStaticStreamPackage(NewURLStream(url)), nil
 			}
@@ -49,7 +49,7 @@ func NewStreamPackage(context contextpkg.Context, url exturl.URL, unpack string)
 			}
 
 		default:
-			return nil, fmt.Errorf("unsupported unpack: %s", unpack)
+			return nil, fmt.Errorf("unsupported archive format: %s", archiveFormat)
 		}
 	}
 }

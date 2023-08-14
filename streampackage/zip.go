@@ -67,16 +67,11 @@ func NewZipStream(file *zip.File) *ZipStream {
 }
 
 // Stream interface
-func (self *ZipStream) Open(context contextpkg.Context) (string, bool, io.Reader, error) {
+func (self *ZipStream) Open(context contextpkg.Context) (io.ReadCloser, string, bool, error) {
 	var err error
 	if self.reader, err = self.file.Open(); err == nil {
-		return self.file.Name, util.IsFileExecutable(self.file.Mode()), self.reader, nil
+		return self.reader, self.file.Name, util.IsFileExecutable(self.file.Mode()), nil
 	} else {
-		return "", false, nil, err
+		return nil, "", false, err
 	}
-}
-
-// Stream interface
-func (self *ZipStream) Close() error {
-	return self.reader.Close()
 }

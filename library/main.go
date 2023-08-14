@@ -8,7 +8,7 @@ import (
 	_ "github.com/tliron/kutil/problems"
 	_ "github.com/tliron/kutil/protobuf"
 	_ "github.com/tliron/kutil/reflection"
-	_ "github.com/tliron/kutil/stream-package"
+	_ "github.com/tliron/kutil/streampackage"
 	_ "github.com/tliron/kutil/terminal"
 	_ "github.com/tliron/kutil/transcribe"
 	_ "github.com/tliron/kutil/util"

@@ -25,20 +25,15 @@ func NewURLStream(url exturl.URL) *URLStream {
 }
 
 // Stream interface
-func (self *URLStream) Open(context contextpkg.Context) (string, bool, io.Reader, error) {
+func (self *URLStream) Open(context contextpkg.Context) (io.ReadCloser, string, bool, error) {
 	var err error
 	if self.reader, err = self.url.Open(context); err == nil {
 		if path, err := exturl.GetPath(self.url); err == nil {
-			return filepath.Base(path), false, self.reader, nil
+			return self.reader, filepath.Base(path), false, nil
 		} else {
-			return "", false, nil, err
+			return nil, "", false, err
 		}
 	} else {
-		return "", false, nil, err
+		return nil, "", false, err
 	}
-}
-
-// Stream interface
-func (self *URLStream) Close() error {
-	return self.reader.Close()
 }

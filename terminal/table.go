@@ -22,10 +22,10 @@ type Table struct {
 	BottomDivider          string
 }
 
-type TableStyle uint8
+type TableStyle int
 
 const (
-	TopSeparatorTableStyle = 1 << iota
+	TopSeparatorTableStyle TableStyle = 1 << iota
 	ColumnSeparatorTableStyle
 	RowSeparatorTableStyle
 	BottomSeparatorTableStyle

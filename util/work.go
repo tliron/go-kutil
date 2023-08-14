@@ -6,29 +6,6 @@ import (
 )
 
 //
-// Promise
-//
-
-type Promise chan struct{}
-
-func NewPromise() Promise {
-	return make(Promise)
-}
-
-func (self Promise) Release() {
-	close(self)
-}
-
-func (self Promise) Wait(context contextpkg.Context) error {
-	select {
-	case <-context.Done():
-		return context.Err()
-	case <-self:
-		return nil
-	}
-}
-
-//
 // CoordinatedWork
 //
 
@@ -37,7 +14,7 @@ type CoordinatedWork struct {
 }
 
 func NewCoordinatedWork() *CoordinatedWork {
-	return &CoordinatedWork{}
+	return new(CoordinatedWork)
 }
 
 func (self *CoordinatedWork) Start(context contextpkg.Context, key string) (Promise, bool) {

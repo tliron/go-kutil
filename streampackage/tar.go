@@ -71,11 +71,6 @@ func NewTarStream(header *tar.Header, tarReader *tar.Reader) *TarStream {
 }
 
 // Stream interface
-func (self *TarStream) Open(context contextpkg.Context) (string, bool, io.Reader, error) {
-	return self.header.Name, util.IsFileExecutable(fs.FileMode(self.header.Mode)), self.tarReader, nil
-}
-
-// Stream interface
-func (self *TarStream) Close() error {
-	return nil
+func (self *TarStream) Open(context contextpkg.Context) (io.ReadCloser, string, bool, error) {
+	return io.NopCloser(self.tarReader), self.header.Name, util.IsFileExecutable(fs.FileMode(self.header.Mode)), nil
 }
