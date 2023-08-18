@@ -132,8 +132,13 @@ func WriteCBOR(value any, writer io.Writer) error {
 }
 
 func WriteMessagePack(value any, writer io.Writer) error {
-	encoder := util.NewMessagePackEncoder(writer)
-	return encoder.Encode(value)
+	// MessagePack encoder has problems with map[any]any
+	if value, err := ard.NormalizeStringMapsCopyToARD(value); err == nil {
+		encoder := util.NewMessagePackEncoder(writer)
+		return encoder.Encode(value)
+	} else {
+		return err
+	}
 }
 
 func WriteGo(value any, writer io.Writer, indent string) error {
