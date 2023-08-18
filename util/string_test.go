@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestString(t *testing.T) {
+func TestStringToBytes(t *testing.T) {
 	s := "this is a string"
 	b1 := StringToBytes(s)
 	b2 := ([]byte)(s)
@@ -15,7 +15,9 @@ func TestString(t *testing.T) {
 	if StringToBytes("") != nil {
 		t.Error("StringToBytes nil")
 	}
+}
 
+func TestBytesToString(t *testing.T) {
 	b := []byte{'h', 'e', 'l', 'l', 'o'}
 	s1 := BytesToString(b)
 	s2 := (string)(b)
@@ -25,7 +27,9 @@ func TestString(t *testing.T) {
 	if BytesToString(nil) != "" {
 		t.Error("BytesToString nil")
 	}
+}
 
+func TestJoinQuote(t *testing.T) {
 	couple := []string{"hello", `"world"`}
 	many := []string{"hello", `"world"`, "from", "Tal"}
 	if JoinQuote(couple, ", ") != `"hello", "\"world\""` {

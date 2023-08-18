@@ -29,12 +29,12 @@ func GetServices(context contextpkg.Context, kubernetes kubernetespkg.Interface,
 
 func GetServiceIPs(context contextpkg.Context, kubernetes kubernetespkg.Interface, namespace string, appName string) ([]string, error) {
 	if services, err := GetServices(context, kubernetes, namespace, appName); err == nil {
-		var ips []string
+		var ipAddresses []string
 		for _, service := range services.Items {
-			ips = append(ips, service.Spec.ClusterIP)
+			ipAddresses = append(ipAddresses, service.Spec.ClusterIP)
 		}
-		if len(ips) > 0 {
-			return ips, nil
+		if len(ipAddresses) > 0 {
+			return ipAddresses, nil
 		} else {
 			return nil, fmt.Errorf("no IPs for services for app.kubernetes.io/name=%q in namespace %q", appName, namespace)
 		}
@@ -44,8 +44,8 @@ func GetServiceIPs(context contextpkg.Context, kubernetes kubernetespkg.Interfac
 }
 
 func GetFirstServiceIP(context contextpkg.Context, kubernetes kubernetespkg.Interface, namespace string, appName string) (string, error) {
-	if ips, err := GetServiceIPs(context, kubernetes, namespace, appName); err == nil {
-		return ips[0], nil
+	if ipAddresses, err := GetServiceIPs(context, kubernetes, namespace, appName); err == nil {
+		return ipAddresses[0], nil
 	} else {
 		return "", err
 	}

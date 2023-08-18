@@ -9,17 +9,19 @@ import (
 	core "k8s.io/api/core/v1"
 	errorspkg "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	waitpkg "k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kubernetespkg "k8s.io/client-go/kubernetes"
 )
 
+var interval = 10 * time.Second
 var timeout = 60 * time.Second
 
 func WaitForPod(context contextpkg.Context, kubernetes kubernetespkg.Interface, log commonlog.Logger, namespace string, appName string) (*core.Pod, error) {
 	log.Infof("waiting for a pod for app %q", appName)
 
 	var pod *core.Pod
-	err := waitpkg.PollImmediate(time.Second, timeout, func() (bool, error) {
+
+	err := Wait(context, func(context contextpkg.Context) (bool, error) {
 		if pods, err := GetPods(context, kubernetes, namespace, appName); err == nil {
 			for _, pod_ := range pods.Items {
 				for _, containerStatus := range pod_.Status.ContainerStatuses {
@@ -60,7 +62,7 @@ func WaitForDeployment(context contextpkg.Context, kubernetes kubernetespkg.Inte
 	log.Infof("waiting for a deployment for app %q", appName)
 
 	var deployment *apps.Deployment
-	err := waitpkg.PollImmediate(time.Second, timeout, func() (bool, error) {
+	err := Wait(context, func(context contextpkg.Context) (bool, error) {
 		var err error
 		if deployment, err = kubernetes.AppsV1().Deployments(namespace).Get(context, appName, meta.GetOptions{}); err == nil {
 			for _, condition := range deployment.Status.Conditions {
@@ -90,14 +92,17 @@ func WaitForDeployment(context contextpkg.Context, kubernetes kubernetespkg.Inte
 	}
 }
 
-func WaitForDeletion(log commonlog.Logger, name string, condition func() bool) {
-	err := waitpkg.PollImmediate(time.Second, timeout, func() (bool, error) {
+func WaitForDeletion(context contextpkg.Context, log commonlog.Logger, name string, condition func() bool) {
+	if err := Wait(context, func(context contextpkg.Context) (bool, error) {
 		log.Infof("waiting for %s to delete", name)
 		return !condition(), nil
-	})
-	if err != nil {
+	}); err != nil {
 		log.Warningf("error while waiting for %s to delete: %s", name, err.Error())
 	}
+}
+
+func Wait(context contextpkg.Context, condition wait.ConditionWithContextFunc) error {
+	return wait.PollUntilContextTimeout(context, interval, timeout, true, condition)
 }
 
 /*

@@ -70,6 +70,10 @@ func createTarball(t *testing.T, tarWriter *tar.Writer) {
 	sourcePath := filepath.Join(getRoot(t), "streampackage")
 
 	if err := filepath.WalkDir(sourcePath, func(path string, dirEntry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if !dirEntry.IsDir() {
 			t.Logf("adding file to tarball: %s", path)
 
@@ -100,6 +104,7 @@ func createTarball(t *testing.T, tarWriter *tar.Writer) {
 				return nil
 			}
 		}
+
 		return nil
 	}); err != nil {
 		t.Errorf("filepath.WalkDir: %s", err.Error())
@@ -111,6 +116,10 @@ func createZip(t *testing.T, zipWriter *zip.Writer) {
 	sourcePath := filepath.Join(getRoot(t), "streampackage")
 
 	if err := filepath.WalkDir(sourcePath, func(path string, dirEntry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if !dirEntry.IsDir() {
 			t.Logf("adding file to zip: %s", path)
 
@@ -139,6 +148,7 @@ func createZip(t *testing.T, zipWriter *zip.Writer) {
 				return nil
 			}
 		}
+
 		return nil
 	}); err != nil {
 		t.Errorf("filepath.WalkDir: %s", err.Error())
