@@ -12,8 +12,8 @@ import (
 )
 
 func NewUnstructuredFromYAMLTemplate(code string, data any) (*unstructured.Unstructured, error) {
-	if object, err := ard.DecodeYAMLTemplate(code, data); err == nil {
-		object, _ = ard.NormalizeStringMaps(object)
+	if object, err := ard.DecodeTemplate(code, data, "yaml"); err == nil {
+		object, _ = ard.ConvertMapsToStringMaps(object)
 		if stringMap, ok := object.(ard.StringMap); ok {
 			return &unstructured.Unstructured{Object: stringMap}, nil
 		} else {

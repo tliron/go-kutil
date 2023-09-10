@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tliron/go-ard"
-	"github.com/tliron/kutil/transcribe"
+	"github.com/tliron/go-transcribe"
 	"github.com/tliron/kutil/util"
 	core "k8s.io/api/core/v1"
 )
@@ -74,7 +74,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 	switch secret.Type {
 	case core.SecretTypeDockerConfigJson:
 		if data, ok := secret.Data[core.DockerConfigJsonKey]; ok {
-			if value, _, err := ard.DecodeJSON(util.BytesToString(data), false); err == nil {
+			if value, err := ard.DecodeJSON(data, false); err == nil {
 				if auths := ard.NewNode(value).Get("auths").Value; auths != nil {
 					return NewRegistryCredentialsTableFromARD(auths)
 				} else {
@@ -89,7 +89,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 
 	case core.SecretTypeDockercfg:
 		if data, ok := secret.Data[core.DockerConfigKey]; ok {
-			if value, _, err := ard.DecodeJSON(util.BytesToString(data), false); err == nil {
+			if value, err := ard.DecodeJSON(data, false); err == nil {
 				return NewRegistryCredentialsTableFromARD(value)
 			} else {
 				return nil, err
@@ -111,7 +111,7 @@ func (self RegistryCredentialsTable) ToARD() ard.Value {
 }
 
 func (self RegistryCredentialsTable) ToDockerConfigJSON() (string, error) {
-	return transcribe.EncodeJSON(ard.StringMap{
+	return transcribe.StringifyJSON(ard.StringMap{
 		"auths": self.ToARD(),
 	}, "")
 }

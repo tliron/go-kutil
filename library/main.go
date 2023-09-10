@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/tliron/go-transcribe"
 	_ "github.com/tliron/kutil/cobra"
 	_ "github.com/tliron/kutil/exec"
 	_ "github.com/tliron/kutil/fswatch"
@@ -10,7 +11,6 @@ import (
 	_ "github.com/tliron/kutil/reflection"
 	_ "github.com/tliron/kutil/streampackage"
 	_ "github.com/tliron/kutil/terminal"
-	_ "github.com/tliron/kutil/transcribe"
 	_ "github.com/tliron/kutil/util"
 	_ "github.com/tliron/kutil/version"
 )
