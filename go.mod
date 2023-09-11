@@ -16,7 +16,7 @@ require (
 	github.com/tliron/commonlog v0.1.1
 	github.com/tliron/exturl v0.4.0
 	github.com/tliron/go-ard v0.2.0
-	github.com/tliron/go-transcribe v0.0.0-20230910202715-035e841801a2
+	github.com/tliron/go-transcribe v0.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	golang.org/x/crypto v0.13.0
 	golang.org/x/term v0.12.0
