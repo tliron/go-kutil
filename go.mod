@@ -17,7 +17,6 @@ require (
 	github.com/tliron/exturl v0.4.0
 	github.com/tliron/go-ard v0.2.0
 	github.com/tliron/go-transcribe v0.2.0
-	github.com/vmihailenco/msgpack/v5 v5.3.5
 	golang.org/x/crypto v0.13.0
 	golang.org/x/term v0.12.0
 	google.golang.org/protobuf v1.31.0
@@ -101,6 +100,7 @@ require (
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/tliron/yamlkeys v1.3.6 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
