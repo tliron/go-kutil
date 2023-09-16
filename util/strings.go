@@ -39,6 +39,15 @@ func StringToBytes(string_ string) (bytes []byte) {
 	*/
 }
 
+// Converts any value to a string.
+//
+// Will use the [fmt.Stringer] interface if implemented.
+//
+// Will use the [error] interface if implemented.
+//
+// nil will become "nil". []byte will become a string.
+// Primitive types will use [strconv]. Any other type
+// will use fmt.Sprintf("%+v").
 func ToString(value any) string {
 	if value == nil {
 		return "nil"
@@ -46,10 +55,32 @@ func ToString(value any) string {
 	switch value_ := value.(type) {
 	case string:
 		return value_
+	case []byte:
+		return string(value_)
+	case bool:
+		return strconv.FormatBool(value_)
+	case int64:
+		return strconv.FormatInt(value_, 10)
+	case int32:
+		return strconv.FormatInt(int64(value_), 10)
+	case int8:
+		return strconv.FormatInt(int64(value_), 10)
+	case int:
+		return strconv.FormatInt(int64(value_), 10)
+	case uint64:
+		return strconv.FormatUint(value_, 10)
+	case uint32:
+		return strconv.FormatUint(uint64(value_), 10)
+	case uint8:
+		return strconv.FormatUint(uint64(value_), 10)
+	case uint:
+		return strconv.FormatUint(uint64(value_), 10)
+	case float64:
+		return strconv.FormatFloat(value_, 'g', -1, 64)
+	case float32:
+		return strconv.FormatFloat(float64(value_), 'g', -1, 32)
 	case fmt.Stringer:
 		return value_.String()
-	case []byte:
-		return BytesToString(value_)
 	case error:
 		return value_.Error()
 	default:
@@ -57,6 +88,7 @@ func ToString(value any) string {
 	}
 }
 
+// Calls [ToString] on all slice elements.
 func ToStrings(values []any) []string {
 	length := len(values)
 	if length == 0 {

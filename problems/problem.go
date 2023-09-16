@@ -68,7 +68,7 @@ func NewProblem(section string, item string, message string, row int, column int
 	return &self
 }
 
-// fmt.Stringer interface
+// ([fmt.Stringer] interface)
 func (self *Problem) String() string {
 	r := ""
 	if self.Row != -1 {

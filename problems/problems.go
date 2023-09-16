@@ -91,7 +91,7 @@ func (self *Problems) ToError(locate bool) error {
 	}
 }
 
-// fmt.Stringer interface
+// ([fmt.Stringer] interface)
 func (self *Problems) String() string {
 	return self.ToString(false)
 }

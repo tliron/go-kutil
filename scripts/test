@@ -4,6 +4,8 @@ set -e
 HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$HERE/_env"
 
+"$HERE/build"
+
 # -count=1 is the idiomatic way to disable test caching
 # GORACE=history_size=7 is the maximum, only affects "-race"
 

@@ -15,15 +15,15 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/commonlog v0.1.1
 	github.com/tliron/exturl v0.4.0
-	github.com/tliron/go-ard v0.2.0
-	github.com/tliron/go-transcribe v0.2.0
+	github.com/tliron/go-ard v0.2.3
+	github.com/tliron/go-transcribe v0.2.1
 	golang.org/x/crypto v0.13.0
 	golang.org/x/term v0.12.0
 	google.golang.org/protobuf v1.31.0
-	k8s.io/api v0.28.1
-	k8s.io/apiextensions-apiserver v0.28.1
-	k8s.io/apimachinery v0.28.1
-	k8s.io/client-go v0.28.1
+	k8s.io/api v0.28.2
+	k8s.io/apiextensions-apiserver v0.28.2
+	k8s.io/apimachinery v0.28.2
+	k8s.io/client-go v0.28.2
 )
 
 require (
