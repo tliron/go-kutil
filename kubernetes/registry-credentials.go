@@ -26,12 +26,12 @@ func NewRegistryCredentials(username string, password string) *RegistryCredentia
 }
 
 func NewRegistryCredentialsFromARD(value ard.Value) (*RegistryCredentials, error) {
-	node := ard.NewNode(value)
-	if v, ok := node.Get("username").String(); ok {
+	value_ := ard.With(value)
+	if username, ok := value_.Get("username").String(); ok {
 		var self RegistryCredentials
-		self.Username = v
-		if v, ok := node.Get("password").String(); ok {
-			self.Password = v
+		self.Username = username
+		if password, ok := value_.Get("password").String(); ok {
+			self.Password = password
 			return &self, nil
 		}
 	}
@@ -75,7 +75,7 @@ func NewRegistryCredentialsTableFromSecret(secret *core.Secret) (RegistryCredent
 	case core.SecretTypeDockerConfigJson:
 		if data, ok := secret.Data[core.DockerConfigJsonKey]; ok {
 			if value, err := ard.DecodeJSON(data, false); err == nil {
-				if auths := ard.NewNode(value).Get("auths").Value; auths != nil {
+				if auths := ard.With(value).Get("auths").Value; auths != nil {
 					return NewRegistryCredentialsTableFromARD(auths)
 				} else {
 					return nil, fmt.Errorf("malformed %q secret: %s", core.SecretTypeDockerConfigJson, value)

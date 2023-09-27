@@ -1,7 +1,7 @@
 package util
 
-// Returns true if value is a [int64], [int32], [int16], [int8], [int],
-// [uint64], [uint32], [uint16], [uint8], or [uint], [float64], or [float32].
+// Returns true if value is an int64, int32, int16, int8, int,
+// uint64, uint32, uint16, uint8, uint, float64, or float32.
 func IsNumber(value any) bool {
 	switch value.(type) {
 	case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint, float64, float32:
@@ -11,8 +11,8 @@ func IsNumber(value any) bool {
 	}
 }
 
-// Returns true if value is a [int64], [int32], [int16], [int8], [int],
-// [uint64], [uint32], [uint16], [uint8], or [uint].
+// Returns true if value is an int64, int32, int16, int8, int,
+// uint64, uint32, uint16, uint8, or uint.
 func IsInteger(value any) bool {
 	switch value.(type) {
 	case int64, int32, int16, int8, int, uint64, uint32, uint16, uint8, uint:
@@ -21,7 +21,7 @@ func IsInteger(value any) bool {
 	return false
 }
 
-// Returns true if value is a [float64] or [float32].
+// Returns true if value is a float64 or float32.
 func IsFloat(value any) bool {
 	switch value.(type) {
 	case float64, float32:
@@ -30,11 +30,11 @@ func IsFloat(value any) bool {
 	return false
 }
 
-// Converts any number type to [int64].
+// Converts any number type to int64.
 //
-// Support types are [int64], [int32], [int16], [int8], [int],
-// [uint64], [uint32], [uint16], [uint8], [uint],
-// [float64], and [float32].
+// Supported types are int64, int32, int16, int8, int,
+// uint64, uint32, uint16, uint8, uint,
+// float64, and float32.
 //
 // Precision may be lost.
 func ToInt64(value any) (int64, bool) {
@@ -68,11 +68,11 @@ func ToInt64(value any) (int64, bool) {
 	}
 }
 
-// Converts any number type to [uint64].
+// Converts any number type to uint64.
 //
-// Support types are [int64], [int32], [int16], [int8], [int],
-// [uint64], [uint32], [uint16], [uint8], [uint],
-// [float64], and [float32].
+// Support types are int64, int32, int16, int8, int,
+// uint64, uint32, uint16, uint8, uint,
+// float64, and float32.
 //
 // Precision may be lost.
 func ToUInt64(value any) (uint64, bool) {
@@ -106,11 +106,11 @@ func ToUInt64(value any) (uint64, bool) {
 	}
 }
 
-// Converts any number type to [float64].
+// Converts any number type to float64.
 //
-// Support types are [int64], [int32], [int16], [int8], [int],
-// [uint64], [uint32], [uint16], [uint8], [uint],
-// [float64], and [float32].
+// Support types are int64, int32, int16, int8, int,
+// uint64, uint32, uint16, uint8, uint,
+// float64, and float32.
 //
 // Precision may be lost.
 func ToFloat64(value any) (float64, bool) {

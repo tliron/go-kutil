@@ -14,12 +14,12 @@ type NamedPipe struct {
 	reader *os.File
 }
 
-// io.Writer interface
+// ([io.Writer] interface)
 func (self *NamedPipe) Write(p []byte) (int, error) {
 	return self.writer.Write(p)
 }
 
-// io.Closer interface
+// ([io.Closer] interface)
 func (self *NamedPipe) Close() error {
 	self.reader.Close()
 	self.writer.Close()

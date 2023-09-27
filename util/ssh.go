@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func ExecSSH(host string, username string, key string, stdin io.Reader, command ...string) (string, error) {
+func ExecSSH(host string, port int, username string, key string, stdin io.Reader, command ...string) (string, error) {
 	if signer, err := ssh.ParsePrivateKey(StringToBytes(key)); err == nil {
 		config := ssh.ClientConfig{
 			User: username,
@@ -23,7 +23,7 @@ func ExecSSH(host string, username string, key string, stdin io.Reader, command 
 			},
 		}
 
-		if client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), &config); err == nil {
+		if client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, port), &config); err == nil {
 			defer client.Close()
 
 			if session, err := client.NewSession(); err == nil {
@@ -40,6 +40,7 @@ func ExecSSH(host string, username string, key string, stdin io.Reader, command 
 				if err := session.Run(strings.Join(command, " ")); err == nil {
 					return stdout.String(), nil
 				} else {
+					// TODO: special error object to contain stderr separately
 					return "", fmt.Errorf("%s\n%s", err.Error(), stderr.String())
 				}
 			} else {
@@ -53,12 +54,12 @@ func ExecSSH(host string, username string, key string, stdin io.Reader, command 
 	}
 }
 
-func CopySSH(host string, username string, key string, reader io.Reader, targetPath string, permissions *int64) error {
+func CopySSH(host string, port int, username string, key string, reader io.Reader, targetPath string, permissions *int64) error {
 	dir := filepath.Dir(targetPath)
-	if _, err := ExecSSH(host, username, key, nil, "mkdir", "--parents", dir); err == nil {
-		if _, err := ExecSSH(host, username, key, reader, "cp", "/dev/stdin", targetPath); err == nil {
+	if _, err := ExecSSH(host, port, username, key, nil, "mkdir", "--parents", dir); err == nil {
+		if _, err := ExecSSH(host, port, username, key, reader, "cp", "/dev/stdin", targetPath); err == nil {
 			if permissions != nil {
-				_, err := ExecSSH(host, username, key, nil, "chmod", strconv.FormatInt(*permissions, 8), targetPath)
+				_, err := ExecSSH(host, port, username, key, nil, "chmod", strconv.FormatInt(*permissions, 8), targetPath)
 				return err
 			}
 			return nil

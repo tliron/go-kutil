@@ -97,9 +97,8 @@ func (self *Problems) String() string {
 }
 
 func (self *Problems) Slice() ProblemSlice {
-	problems := make(ProblemSlice, len(self.Problems))
 	self.lock.RLock()
-	copy(problems, self.Problems)
+	problems := append(self.Problems[:0:0], self.Problems...)
 	self.lock.RUnlock()
 	return problems
 }

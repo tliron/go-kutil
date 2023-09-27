@@ -8,6 +8,8 @@ import (
 	"syscall"
 )
 
+// Creates a named pipe using [syscall.Mkfifo] in the OS temp directory.
+// Currently only supported on Linux.
 func NewTempNamedPipe(writer io.Writer, mode uint32) (*NamedPipe, error) {
 	var self NamedPipe
 

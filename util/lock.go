@@ -108,10 +108,10 @@ func NewMockLocker() sync.Locker {
 	return MockLocker{}
 }
 
-// sync.Locker interface
+// ([sync.Locker] interface)
 func (self MockLocker) Lock() {}
 
-// sync.Locker interface
+// ([sync.Locker] interface)
 func (self MockLocker) Unlock() {}
 
 //
@@ -126,13 +126,13 @@ func NewMockRWLocker() RWLocker {
 	return MockRWLocker{}
 }
 
-// RWLocker interface
+// ([RWLocker] interface)
 func (self MockRWLocker) RLock() {}
 
-// RWLocker interface
+// ([RWLocker] interface)
 func (self MockRWLocker) RUnlock() {}
 
-// RWLocker interface
+// ([RWLocker] interface)
 func (self MockRWLocker) RLocker() sync.Locker {
 	return self
 }
@@ -145,6 +145,7 @@ type LockableEntity interface {
 	GetEntityLock() RWLocker
 }
 
+// From [LockableEntity] interface.
 func GetEntityLock(entity any) RWLocker {
 	if lockable, ok := entity.(LockableEntity); ok {
 		return lockable.GetEntityLock()

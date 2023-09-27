@@ -50,7 +50,7 @@ func Exit(code int) {
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
-					fmt.Fprintf(os.Stderr, "panic during exit: %s\n", r)
+					fmt.Fprintf(os.Stderr, "panic during exit: %+v\n", r)
 				}
 			}()
 
@@ -76,7 +76,7 @@ func ExitOnSIGTERM() {
 // ExitFunctionHandle
 //
 
-type ExitFunctionHandle uint64
+type ExitFunctionHandle int
 
 func (self ExitFunctionHandle) Cancel() {
 	exitLock.Lock()

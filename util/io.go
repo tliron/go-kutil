@@ -68,7 +68,7 @@ func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
 	return self
 }
 
-// io.Writer interface
+// ([io.Writer] interface)
 func (self BufferedWriter) Write(p []byte) (int, error) {
 	defer func() {
 		if recover() != nil {
@@ -82,7 +82,7 @@ func (self BufferedWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// io.Closer interface
+// ([io.Closer] interface)
 func (self BufferedWriter) Close() error {
 	defer func() {
 		recover()
@@ -123,14 +123,14 @@ func NewSyncedWriter(writer io.Writer) *SyncedWriter {
 	}
 }
 
-// io.Writer interface
+// ([io.Writer] interface)
 func (self *SyncedWriter) Write(p []byte) (int, error) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
 	return self.Writer.Write(p)
 }
 
-// io.Closer interface
+// ([io.Closer] interface)
 func (self *SyncedWriter) Close() error {
 	self.lock.Lock()
 	defer self.lock.Unlock()
@@ -153,12 +153,11 @@ func NewChannelWriter(ch chan []byte) *ChannelWriter {
 	return &ChannelWriter{ch}
 }
 
-// io.Writer interface
+// ([io.Writer] interface)
 func (self *ChannelWriter) Write(p []byte) (int, error) {
 	if p != nil {
 		// We are copying the slice because contents might change while sending to the channel
-		p_ := make([]byte, len(p))
-		copy(p_, p)
+		p_ := append(p[:0:0], p...)
 		self.ch <- p_
 	}
 	return len(p), nil
@@ -187,7 +186,7 @@ func NewChannelReader(ch chan []byte) *ChannelReader {
 	return &ChannelReader{reader: reader}
 }
 
-// io.Reader interface
+// ([io.Reader] interface)
 func (self *ChannelReader) Read(p []byte) (n int, err error) {
 	return self.reader.Read(p)
 }
@@ -210,7 +209,7 @@ func NewContextualReader(context contextpkg.Context, reader io.Reader) io.Reader
 	return &ContextualReader{reader: reader, context: context}
 }
 
-// io.Reader interface
+// ([io.Reader] interface)
 func (self *ContextualReader) Read(p []byte) (int, error) {
 	return ContextualRead(self.context, self.reader, p)
 }
@@ -228,12 +227,12 @@ func NewContextualReadCloser(context contextpkg.Context, reader io.ReadCloser) i
 	return &ContextualReadCloser{reader: reader, context: context}
 }
 
-// io.Reader interface
+// ([io.Reader] interface)
 func (self *ContextualReadCloser) Read(p []byte) (int, error) {
 	return ContextualRead(self.context, self.reader, p)
 }
 
-// io.Closer interface
+// ([io.Closer] interface)
 func (self ContextualReadCloser) Close() error {
 	return self.reader.Close()
 }
@@ -250,7 +249,7 @@ func NewTestLogWriter(t *testing.T) *TestLogWriter {
 	return &TestLogWriter{t}
 }
 
-// io.Writer interface
+// ([io.Writer] interface)
 func (self *TestLogWriter) Write(p []byte) (n int, err error) {
 	self.t.Helper()
 	self.t.Log(p)

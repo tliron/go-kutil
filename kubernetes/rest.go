@@ -86,7 +86,7 @@ func NewExecError(err error, stderr string) *ExecError {
 	return &ExecError{err, stderr}
 }
 
-// error interface
+// (error interface)
 func (self *ExecError) Error() string {
 	return fmt.Sprintf("%s\n%s", self.Err.Error(), self.Stderr)
 }
