@@ -2,6 +2,7 @@ package util
 
 import (
 	contextpkg "context"
+	"errors"
 	"io"
 	"sync"
 	"testing"
@@ -41,6 +42,24 @@ func ContextualRead(context contextpkg.Context, reader io.Reader, p []byte) (int
 	}
 }
 
+// Sends a copy of the byte slice to a channel and returns its length.
+// Copying is necessary for ensuring that the submitted data is
+// indeed the data that will be received, even if the underlying array
+// changes after this call.
+func WriteBytesToChannel(ch chan []byte, p []byte) (int, error) {
+	length := len(p)
+
+	if length > 0 {
+		select {
+		case ch <- append(p[:0:0], p...):
+		default:
+			return 0, errors.New("channel full")
+		}
+	}
+
+	return length, nil
+}
+
 //
 // BufferedWriter
 //
@@ -49,27 +68,41 @@ func ContextualRead(context contextpkg.Context, reader io.Reader, p []byte) (int
 // https://gobyexample.com/closing-channels
 
 type BufferedWriter struct {
-	writer io.Writer
-	jobs   chan []byte
-	close  chan struct{}
-	closed chan struct{}
+	writer      io.Writer
+	submissions chan []byte
+	close       chan struct{}
+	closed      chan struct{}
 }
 
-func NewBufferedWriter(writer io.Writer, size int) BufferedWriter {
+// Creates a thread-safe [io.WriterCloser] that separates the acceptance
+// of byte slices via [BufferedWriter.Write] from the actual writing of
+// the data to the underlying [io.Writer], which occurs on a separate
+// goroutine.
+//
+// The size argument is for the internal channel, referring to the maximum
+// number of write submissions to be buffered (not the number of bytes). If
+// the buffering channel is full then [BufferedWriter.Write] will return an
+// error. The actual write errors are ignored.
+//
+// Note that the implementation copies the byte slice before sending it
+// to the separate goroutine. This ensures that the submitted data is
+// indeed the data that will be written, even if the underlying array
+// changes after submission.
+func NewBufferedWriter(writer io.Writer, size int) *BufferedWriter {
 	self := BufferedWriter{
-		writer: writer,
-		jobs:   make(chan []byte, size),
-		close:  make(chan struct{}, 1),
-		closed: make(chan struct{}, 1),
+		writer:      writer,
+		submissions: make(chan []byte, size),
+		close:       make(chan struct{}, 1),
+		closed:      make(chan struct{}, 1),
 	}
 
 	go self.run()
 
-	return self
+	return &self
 }
 
 // ([io.Writer] interface)
-func (self BufferedWriter) Write(p []byte) (int, error) {
+func (self *BufferedWriter) Write(p []byte) (int, error) {
 	defer func() {
 		if recover() != nil {
 			// The channel was closed
@@ -78,27 +111,26 @@ func (self BufferedWriter) Write(p []byte) (int, error) {
 		}
 	}()
 
-	self.jobs <- p
-	return len(p), nil
+	return WriteBytesToChannel(self.submissions, p)
 }
 
 // ([io.Closer] interface)
-func (self BufferedWriter) Close() error {
+func (self *BufferedWriter) Close() error {
 	defer func() {
 		recover()
 	}()
 
-	close(self.jobs)
+	close(self.submissions)
 	<-self.closed
 	return nil
 }
 
-func (self BufferedWriter) run() {
+func (self *BufferedWriter) run() {
 	for {
 		select {
-		case job, ok := <-self.jobs:
+		case job, ok := <-self.submissions:
 			if ok {
-				self.writer.Write(job)
+				self.writer.Write(job) // ignores errors!
 			} else {
 				self.closed <- struct{}{}
 				return
@@ -117,6 +149,11 @@ type SyncedWriter struct {
 	lock sync.Mutex
 }
 
+// Creates a thread-safe [io.WriterCloser] that synchronizes all
+// the [SyncedWriter.Write] calls via a mutex.
+//
+// If the underlying writer does not support [io.Closer] then
+// [SyncedWriter.Close] will do nothing.
 func NewSyncedWriter(writer io.Writer) *SyncedWriter {
 	return &SyncedWriter{
 		Writer: writer,
@@ -149,18 +186,21 @@ type ChannelWriter struct {
 	ch chan []byte
 }
 
+// Creates an [io.Writer] that writes bytes to a channel. The expectation is that
+// something else will be receiving from the channel and processing the bytes.
+// Writing is non-blocking: if the channel is full then [ChannelWriter.Write] will
+// return an error.
+//
+// Note that the implementation copies the byte slice before sending it to the
+// channel. This ensures that the submitted data is indeed the data that will be
+// received, even if the underlying array changes after submission.
 func NewChannelWriter(ch chan []byte) *ChannelWriter {
 	return &ChannelWriter{ch}
 }
 
 // ([io.Writer] interface)
 func (self *ChannelWriter) Write(p []byte) (int, error) {
-	if p != nil {
-		// We are copying the slice because contents might change while sending to the channel
-		p_ := append(p[:0:0], p...)
-		self.ch <- p_
-	}
-	return len(p), nil
+	return WriteBytesToChannel(self.ch, p)
 }
 
 //
@@ -171,6 +211,8 @@ type ChannelReader struct {
 	reader *io.PipeReader
 }
 
+// Creates an [io.Reader] that reads bytes from a channel. This works via
+// a separate goroutine that pipes (via [io.Pipe]) the channel data.
 func NewChannelReader(ch chan []byte) *ChannelReader {
 	reader, writer := io.Pipe()
 
@@ -200,6 +242,10 @@ func (self *ChannelReader) Read(p []byte) (n int, err error) {
 // https://benjamincongdon.me/blog/2020/04/23/Cancelable-Reads-in-Go/
 // https://github.com/muesli/cancelreader
 
+// Creates a [io.Reader] that allows cancellation of reading via a provided
+// context. Note that cancellation is not guaranteed because the underlying reader
+// is called in-thread. At best we can guarantee that subsequent calls to
+// [ContextualReader.Read] will fail after cancellation.
 type ContextualReader struct {
 	reader  io.Reader
 	context contextpkg.Context
@@ -218,11 +264,16 @@ func (self *ContextualReader) Read(p []byte) (int, error) {
 // ContextualReadCloser
 //
 
+// Creates a [io.ReadCloser] that allows cancellation of reading via a provided
+// context. Note that cancellation is not guaranteed because the underlying reader
+// is called in-thread. At best we can guarantee that subsequent calls to
+// [ContextualReadCloser.Read] will fail after cancellation.
 type ContextualReadCloser struct {
 	reader  io.ReadCloser
 	context contextpkg.Context
 }
 
+// Creates a [io.ReadCloser]
 func NewContextualReadCloser(context contextpkg.Context, reader io.ReadCloser) io.ReadCloser {
 	return &ContextualReadCloser{reader: reader, context: context}
 }
