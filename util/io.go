@@ -42,16 +42,21 @@ func ContextualRead(context contextpkg.Context, reader io.Reader, p []byte) (int
 	}
 }
 
-// Sends a copy of the byte slice to a channel and returns its length.
-// Copying is necessary for ensuring that the submitted data is
+// Sends the byte slice to a channel and returns its length.
+//
+// When copy is true will copy the byte slice before sending it to the
+// channel. This is necessary for ensuring that the submitted data is
 // indeed the data that will be received, even if the underlying array
 // changes after this call.
-func WriteBytesToChannel(ch chan []byte, p []byte) (int, error) {
+func WriteBytesToChannel(ch chan []byte, p []byte, copy bool) (int, error) {
 	length := len(p)
 
 	if length > 0 {
+		if copy {
+			p = append(p[:0:0], p...)
+		}
 		select {
-		case ch <- append(p[:0:0], p...):
+		case ch <- p:
 		default:
 			return 0, errors.New("channel full")
 		}
@@ -69,6 +74,7 @@ func WriteBytesToChannel(ch chan []byte, p []byte) (int, error) {
 
 type BufferedWriter struct {
 	writer      io.Writer
+	copy        bool
 	submissions chan []byte
 	close       chan struct{}
 	closed      chan struct{}
@@ -84,13 +90,14 @@ type BufferedWriter struct {
 // the buffering channel is full then [BufferedWriter.Write] will return an
 // error. The actual write errors are ignored.
 //
-// Note that the implementation copies the byte slice before sending it
-// to the separate goroutine. This ensures that the submitted data is
+// When copy is true the implementation copies the byte slice before sending
+// it to the separate goroutine. This ensures that the submitted data is
 // indeed the data that will be written, even if the underlying array
 // changes after submission.
-func NewBufferedWriter(writer io.Writer, size int) *BufferedWriter {
+func NewBufferedWriter(writer io.Writer, size int, copy bool) *BufferedWriter {
 	self := BufferedWriter{
 		writer:      writer,
+		copy:        copy,
 		submissions: make(chan []byte, size),
 		close:       make(chan struct{}, 1),
 		closed:      make(chan struct{}, 1),
@@ -111,7 +118,7 @@ func (self *BufferedWriter) Write(p []byte) (int, error) {
 		}
 	}()
 
-	return WriteBytesToChannel(self.submissions, p)
+	return WriteBytesToChannel(self.submissions, p, self.copy)
 }
 
 // ([io.Closer] interface)
@@ -183,7 +190,8 @@ func (self *SyncedWriter) Close() error {
 //
 
 type ChannelWriter struct {
-	ch chan []byte
+	ch   chan []byte
+	copy bool
 }
 
 // Creates an [io.Writer] that writes bytes to a channel. The expectation is that
@@ -191,16 +199,16 @@ type ChannelWriter struct {
 // Writing is non-blocking: if the channel is full then [ChannelWriter.Write] will
 // return an error.
 //
-// Note that the implementation copies the byte slice before sending it to the
-// channel. This ensures that the submitted data is indeed the data that will be
+// When copy is true the implementation copies the byte slice before sending it to
+// the channel. This ensures that the submitted data is indeed the data that will be
 // received, even if the underlying array changes after submission.
-func NewChannelWriter(ch chan []byte) *ChannelWriter {
-	return &ChannelWriter{ch}
+func NewChannelWriter(ch chan []byte, copy bool) *ChannelWriter {
+	return &ChannelWriter{ch, copy}
 }
 
 // ([io.Writer] interface)
 func (self *ChannelWriter) Write(p []byte) (int, error) {
-	return WriteBytesToChannel(self.ch, p)
+	return WriteBytesToChannel(self.ch, p, self.copy)
 }
 
 //

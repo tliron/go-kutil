@@ -46,6 +46,8 @@ func (self *Command) Stop(err error) {
 }
 
 func (self *Command) Start(context contextpkg.Context) (*Process, error) {
+	copy := false // TODO: whether to copy byte slices
+
 	process := newProcess(self.ChannelSize)
 
 	command := exec.Command(self.Name, self.Args...)
@@ -72,7 +74,7 @@ func (self *Command) Start(context contextpkg.Context) (*Process, error) {
 		// Write stdout
 		if stdoutReader != nil {
 			go func() {
-				io.Copy(util.NewChannelWriter(process.Stdout), stdoutReader)
+				io.Copy(util.NewChannelWriter(process.Stdout, copy), stdoutReader)
 				// When done will return an input/output error
 				// (an *fs.PathError wrapping a syscall.Errno)
 				log.Debug("stdout closed")
@@ -147,7 +149,7 @@ func (self *Command) Start(context contextpkg.Context) (*Process, error) {
 		// Note: Our stderr is not a TTY file, which may cause some shell programs to disable their interactive mode.
 		// In such cases it may be possible to force interactive mode, for example: `bash -i`
 		log.Debugf("creating pseudo-terminal with size %d, %d", self.PseudoTerminal.Width, self.PseudoTerminal.Height)
-		command.Stderr = util.NewChannelWriter(process.Stderr)
+		command.Stderr = util.NewChannelWriter(process.Stderr, copy)
 		winsize := pty.Winsize{Rows: uint16(self.PseudoTerminal.Height), Cols: uint16(self.PseudoTerminal.Width)}
 		if ptyFile, err := pty.StartWithSize(command, &winsize); err == nil {
 			start(ptyFile, ptyFile, ptyFile)
@@ -157,8 +159,8 @@ func (self *Command) Start(context contextpkg.Context) (*Process, error) {
 		}
 	} else {
 		if stdinWriter, err := command.StdinPipe(); err == nil {
-			command.Stdout = util.NewChannelWriter(process.Stdout)
-			command.Stderr = util.NewChannelWriter(process.Stderr)
+			command.Stdout = util.NewChannelWriter(process.Stdout, copy)
+			command.Stderr = util.NewChannelWriter(process.Stderr, copy)
 			if err := command.Start(); err == nil {
 				start(stdinWriter, nil, nil)
 				return &process, nil
