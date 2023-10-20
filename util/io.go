@@ -49,12 +49,13 @@ func ContextualRead(context contextpkg.Context, reader io.Reader, p []byte) (int
 // indeed the data that will be received, even if the underlying array
 // changes after this call.
 func WriteBytesToChannel(ch chan []byte, p []byte, copy bool) (int, error) {
+	if copy {
+		p = append(p[:0:0], p...)
+	}
+
 	length := len(p)
 
 	if length > 0 {
-		if copy {
-			p = append(p[:0:0], p...)
-		}
 		select {
 		case ch <- p:
 		default:
@@ -135,9 +136,9 @@ func (self *BufferedWriter) Close() error {
 func (self *BufferedWriter) run() {
 	for {
 		select {
-		case job, ok := <-self.submissions:
+		case submission, ok := <-self.submissions:
 			if ok {
-				self.writer.Write(job) // ignores errors!
+				self.writer.Write(submission) // ignores errors!
 			} else {
 				self.closed <- struct{}{}
 				return
@@ -171,6 +172,7 @@ func NewSyncedWriter(writer io.Writer) *SyncedWriter {
 func (self *SyncedWriter) Write(p []byte) (int, error) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
+
 	return self.Writer.Write(p)
 }
 
@@ -178,6 +180,7 @@ func (self *SyncedWriter) Write(p []byte) (int, error) {
 func (self *SyncedWriter) Close() error {
 	self.lock.Lock()
 	defer self.lock.Unlock()
+
 	if closer, ok := self.Writer.(io.Closer); ok {
 		return closer.Close()
 	} else {

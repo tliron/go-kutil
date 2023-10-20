@@ -3,6 +3,7 @@ package main
 import (
 	_ "github.com/tliron/go-transcribe"
 	_ "github.com/tliron/kutil/cobra"
+	_ "github.com/tliron/kutil/compression"
 	_ "github.com/tliron/kutil/exec"
 	_ "github.com/tliron/kutil/fswatch"
 	_ "github.com/tliron/kutil/kubernetes"
