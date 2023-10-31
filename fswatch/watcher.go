@@ -40,7 +40,9 @@ func (self *Watcher) Start(onChanged OnChangedFunc) {
 					return
 				}
 
-				onChanged(self.urlContext.NewFileURL(event.Name))
+				if event.Has(fsnotify.Write) || event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
+					onChanged(self.urlContext.NewFileURL(event.Name))
+				}
 
 			case err, ok := <-self.watcher.Errors:
 				if !ok {

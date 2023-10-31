@@ -3,18 +3,18 @@ module github.com/tliron/kutil
 go 1.21
 
 require (
-	github.com/creack/pty v1.1.18
-	github.com/fsnotify/fsnotify v1.6.0
+	github.com/creack/pty v1.1.20
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/iancoleman/strcase v0.3.0
-	github.com/klauspost/compress v1.17.1
+	github.com/klauspost/compress v1.17.2
 	github.com/klauspost/pgzip v1.2.6
 	github.com/muesli/termenv v0.15.2
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tliron/commonlog v0.2.4
-	github.com/tliron/exturl v0.4.1
+	github.com/tliron/exturl v0.4.2
 	github.com/tliron/go-ard v0.2.14
 	github.com/tliron/go-transcribe v0.3.0
 	golang.org/x/crypto v0.14.0
