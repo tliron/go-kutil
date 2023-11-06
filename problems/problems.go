@@ -178,5 +178,5 @@ func (self *Problems) WithError(err error, locate bool) error {
 // Print
 
 func (self *Problems) Print(locate bool) bool {
-	return self.Write(os.Stderr, terminal.DefaultStylist, true, locate)
+	return self.Write(os.Stderr, terminal.StderrStylist, true, locate)
 }
