@@ -8,7 +8,7 @@ import (
 
 func Fail(message string) {
 	if !terminal.Quiet {
-		terminal.Eprintln(terminal.StdoutStylist.Error(message))
+		terminal.Eprintln(terminal.StderrStylist.Error(message))
 	}
 	Exit(1)
 }

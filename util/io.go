@@ -228,7 +228,7 @@ func NewChannelReader(ch chan []byte) *ChannelReader {
 	reader, writer := io.Pipe()
 
 	go func() {
-		defer writer.Close()
+		defer writer.Close() // Note: always returns nil
 		for p := range ch {
 			if _, err := writer.Write(p); err != nil {
 				return
