@@ -63,12 +63,19 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
-func ExitOnSIGTERM() {
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+func ExitOnSignals() {
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Interrupt)
 	go func() {
-		<-c
-		Exit(1)
+		<-interrupt
+		Exit(143)
+	}()
+
+	terminate := make(chan os.Signal)
+	signal.Notify(terminate, syscall.SIGTERM)
+	go func() {
+		<-terminate
+		Exit(130)
 	}()
 }
 

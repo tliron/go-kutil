@@ -3,27 +3,27 @@ module github.com/tliron/kutil
 go 1.21
 
 require (
-	github.com/creack/pty v1.1.20
+	github.com/creack/pty v1.1.21
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/iancoleman/strcase v0.3.0
-	github.com/klauspost/compress v1.17.2
+	github.com/klauspost/compress v1.17.3
 	github.com/klauspost/pgzip v1.2.6
 	github.com/muesli/termenv v0.15.2
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/tliron/commonlog v0.2.6
-	github.com/tliron/exturl v0.4.2
+	github.com/tliron/commonlog v0.2.7
+	github.com/tliron/exturl v0.4.3
 	github.com/tliron/go-ard v0.2.15
-	github.com/tliron/go-transcribe v0.3.1
+	github.com/tliron/go-transcribe v0.3.2
 	golang.org/x/crypto v0.15.0
 	golang.org/x/term v0.14.0
 	google.golang.org/protobuf v1.31.0
-	k8s.io/api v0.28.3
-	k8s.io/apiextensions-apiserver v0.28.3
-	k8s.io/apimachinery v0.28.3
-	k8s.io/client-go v0.28.3
+	k8s.io/api v0.28.4
+	k8s.io/apiextensions-apiserver v0.28.4
+	k8s.io/apimachinery v0.28.4
+	k8s.io/client-go v0.28.4
 )
 
 require (
@@ -48,7 +48,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
-	github.com/go-git/go-git/v5 v5.9.0 // indirect
+	github.com/go-git/go-git/v5 v5.10.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
