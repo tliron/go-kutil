@@ -3,8 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
+	signalpkg "os/signal"
 )
 
 // Inspired by: https://github.com/tebeka/atexit
@@ -63,19 +62,12 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
-func ExitOnSignals() {
-	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt)
+func ExitOnSignal(signal os.Signal, exitCode int) {
+	ch := make(chan os.Signal)
+	signalpkg.Notify(ch, signal) // CTRL+C
 	go func() {
-		<-interrupt
-		Exit(143)
-	}()
-
-	terminate := make(chan os.Signal)
-	signal.Notify(terminate, syscall.SIGTERM)
-	go func() {
-		<-terminate
-		Exit(130)
+		<-ch
+		Exit(exitCode)
 	}()
 }
 
