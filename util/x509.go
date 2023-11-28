@@ -2,6 +2,7 @@ package util
 
 import (
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -29,7 +30,7 @@ func ParseX509Certificates(bytes []byte) ([]*x509.Certificate, error) {
 	return certificates, nil
 }
 
-func ParseX509CertPool(bytes []byte) (*x509.CertPool, error) {
+func ParseX509CertificatePool(bytes []byte) (*x509.CertPool, error) {
 	if certificates, err := ParseX509Certificates(bytes); err == nil {
 		if len(certificates) > 0 {
 			certPool := x509.NewCertPool()
@@ -47,11 +48,23 @@ func ParseX509CertPool(bytes []byte) (*x509.CertPool, error) {
 
 var serialNumberLimit = new(big.Int).Lsh(big.NewInt(1), 128)
 
-func CreateX509Certificate(organization string, host string, rsa bool, ca bool) (*x509.Certificate, error) {
+func RandomSerialNumber() (*big.Int, error) {
+	return rand.Int(rand.Reader, serialNumberLimit)
+}
+
+// Initializes a X.509 certificate with a random serial number.
+//
+// If duration is 0 it will default to one year.
+func NewX509Certificate(organization string, host string, duration time.Duration, rsa bool, ca bool) (*x509.Certificate, error) {
 	// See: https://golang.org/src/crypto/tls/generate_cert.go
 
-	if serialNumber, err := rand.Int(rand.Reader, serialNumberLimit); err == nil {
+	if serialNumber, err := RandomSerialNumber(); err == nil {
 		now := time.Now()
+
+		if duration == 0 {
+			duration = 365 * 24 * time.Hour // 1 year
+		}
+
 		certificate := x509.Certificate{
 			Subject: pkix.Name{
 				Organization: []string{organization},
@@ -65,25 +78,60 @@ func CreateX509Certificate(organization string, host string, rsa bool, ca bool) 
 			//SignatureAlgorithm:    x509.SHA256WithRSA,
 			BasicConstraintsValid: true,
 			NotBefore:             now,
-			NotAfter:              now.Add(365 * 24 * time.Hour), // one year
+			NotAfter:              now.Add(duration),
 		}
+
 		if rsa {
 			certificate.KeyUsage |= x509.KeyUsageKeyEncipherment
 		}
+
 		if ca {
 			certificate.IsCA = true
 			certificate.KeyUsage |= x509.KeyUsageCertSign
 		}
+
 		return &certificate, nil
 	} else {
 		return nil, err
 	}
 }
 
+// Signs a X.509 certificate.
+//
+// For RSA, privateKey should be [*rsa.PrivateKey] and publicKey should be [*rsa.PublicKey].
 func SignX509Certificate(certificate *x509.Certificate, privateKey any, publicKey any) (*x509.Certificate, error) {
 	if certificateBytes, err := x509.CreateCertificate(rand.Reader, certificate, certificate, publicKey, privateKey); err == nil {
 		return x509.ParseCertificate(certificateBytes)
 	} else {
 		return nil, err
+	}
+}
+
+// Generates a random RSA key pair and uses it to sign a X.509 certificate
+// with a random serial number.
+//
+// If host is empy it will default to "localhost". If rsaBits is 0 it will default to 2048.
+// If duration is 0 it will default to one year.
+func CreateRSAX509Certificate(organization string, host string, rsaBits int, duration time.Duration) (*rsa.PrivateKey, *x509.Certificate, error) {
+	if host == "" {
+		host = "localhost"
+	}
+
+	if rsaBits == 0 {
+		rsaBits = 2048
+	}
+
+	if privateKey, err := rsa.GenerateKey(rand.Reader, rsaBits); err == nil {
+		if certificate, err := NewX509Certificate(organization, host, duration, true, true); err == nil {
+			if certificate, err = SignX509Certificate(certificate, privateKey, &privateKey.PublicKey); err == nil {
+				return privateKey, certificate, nil
+			} else {
+				return nil, nil, err
+			}
+		} else {
+			return nil, nil, err
+		}
+	} else {
+		return nil, nil, err
 	}
 }

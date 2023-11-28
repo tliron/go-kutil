@@ -5,14 +5,15 @@ HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$HERE/_env"
 . "$HERE/_trap"
 
+# dnf install mingw64-gcc
+
 git_version
 
 function build () {
 	local TOOL=$1
 	pushd "$ROOT/$TOOL" > /dev/null
 	go build \
-		-buildmode=c-shared \
-		-o="$ROOT/dist/libkutil.so" \
+		"${@:2}" \
 		-ldflags " \
 			-X '$MODULE/version.GitVersion=$VERSION' \
 			-X '$MODULE/version.GitRevision=$REVISION' \
@@ -20,5 +21,12 @@ function build () {
 	popd > /dev/null
 }
 
-build library
+m 'posix'
+build library -buildmode=c-shared -o="$ROOT/dist/libkutil.so"
 
+m 'windows'
+GOOS=windows CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc \
+build library -buildmode=c-shared -o="$ROOT/dist/kutil.dll"
+
+m 'wasm'
+GOOS=js GOARCH=wasm build library
