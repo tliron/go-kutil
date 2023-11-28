@@ -15,9 +15,9 @@ import (
 func EnableColor(file *os.File) (bool, CleanupFunc, error) {
 	output := termenv.NewOutput(file)
 	if output.EnvColorProfile() != termenv.Ascii {
-		if mode, err := output.EnableWindowsANSIConsole(); err == nil {
+		if mode, err := termenv.EnableWindowsANSIConsole(); err == nil {
 			return true, func() error {
-				return output.RestoreWindowsConsole(mode)
+				return termenv.RestoreWindowsConsole(mode)
 			}, nil
 		} else {
 			return false, nil, err
