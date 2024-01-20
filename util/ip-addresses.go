@@ -4,107 +4,132 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"strconv"
 	"strings"
 )
 
-func JoinIPAddressPort(address string, port int) string {
-	if IsIPv6(address) {
-		return fmt.Sprintf("[%s]:%d", address, port)
-	} else {
-		return fmt.Sprintf("%s:%d", address, port)
-	}
-}
-
+// Returns true if the IP address string representation is IPv6.
+//
+// Note that this function does no validation and assumes the argument is already
+// a valid IPv6 or IPv4 address.
 func IsIPv6(address string) bool {
 	// See: https://stackoverflow.com/questions/22751035/golang-distinguish-ipv4-ipv6
 	return strings.Contains(address, ":")
 }
 
+// Returns "[address]:port" for IPv6 and "address:port" for IPv4.
+//
+// Meant to satisfy the unfortunate requirement of many APIs to provide
+// an address (or hostname) and port with a single string argument.
+func JoinIPAddressPort(address string, port int) string {
+	if IsIPv6(address) {
+		return "[" + address + "]:" + strconv.FormatInt(int64(port), 10)
+	} else {
+		return address + ":" + strconv.FormatInt(int64(port), 10)
+	}
+}
+
+// If the zone is not empty returns "address%zone".
+// It is expected that the argument does not already have a zone.
+//
+// For IPv6 address string representations only, see:
+// https://en.wikipedia.org/wiki/IPv6_address#Scoped_literal_IPv6_addresses_(with_zone_index)
+func JoinIPAddressZone(address string, zone string) string {
+	if zone != "" {
+		return address + "%" + zone
+	} else {
+		return address
+	}
+}
+
+// Returns true if the two UDP addresses are equal.
 func IsUDPAddrEqual(a *net.UDPAddr, b *net.UDPAddr) bool {
 	return a.IP.Equal(b.IP) && (a.Port == b.Port) && (a.Zone == b.Zone)
 }
 
-func ToReachableIPAddress(address string) (string, string, error) {
-	if net.ParseIP(address).IsUnspecified() {
-		isIpv6 := IsIPv6(address)
-
-		if interfaces, err := net.Interfaces(); err == nil {
+// Always returns a specified address. If the argument is already a specified address,
+// returns it as is. Otherwise (when it's "::" or "0.0.0.0") will attempt to find a specified
+// address by enumerating the active local interfaces, chosing one arbitrarily, with a
+// preference for a global unicast address.
+//
+// The IP version of the returned address will match that of the argument, IPv6 for "::"
+// and IPv4 for "0.0.0.0".
+//
+// Note that a returned IPv6 address may include a zone (when not a global unicast).
+func ToReachableIPAddress(address string) (string, error) {
+	// (Note: net.ParseIP can't parse IPv6 with zone, but netip.ParseAddr can)
+	if addr, err := netip.ParseAddr(address); err == nil {
+		if addr.IsUnspecified() {
 			// Try to find a global unicast first
-			for _, interface_ := range interfaces {
-				if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) {
-					if addrs, err := interface_.Addrs(); err == nil {
-						for _, addr := range addrs {
-							if addr_, ok := addr.(*net.IPNet); ok {
-								//util.DumpIPAddress(addr_.IP.String())
-								if addr_.IP.IsGlobalUnicast() {
-									ip := addr_.IP.String()
-									if isIpv6 == IsIPv6(ip) {
-										return ip, "", nil
-									}
-								}
-							}
-						}
-					} else {
-						return "", "", err
-					}
-				}
+
+			collector := IPAddressCollector{
+				IPv6: IsIPv6(address),
+				FilterInterface: func(interface_ net.Interface) bool {
+					return (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0)
+				},
+				FilterIP: func(ip net.IP) bool {
+					return ip.IsGlobalUnicast()
+				},
 			}
 
-			// No global unicast available
-			for _, interface_ := range interfaces {
-				if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) {
-					if addrs, err := interface_.Addrs(); err == nil {
-						for _, addr := range addrs {
-							if addr_, ok := addr.(*net.IPNet); ok {
-								ip := addr_.IP.String()
-								if isIpv6 == IsIPv6(ip) {
-									// The zone (required when not global unicast) is the interface name
-									return ip, interface_.Name, nil
-								}
-							}
-						}
-					} else {
-						return "", "", err
-					}
+			if addresses, err := collector.Collect(); err == nil {
+				if len(addresses) > 0 {
+					return addresses[0], nil
 				}
+			} else {
+				return "", err
 			}
 
-			return "", "", fmt.Errorf("cannot find an equivalent reachable address for: %s", address)
-		} else {
-			return "", "", err
+			// Otherwise, just use the first address (with zone for IPv6)
+
+			collector.FilterIP = nil
+			collector.WithZone = true
+			if addresses, err := collector.Collect(); err == nil {
+				if len(addresses) > 0 {
+					return addresses[0], nil
+				}
+			} else {
+				return "", err
+			}
+
+			return "", fmt.Errorf("cannot find an equivalent reachable address for: %s", address)
 		}
+	} else {
+		return "", err
 	}
 
-	return address, "", nil
+	return address, nil
 }
 
-func ToBroadcastIPAddress(address string) (string, string, error) {
-	// Note: net.ParseIP can't parse IPv6 zone
-	if ip, err := netip.ParseAddr(address); err == nil {
-		if !ip.IsMulticast() {
-			return "", "", fmt.Errorf("not a multicast address: %s", address)
+// The argument is validated as being a multicast address, e.g. "ff02::1" (IPv6) or
+// "239.0.0.1" (IPv4). For IPv6, if it does not include a zone, a valid zone will be
+// added by enumerating the active local interfaces, chosing one arbitrarily.
+func ToBroadcastIPAddress(address string) (string, error) {
+	// (Note: net.ParseIP can't parse IPv6 with zone, but netip.ParseAddr can)
+	if addr, err := netip.ParseAddr(address); err == nil {
+		if !addr.IsMulticast() {
+			return "", fmt.Errorf("not a multicast address: %s", address)
 		}
 
-		if IsIPv6(address) && ip.Zone() == "" {
+		if IsIPv6(address) && (addr.Zone() == "") {
 			if interfaces, err := net.Interfaces(); err == nil {
 				for _, interface_ := range interfaces {
-					//fmt.Printf("%s\n", interface_.Flags.String())
 					if (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0) &&
 						(interface_.Flags&net.FlagBroadcast != 0) && (interface_.Flags&net.FlagMulticast != 0) {
-						// The zone is the interface name
-						return address, interface_.Name, nil
+						// The IPv6 zone is usually the interface name
+						return JoinIPAddressZone(address, interface_.Name), nil
 					}
 				}
 			} else {
-				return "", "", err
+				return "", err
 			}
 
-			return "", "", fmt.Errorf("cannot find a zone for: %s", address)
+			return "", fmt.Errorf("cannot find IPv6 zone for: %s", address)
 		}
 
-		return address, "", nil
+		return address, nil
 	} else {
-		return "", "", err
+		return "", err
 	}
 }
 
@@ -120,4 +145,74 @@ func DumpIPAddress(address any) {
 	fmt.Printf("  multicast:                 %t\n", ip.IsMulticast())
 	fmt.Printf("  private:                   %t\n", ip.IsPrivate())
 	fmt.Printf("  unspecified:               %t\n", ip.IsUnspecified())
+}
+
+//
+// IPAddressCollector
+//
+
+type FilterInterfaceFunc func(interface_ net.Interface) bool
+
+type FilterIPFunc func(ip net.IP) bool
+
+type IPAddressCollector struct {
+	// If nil, will call net.Interfaces().
+	Interfaces []net.Interface
+
+	// Which IP version to accept.
+	IPv6 bool
+
+	// Include IPv6 zone in returned addresses.
+	WithZone bool
+
+	// Return true to accept an interface (can be nil).
+	FilterInterface FilterInterfaceFunc
+
+	// Return true to accept an IP (can be nil).
+	// Note that the argument's address (ip.String()) does not include the IPv6 zone.
+	FilterIP FilterIPFunc
+}
+
+func (self *IPAddressCollector) Collect() ([]string, error) {
+	var addresses []string
+
+	if interfaces, err := self.interfaces(); err == nil {
+		for _, interface_ := range interfaces {
+			if (self.FilterInterface == nil) || self.FilterInterface(interface_) {
+				if addrs, err := interface_.Addrs(); err == nil {
+					for _, addr := range addrs {
+						if ipNet, ok := addr.(*net.IPNet); ok {
+							ip := ipNet.IP
+							address := ip.String()
+							isIpV6 := IsIPv6(address)
+							if (isIpV6 == self.IPv6) && ((self.FilterIP == nil) || self.FilterIP(ip)) {
+								if self.WithZone && isIpV6 {
+									// The IPv6 zone is usually the interface name
+									address = JoinIPAddressZone(address, interface_.Name)
+								}
+								addresses = append(addresses, address)
+							}
+						}
+					}
+				} else {
+					return nil, err
+				}
+			}
+		}
+	} else {
+		return nil, err
+	}
+
+	return addresses, nil
+}
+
+func (self *IPAddressCollector) interfaces() ([]net.Interface, error) {
+	if self.Interfaces == nil {
+		var err error
+		if self.Interfaces, err = net.Interfaces(); err != nil {
+			return nil, err
+		}
+	}
+
+	return self.Interfaces, nil
 }

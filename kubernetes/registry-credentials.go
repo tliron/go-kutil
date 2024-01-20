@@ -111,7 +111,7 @@ func (self RegistryCredentialsTable) ToARD() ard.Value {
 }
 
 func (self RegistryCredentialsTable) ToDockerConfigJSON() (string, error) {
-	return (&transcribe.Transcriber{Indent: ""}).StringifyJSON(ard.StringMap{
+	return transcribe.NewTranscriber().StringifyJSON(ard.StringMap{
 		"auths": self.ToARD(),
 	})
 }
