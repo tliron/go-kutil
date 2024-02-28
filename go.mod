@@ -7,17 +7,17 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/iancoleman/strcase v0.3.0
-	github.com/klauspost/compress v1.17.6
+	github.com/klauspost/compress v1.17.7
 	github.com/klauspost/pgzip v1.2.6
 	github.com/muesli/termenv v0.15.2
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/tliron/commonlog v0.2.11
+	github.com/tliron/commonlog v0.2.12
 	github.com/tliron/exturl v0.4.3
 	github.com/tliron/go-ard v0.2.16
 	github.com/tliron/go-transcribe v0.3.4
-	golang.org/x/crypto v0.19.0
+	golang.org/x/crypto v0.20.0
 	golang.org/x/term v0.17.0
 	google.golang.org/protobuf v1.32.0
 	k8s.io/api v0.29.2
@@ -108,7 +108,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
