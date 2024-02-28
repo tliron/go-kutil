@@ -1,7 +1,6 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 )
@@ -12,7 +11,7 @@ import (
 
 type Executor[T any] interface {
 	Queue(task T)
-	Wait() error
+	Wait() []error
 }
 
 //
@@ -51,10 +50,10 @@ func (self *ParallelExecutor[T]) Queue(task T) {
 }
 
 // ([Executor] interface)
-func (self *ParallelExecutor[T]) Wait() error {
+func (self *ParallelExecutor[T]) Wait() []error {
 	self.wg.Wait()
 	close(self.tasks)
-	return errors.Join(self.errs...)
+	return self.errs
 }
 
 func (self *ParallelExecutor[T]) worker() {
