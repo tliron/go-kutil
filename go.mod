@@ -13,13 +13,13 @@ require (
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/tliron/commonlog v0.2.12
+	github.com/tliron/commonlog v0.2.13
 	github.com/tliron/exturl v0.4.3
 	github.com/tliron/go-ard v0.2.16
 	github.com/tliron/go-transcribe v0.3.4
-	golang.org/x/crypto v0.20.0
-	golang.org/x/term v0.17.0
-	google.golang.org/protobuf v1.32.0
+	golang.org/x/crypto v0.21.0
+	golang.org/x/term v0.18.0
+	google.golang.org/protobuf v1.33.0
 	k8s.io/api v0.29.2
 	k8s.io/apiextensions-apiserver v0.29.2
 	k8s.io/apimachinery v0.29.2
@@ -111,7 +111,7 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -90,6 +91,18 @@ func (self IPStack) ServerBinds(address string) []IPStackBind {
 	default:
 		return nil
 	}
+}
+
+type IPStackStartServerFunc func(level2protocol string, address string) error
+
+func (self IPStack) StartServers(address string, start IPStackStartServerFunc) error {
+	var errs []error
+	for _, bind := range self.ServerBinds(address) {
+		if err := start(bind.Level2Protocol, bind.Address); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 //

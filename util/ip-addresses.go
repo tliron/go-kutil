@@ -29,6 +29,29 @@ func JoinIPAddressPort(address string, port int) string {
 	}
 }
 
+func SplitIPAddressPort(addressPort string) (string, int, bool) {
+	if p := strings.LastIndex(addressPort, ":"); p != -1 {
+		address := addressPort[:p]
+		port := addressPort[p+1:]
+		if strings.HasPrefix(address, "[") {
+			// IPv6
+			var ok bool
+			if address, _, ok = strings.Cut(address[1:], "]"); ok {
+				if port_, err := strconv.Atoi(port); err == nil {
+					return address, port_, true
+				}
+			}
+		} else {
+			// IPv4
+			if port_, err := strconv.Atoi(port); err == nil {
+				return address, port_, true
+			}
+		}
+	}
+
+	return "", 0, false
+}
+
 // If the zone is not empty returns "address%zone".
 // It is expected that the argument does not already have a zone.
 //
@@ -130,6 +153,37 @@ func ToBroadcastIPAddress(address string) (string, error) {
 		return address, nil
 	} else {
 		return "", err
+	}
+}
+
+func IPAddressPortWithoutZone(address string) string {
+	if strings.Contains(address, "%") {
+		var port string
+		if colon := strings.LastIndex(address, ":"); colon != -1 {
+			port = address[colon+1:]
+			address = address[:colon]
+		}
+
+		var ipv6 bool
+		if strings.HasPrefix(address, "[") {
+			// This should always be the case
+			ipv6 = true
+			address = address[1 : len(address)-1]
+		}
+
+		address, _, _ = strings.Cut(address, "%")
+
+		if ipv6 {
+			address = "[" + address + "]"
+		}
+
+		if port == "" {
+			return address
+		} else {
+			return address + ":" + port
+		}
+	} else {
+		return address
 	}
 }
 

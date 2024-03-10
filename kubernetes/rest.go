@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	contextpkg "context"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -13,13 +14,13 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-func WriteToContainer(rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, reader io.Reader, targetPath string, permissions *int64) error {
+func WriteToContainer(context contextpkg.Context, rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, reader io.Reader, targetPath string, permissions *int64) error {
 	dir := filepath.Dir(targetPath)
-	if err := Exec(rest, config, namespace, podName, containerName, nil, nil, nil, false, "mkdir", "--parents", dir); err == nil {
-		if err := Exec(rest, config, namespace, podName, containerName, reader, nil, nil, false, "cp", "/dev/stdin", targetPath); err == nil {
+	if err := Exec(context, rest, config, namespace, podName, containerName, nil, nil, nil, false, "mkdir", "--parents", dir); err == nil {
+		if err := Exec(context, rest, config, namespace, podName, containerName, reader, nil, nil, false, "cp", "/dev/stdin", targetPath); err == nil {
 			if permissions != nil {
 				octal := strconv.FormatInt(*permissions, 8)
-				return Exec(rest, config, namespace, podName, containerName, nil, nil, nil, false, "chmod", octal, targetPath)
+				return Exec(context, rest, config, namespace, podName, containerName, nil, nil, nil, false, "chmod", octal, targetPath)
 			} else {
 				return nil
 			}
@@ -31,11 +32,11 @@ func WriteToContainer(rest restpkg.Interface, config *restpkg.Config, namespace 
 	}
 }
 
-func ReadFromContainer(rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, writer io.Writer, sourcePath string) error {
-	return Exec(rest, config, namespace, podName, containerName, nil, writer, nil, false, "cat", sourcePath)
+func ReadFromContainer(context contextpkg.Context, rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, writer io.Writer, sourcePath string) error {
+	return Exec(context, rest, config, namespace, podName, containerName, nil, writer, nil, false, "cat", sourcePath)
 }
 
-func Exec(rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, stdin io.Reader, stdout io.Writer, stderr io.Writer, tty bool, command ...string) error {
+func Exec(context contextpkg.Context, rest restpkg.Interface, config *restpkg.Config, namespace string, podName string, containerName string, stdin io.Reader, stdout io.Writer, stderr io.Writer, tty bool, command ...string) error {
 	var stderrCapture strings.Builder
 	if stderr == nil {
 		// If not redirecting stderr then make sure to capture it
@@ -67,7 +68,7 @@ func Exec(rest restpkg.Interface, config *restpkg.Config, namespace string, podN
 	request := rest.Post().Namespace(namespace).Resource("pods").Name(podName).SubResource("exec").VersionedParams(&execOptions, scheme.ParameterCodec)
 
 	if executor, err := remotecommand.NewSPDYExecutor(config, "POST", request.URL()); err == nil {
-		if err = executor.Stream(streamOptions); err == nil {
+		if err = executor.StreamWithContext(context, streamOptions); err == nil {
 			return nil
 		} else {
 			return NewExecError(err, strings.TrimRight(stderrCapture.String(), "\n"))
@@ -76,6 +77,10 @@ func Exec(rest restpkg.Interface, config *restpkg.Config, namespace string, podN
 		return err
 	}
 }
+
+//
+// ExecError
+//
 
 type ExecError struct {
 	Err    error
@@ -86,7 +91,7 @@ func NewExecError(err error, stderr string) *ExecError {
 	return &ExecError{err, stderr}
 }
 
-// (error interface)
+// ([error] interface)
 func (self *ExecError) Error() string {
 	return fmt.Sprintf("%s\n%s", self.Err.Error(), self.Stderr)
 }
