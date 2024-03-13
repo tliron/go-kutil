@@ -12,6 +12,7 @@ import (
 type Executor[T any] interface {
 	Queue(task T)
 	Wait() []error
+	Close()
 }
 
 //
@@ -54,6 +55,11 @@ func (self *ParallelExecutor[T]) Wait() []error {
 	self.wg.Wait()
 	close(self.tasks)
 	return self.errs
+}
+
+// ([Executor] interface)
+func (self *ParallelExecutor[T]) Close() {
+	close(self.tasks)
 }
 
 func (self *ParallelExecutor[T]) worker() {
