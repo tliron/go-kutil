@@ -5,10 +5,13 @@ import (
 	"io"
 )
 
-var MaxResultsSliceSize = 1_000 // 0 for limitless
-var ResultsStreamBufferSize = 100
+var (
+	MaxResultsSliceSize     = 1_000 // 0 for limitless
+	ResultsStreamBufferSize = 100
+)
 
 type IterateResultsFunc[E any] func(entity E) error
+type GetResults[E any] func(offset uint) (Results[E], error)
 
 func IterateResults[E any](results Results[E], iterate IterateResultsFunc[E]) error {
 	defer results.Release()
@@ -42,6 +45,40 @@ func GatherResults[E any](results Results[E]) ([]E, error) {
 	}
 
 	return slice, nil
+}
+
+func CombineResults[E any](get GetResults[E]) Results[E] {
+	stream := NewResultsStream[E](nil)
+
+	go func() {
+		var offset uint
+
+		for {
+			var count uint
+
+			if results, err := get(offset); err == nil {
+				if err := IterateResults(results, func(entity E) error {
+					stream.Send(entity)
+					count++
+					return nil
+				}); err != nil {
+					stream.Close(err)
+				}
+			} else {
+				stream.Close(err)
+			}
+
+			if count == 0 {
+				break
+			}
+
+			offset += count
+		}
+
+		stream.Close(nil)
+	}()
+
+	return stream
 }
 
 //

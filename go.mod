@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/creack/pty v1.1.21
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/hashicorp/memberlist v0.5.0
+	github.com/hashicorp/memberlist v0.5.1
 	github.com/iancoleman/strcase v0.3.0
 	github.com/klauspost/compress v1.17.7
 	github.com/klauspost/pgzip v1.2.6
@@ -66,7 +66,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
-	github.com/hashicorp/go-msgpack v0.5.3 // indirect
+	github.com/hashicorp/go-msgpack/v2 v2.1.1 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
