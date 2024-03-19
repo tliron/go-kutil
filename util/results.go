@@ -107,6 +107,13 @@ func NewResultsSlice[E any](entities []E) *ResultsSlice[E] {
 	}
 }
 
+func NewResult[E any](entity E) *ResultsSlice[E] {
+	return &ResultsSlice[E]{
+		entities: []E{entity},
+		length:   1,
+	}
+}
+
 // ([Results] interface)
 func (self *ResultsSlice[E]) Next() (E, error) {
 	if self.index < self.length {
