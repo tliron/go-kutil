@@ -43,9 +43,11 @@ func (self IPStack) ClientBind(address string) IPStackBind {
 	if address == "" {
 		switch self {
 		case IPv4Stack:
-			address = "0.0.0.0"
+			return IPStackBind{"tcp4", "0.0.0.0"}
 		default:
+			// Prefer IPv6 for dual stack
 			address = "::"
+			return IPStackBind{"tcp6", "::"}
 		}
 	}
 

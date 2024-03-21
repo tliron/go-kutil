@@ -86,7 +86,8 @@ func ToReachableIPAddress(address string) (string, error) {
 			// Try to find a global unicast first
 
 			collector := IPAddressCollector{
-				IPv6: IsIPv6(address),
+				IPv6:     IsIPv6(address),
+				WithZone: true,
 				FilterInterface: func(interface_ net.Interface) bool {
 					return (interface_.Flags&net.FlagLoopback == 0) && (interface_.Flags&net.FlagUp != 0)
 				},
@@ -103,10 +104,8 @@ func ToReachableIPAddress(address string) (string, error) {
 				return "", err
 			}
 
-			// Otherwise, just use the first address (with zone for IPv6)
-
+			// Otherwise, just use the first address
 			collector.FilterIP = nil
-			collector.WithZone = true
 			if addresses, err := collector.Collect(); err == nil {
 				if len(addresses) > 0 {
 					return addresses[0], nil
