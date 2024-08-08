@@ -22,6 +22,7 @@ const (
 	BlueCode    = escapePrefix + "34" + escapeSuffix
 	MagentaCode = escapePrefix + "35" + escapeSuffix
 	CyanCode    = escapePrefix + "36" + escapeSuffix
+	GrayCode    = escapePrefix + "90" + escapeSuffix
 )
 
 // Attempts to enable colorization for [os.Stdout] and [os.Stderr] according to
@@ -118,4 +119,9 @@ func ColorMagenta(s string) string {
 // ([Colorizer] signature)
 func ColorCyan(s string) string {
 	return CyanCode + s + ResetCode
+}
+
+// ([Colorizer] signature)
+func ColorGray(s string) string {
+	return GrayCode + s + ResetCode
 }
