@@ -9,6 +9,9 @@ import (
 )
 
 func init() {
+	defaultLockType = SyncLock
+	deadlock.Opts.DisableLockOrderDetection = false
+
 	switch os.Getenv("KUTIL_LOCK_DEFAULT") {
 	case "sync":
 		defaultLockType = SyncLock
@@ -16,15 +19,13 @@ func init() {
 		defaultLockType = DebugLock
 	case "mock":
 		defaultLockType = MockLock
-	default:
-		defaultLockType = SyncLock
 	}
 
 	switch os.Getenv("KUTIL_LOCK_DEBUG_ORDER_DETECTION") {
 	case "true":
-		deadlock.Opts.DisableLockOrderDetection = true
-	case "false":
 		deadlock.Opts.DisableLockOrderDetection = false
+	case "false":
+		deadlock.Opts.DisableLockOrderDetection = true
 	}
 }
 

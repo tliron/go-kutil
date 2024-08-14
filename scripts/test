@@ -13,5 +13,6 @@ cd "$ROOT"
 
 KUTIL_TEST_ROOT=$ROOT \
 KUTIL_LOCK_DEFAULT=debug \
+KUTIL_LOCK_DEBUG_ORDER_DETECTION=true \
 GORACE=history_size=7 \
 go test -count=1 -timeout=30s ./... "$@"
