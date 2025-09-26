@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/klauspost/compress/zip"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 //

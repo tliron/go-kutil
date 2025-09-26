@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/go-kutil/terminal"
 )
 
 func Print() {

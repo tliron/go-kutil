@@ -7,7 +7,7 @@ import (
 	"io/fs"
 
 	"github.com/tliron/exturl"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 //

@@ -3,7 +3,7 @@ package reflection
 import (
 	"reflect"
 
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 type EntityTraverser func(any) bool

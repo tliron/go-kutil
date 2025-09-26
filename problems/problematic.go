@@ -1,6 +1,6 @@
 package problems
 
-import "github.com/tliron/kutil/terminal"
+import "github.com/tliron/go-kutil/terminal"
 
 //
 // Problematic

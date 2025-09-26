@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tliron/kutil/terminal"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/terminal"
+	"github.com/tliron/go-kutil/util"
 )
 
 //

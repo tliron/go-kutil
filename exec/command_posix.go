@@ -10,7 +10,7 @@ import (
 	"os/exec"
 
 	"github.com/creack/pty"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 func (self *Command) Start(context contextpkg.Context) (*Process, error) {

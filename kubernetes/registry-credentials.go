@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/tliron/go-ard"
+	"github.com/tliron/go-kutil/util"
 	"github.com/tliron/go-transcribe"
-	"github.com/tliron/kutil/util"
 	core "k8s.io/api/core/v1"
 )
 

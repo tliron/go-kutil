@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

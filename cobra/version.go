@@ -6,8 +6,8 @@ import (
 	"runtime/debug"
 
 	"github.com/spf13/cobra"
-	"github.com/tliron/kutil/terminal"
-	"github.com/tliron/kutil/version"
+	"github.com/tliron/go-kutil/terminal"
+	"github.com/tliron/go-kutil/version"
 )
 
 func NewVersionCommand(name string) *cobra.Command {
